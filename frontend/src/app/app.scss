@@ -1,0 +1,52 @@
+/* Remove margens padrão do corpo da página */
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #121212; /* Fundo escuro padrão Spotify */
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+}
+
+.login-box {
+  text-align: center;
+  background-color: #181818;
+  padding: 50px 70px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+  color: #1DB954; /* Verde Spotify */
+}
+
+p {
+  margin-bottom: 40px;
+  color: #b3b3b3;
+  font-size: 1.1rem;
+}
+
+.btn-spotify {
+  background-color: #1DB954;
+  color: black;
+  border: none;
+  padding: 16px 36px;
+  border-radius: 500px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-spotify:hover {
+  background-color: #1ed760;
+  transform: scale(1.05); /* Efeito de crescer um pouquinho quando passa o mouse */
+}
