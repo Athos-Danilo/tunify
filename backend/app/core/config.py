@@ -12,9 +12,12 @@ class Settings:
     SPOTIFY_CLIENT_ID: str = os.getenv("SPOTIFY_CLIENT_ID")
     SPOTIFY_CLIENT_SECRET: str = os.getenv("SPOTIFY_CLIENT_SECRET")
     SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI")
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
 
     def check_setup(self):
         if not self.SPOTIFY_CLIENT_ID:
-            raise ValueError("❌ ERRO: SPOTIFY_CLIENT_ID não encontrado no .env")
+            raise ValueError("ERRO: SPOTIFY_CLIENT_ID não encontrado no .env")
+        if not self.DATABASE_URL:
+            raise ValueError("ERRO: DATABASE_URL não encontrada no .env")
         
 settings = Settings()
