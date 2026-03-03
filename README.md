@@ -37,11 +37,25 @@ Este projeto não é apenas um consumidor de API. Ele implementa uma arquitetura
 
 ## Funcionalidades Principais
 
-1.  **Vibe Architect:** Crie playlists desenhando uma "Curva de Energia" (ex: Começar Calmo -> Terminar Agitado).
-2.  **Smart Context:** Geração de playlists baseadas em clima (Weather API) e hora do dia.
-3.  **Deep Discovery:** Algoritmo focado em encontrar artistas "Lado B" (baixa popularidade) que possuem assinatura sonora idêntica aos seus artistas favoritos.
-4.  **Dashboard Analítico:** Visualização de dados (Radar Charts) do perfil de consumo do usuário.
+1. **Vibe Architect:** Crie playlists desenhando uma "Curva de Energia" (ex: Começar Calmo -> Terminar Agitado).
+2. **Smart Context:** Geração de playlists baseadas em clima (Weather API) e hora do dia.
+3. **Deep Discovery:** Algoritmo focado em encontrar artistas "Lado B" (baixa popularidade) que possuem assinatura sonora idêntica aos seus artistas favoritos.
+4. **Dashboard Analítico:** Visualização de dados (Radar Charts) do perfil de consumo do usuário.
 
 ---
 
-**Desenvolvido por ATHOS INÁCIO** 
+## Licença
+
+Copyright (c) 2026 Athos Inácio
+
+All Rights Reserved.
+
+Este projeto e seu código-fonte são propriedade exclusiva do autor.
+
+Não é concedida permissão para usar, copiar, modificar, distribuir, sublicenciar ou vender qualquer parte deste software sem autorização prévia e por escrito.
+
+O projeto é disponibilizado publicamente apenas para fins de portfólio e visualização técnica.
+
+---
+
+**Desenvolvido por ATHOS INÁCIO**
