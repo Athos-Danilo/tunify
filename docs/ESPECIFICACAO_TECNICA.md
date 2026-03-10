@@ -2,11 +2,11 @@
 
 **Slogan:** "A matemática da sua vibe."
 
-**Versão:** 1.0.0
+**Versão:** 1.0.5
 
 **Status:** Desenvolvimento
 
-**Data da Atualização:** 18/02/2026
+**Data da Atualização:** 10/03/2026
 
 ---
 
@@ -80,7 +80,9 @@ As funcionalidades foram organizadas em módulos lógicos para facilitar o desen
 
 * **RF14 \- Exportação para o Spotify:** Botão para efetivar a criação da playlist na conta do usuário.  
 * **RF15 \- Web Player SDK:** Controle remoto completo (Play, Pause, Skip, Seek) de qualquer dispositivo ativo do usuário diretamente pelo dashboard do Tunify.  
-* **RF16 \- Dashboard "DNA Musical":** Visualização de dados (Spider Charts) comparando o gosto do usuário com a média global ou com a playlist gerada.
+* **RF16 \- Dashboard "DNA Musical:** Visualização de dados (Spider Charts) comparando o gosto do usuário com a média global ou com a playlist gerada.
+* **RF17 \- Controle de Visibilidade (Privacy Toggle):** No painel de configuração antes da geração final da playlist, o sistema deve fornecer um toggle (interruptor booleano) permitindo ao usuário definir se a playlist criada no Spotify será Pública ou Privada (public: true ou false).
+* **RF18 \- Módulo de Compartilhamento (Social Share):** Após a criação com sucesso, se a playlist for marcada como Pública, a interface deve exibir um componente de compartilhamento. Este componente deve utilizar a Clipboard API (para copiar o link direto) e a Web Share API (para deep links com WhatsApp, X/Twitter e Instagram Stories). Se a playlist for Privada, o módulo de compartilhamento deve ficar desabilitado visualmente, exibindo um tooltip explicativo para o usuário.
 
 #### **Módulo 6: Analytics & Insights (Dashboard)**
 
@@ -90,6 +92,7 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RF18 \- Top Genres (Pie Chart):** Como o Spotify não fornece gênero por *música*, o sistema deve calcular isso agregando os gêneros dos *artistas* das 50 faixas mais ouvidas.  
 * **RF19 \- Calculadora de Tempo (Library Stats):** O sistema deve percorrer as faixas salvas do usuário (paginação de 50 em 50\) para somar a duração total (`duration_ms`) e exibir: *"Você levaria 14 dias ininterruptos para ouvir toda sua biblioteca"*.  
 * **RF20 \- Linha do Tempo de Popularidade:** Um gráfico de linha mostrando se o gosto do usuário tem ficado mais "Mainstream" (Popularidade alta) ou mais "Underground" ao longo dos últimos 6 meses.
+* **RF21 \- Theme Switcher (Modo Claro/Escuro):** O sistema deve oferecer um toggle na interface do usuário (ex: no cabeçalho ou menu de perfil) permitindo alternar dinamicamente entre a paleta "Dark Mode" (padrão) e "Light Mode". A preferência escolhida deve ser persistida localmente (via localStorage do navegador) para garantir que a escolha seja mantida em acessos futuros.
 
 ## **4\. Regras de Negócio (RN)**
 
@@ -157,6 +160,10 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 
 * **RNF03 \- Criptografia em Repouso:** Tokens sensíveis (*Refresh Token*) devem ser criptografados no banco de dados usando algoritmos robustos (ex: Fernet/AES-256) via biblioteca de criptografia do Python.  
 * **RNF04 \- Tratamento de Rate Limit (Circuit Breaker):** Se o Spotify retornar erro 429 (Too Many Requests), o sistema deve interromper chamadas externas para aquele usuário por X segundos (Exponential Backoff) e notificar o Frontend, em vez de falhar silenciosamente.
+
+### **Segurança**
+
+* **RNF05 \- Arquitetura de Theming:** A alternância de temas deve ser desenvolvida utilizando variáveis CSS nativas (Custom Properties) e as capacidades de Theming do Angular Material. A arquitetura deve garantir que não haja recarregamento da página ao trocar o tema e que ambas as paletas respeitem as regras de contraste visual para leitura confortável.
 
 ---
 
