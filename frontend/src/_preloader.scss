@@ -1,88 +1,160 @@
-/* Reset básico para não ter bordas brancas */
-body, html {
-    margin: 0;
-    padding: 0;
-    background-color: #0b1120; /* Fundo do app.html */
-    font-family: 'Urbanist', sans-serif;
-}
-
-/* O Container do Preloader */
+/*----- Container do Preloader -----*/
 #tunify-preloader {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: #0b1120;
-    z-index: 9999; /* Fica por cima de tudo */
+    background-color: var(--azul-muito-escuro-dk);
+    z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    /* O FadeOut: A tela some suavemente após 3.5s */
-    animation: fadeOut 0.8s ease 3.5s forwards;
+    animation: preloaderExit 6s forwards;
 }
 
-/* As Ondas Sonoras no Fundo */
-.sound-waves {
+/*----- Circulo Azul -----*/
+#tunify-preloader::after {
+    content: '';
     position: absolute;
-    width: 200%;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: var(--azul-dk); 
+    border-radius: 50%; 
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 3; 
+    animation: shockwave 6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/*----- Primeira Onda Sonora -----*/
+.sound-waves {
+    --wave-size: 400px;
+    position: absolute;
+    top: 0; left: 0;
+    width: calc(100vw + var(--wave-size));
     height: 100%;
-    /* Usando um SVG codificado no CSS para gerar a onda */
-    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q100,0 200,50 T400,50 T600,50 T800,50" fill="none" stroke="%23dbf1ff" stroke-width="2" opacity="0.05"/></svg>') repeat-x;
-    background-size: 400px 100%;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q100,0 200,50 T400,50 T600,50 T800,50" fill="none" stroke="%23151e32" stroke-width="2" opacity="1"/></svg>') repeat-x;
+    background-size: var(--wave-size) 100%;
     background-position: center;
-    /* Animação infinita da onda deslizando */
     animation: waveMove 4s linear infinite;
     z-index: 1;
+
+    @include tela-media {
+        --wave-size: 600px;
+    }
+    @include tela-grande {
+        --wave-size: 800px;
+    }
 }
 
-/* O Texto "Tunify" Animado */
+/*----- Segunda Onda Sonora -----*/
+.sound-waves-2 {
+    --wave-size: 500px;
+    position: absolute;
+    top: 0; left: 0;
+    width: calc(100vw + var(--wave-size));
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q25,10 50,50 T100,90 T150,10 T200,50 T250,90 T300,10 T350,50 T400,90 T450,10 T500,50 T550,90 T600,10 T650,50 T700,90 T750,10 T800,50" fill="none" stroke="%231e2e48" stroke-width="1.5" opacity="0.6"/></svg>') repeat-x;
+    background-size: var(--wave-size) 100%;
+    background-position: center;
+    animation: waveMove 6s linear infinite;
+    z-index: 1;
+
+    @include tela-media {
+        --wave-size: 750px;
+    }
+    @include tela-grande {
+        --wave-size: 1000px;
+    }
+}
+
+/*----- Texto "Tunify" -----*/
 .tunify-svg-text {
     position: relative;
     z-index: 2;
-    width: 300px;
+    width: 300px; 
     height: 100px;
+    overflow: visible; 
+
+    @include tela-media {
+        width: 450px;
+        height: 150px;
+    }
+    @include tela-grande {
+        width: 600px;
+        height: 200px;
+    }
 }
 
 .tunify-text {
-    font-family: 'MuseoModerno', sans-serif;
-    font-size: 70px;
-    font-weight: 800;
-    fill: transparent; /* Começa transparente */
-    stroke: #0285ff;   /* Contorno Azul Elétrico */
+    font-family: var(--fonte-especial);
+    font-size: 80px; 
+    font-weight: 600;
+    fill: transparent;
+    stroke: var(--azul-dk);
     stroke-width: 2px;
-    stroke-dasharray: 400;  /* Tamanho da linha para o truque */
-    stroke-dashoffset: 400; /* Esconde a linha inicialmente */
-    
-    /* Animação: Desenha a linha, depois preenche com cor e tira o contorno */
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
     animation: 
-    drawLetter 2s ease forwards,
-    fillLetter 0.5s ease 2s forwards;
+    drawLetter 3s ease forwards,
+    fillLetter 0.5s ease 2.5s forwards;
+
+    @include tela-media {
+        font-weight: 700;
+        font-size: 80px;
+        stroke-dasharray: 480;  
+        stroke-dashoffset: 480;
+    }
+    @include tela-grande {
+        font-weight: 700;
+        font-size: 75px;
+        stroke-dasharray: 550;  
+        stroke-dashoffset: 550;
+    }
 }
 
-/* --- Keyframes (A Matemática da Animação) --- */
+/*----- Animações -----*/
 @keyframes waveMove {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-400px); }
+    100% { transform: translateX(calc(-1 * var(--wave-size))); }
 }
 
 @keyframes drawLetter {
-    to { stroke-dashoffset: 0; } /* Revela a linha */
+    to { stroke-dashoffset: 0; }
 }
 
 @keyframes fillLetter {
     to { 
-    fill: #0285ff; 
-    stroke: transparent; 
-    filter: drop-shadow(0px 0px 10px rgba(2, 133, 255, 0.4)); /* Brilho Neon */
+      fill: var(--azul-dk);
+      stroke: transparent;  
     }
 }
 
-@keyframes fadeOut {
-    to { 
-    opacity: 0; 
-    visibility: hidden; 
-    transform: scale(1.1); /* Dá um leve zoom antes de sumir */
+@keyframes shockwave {
+    0%, 70% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    71% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(250);
+        opacity: 1;
+    }
+}
+
+@keyframes preloaderExit {
+    0%, 78% { 
+        opacity: 1; 
+        visibility: visible; 
+    }
+    90%, 100% { 
+        opacity: 0; 
+        visibility: hidden; 
     }
 }

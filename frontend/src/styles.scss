@@ -6,20 +6,20 @@
   /*---------- Modo Dark ----------*/
 
   // Fundo e Superfícies 
-  --azul-muito-escuro-dk: #0b1120;
-  --azul-escuro-dk: #151e32;
-  --azul-medio-dk: #1e2e48;
+  --azul-muito-escuro-dk: #0B1120;
+  --azul-escuro-dk: #151E32;
+  --azul-medio-dk: #1E2E48;
   --cinza-escuro-dk: #474952;
   
   // Textos e Detalhes
-  --branco-dk: #ffffff;
-  --branco-azulado-dk: #dbf1ff;
+  --branco-dk: #FFFFFF;
+  --branco-azulado-dk: #DBF1FF;
   --cinza-claro-dk: #B3B3B3;
   
   
   // Identidade
-  --azul-dk: #0285ff;
-  --azul-claro-dk: #2c9fff;
+  --azul-dk: #0285FF;
+  --azul-claro-dk: #2C9FFF;
   --verde-spotify-dk: #1DB954;
 
 
@@ -50,6 +50,21 @@
   --fonte-especial: 'MuseoModerno', sans-serif;
 }
 
+// Media Queries Globais ===>
+/*----------Tablet e Notebooks Menores ----------*/
+@mixin tela-media {
+  @media (min-width: 900px) {
+    @content;
+  }
+}
+
+/*---------- Telas Grandes ----------*/
+@mixin tela-grande {
+  @media (min-width: 1400px) {
+    @content;
+  }
+}
+
 html {
   height: 100%;
   @include mat.theme((
@@ -62,7 +77,7 @@ html {
 }
 
 body {
-  // Padrão Dark Mode.
+  /*---------- Padrão Dark Mode ----------*/
   color-scheme: dark;
   background-color: var(--azul-muito-escuro-dk);
   color: var(--branco-dk);
