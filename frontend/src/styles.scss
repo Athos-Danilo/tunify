@@ -43,37 +43,33 @@
 
   /*---------- Fontes ----------*/
 
-  // 
+  // Padrão
+  --fonte-principal: 'Urbanist', sans-serif;
 
+  // Detalhes
+  --fonte-especial: 'MuseoModerno', sans-serif;
 }
 
 html {
   height: 100%;
   @include mat.theme((
     color: (
-      primary: mat.$blue-palette, /* Já deixei azul pra combinar com a gente */
+      primary: mat.$blue-palette,
       tertiary: mat.$green-palette,
     ),
-    typography: Roboto,
     density: 0,
   ));
 }
 
 body {
-  // Forçando o navegador a entender que o nosso padrão é o Dark Mode!
+  // Padrão Dark Mode.
   color-scheme: dark;
-
-  // Substituindo as variáveis chatas do Material pelas NOSSAS cores noturnas
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  
-  // Aplicando a nossa fonte Operária no site inteiro
+  background-color: var(--azul-muito-escuro-dk);
+  color: var(--branco-dk);
   font-family: 'Urbanist', sans-serif;
-
-  // Reset padrão
   margin: 0;
   height: 100%;
 }
 
-/* Importando a mágica da Tela de Carregamento que você criou no outro arquivo */
+/* Importando a Tela de Carregamento */
 @import 'preloader';
