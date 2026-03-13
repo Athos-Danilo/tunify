@@ -1,17 +1,58 @@
-
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// O motor do Angular Material.
 @use '@angular/material' as mat;
+
+// Variáveis Globais ===>
+:root {
+  /*---------- Modo Dark ----------*/
+
+  // Fundo e Superfícies 
+  --azul-muito-escuro-dk: #0b1120;
+  --azul-escuro-dk: #151e32;
+  --azul-medio-dk: #1e2e48;
+  --cinza-escuro-dk: #474952;
+  
+  // Textos e Detalhes
+  --branco-dk: #ffffff;
+  --branco-azulado-dk: #dbf1ff;
+  --cinza-claro-dk: #B3B3B3;
+  
+  
+  // Identidade
+  --azul-dk: #0285ff;
+  --azul-claro-dk: #2c9fff;
+  --verde-spotify-dk: #1DB954;
+
+
+  /*---------- Modo Light ----------*/
+
+  // Fundo e Superfícies 
+  --branco-lt: #FFFFFF;
+  --branco-cinza-lt: #F6F9FF;
+  --branco-escuro-lt: #E9F3FF;
+  --branco-azulado-lt: #DBF1FF;
+
+  // Textos e Detalhes
+  --preto-lt: #0B1120;
+  --cinza-escuro-lt: #474952;
+  --cinza-claro-lt: #D1D9E6;
+
+  // Identidade
+  --azul-lt: #0285FF;
+  --azul-claro-lt: #2C9FFF;
+  --verde-spotify-lt: #1DB954;
+
+  /*---------- Fontes ----------*/
+
+  // 
+
+}
 
 html {
   height: 100%;
   @include mat.theme((
     color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
+      primary: mat.$blue-palette, /* Já deixei azul pra combinar com a gente */
+      tertiary: mat.$green-palette,
     ),
     typography: Roboto,
     density: 0,
@@ -19,20 +60,20 @@ html {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
+  // Forçando o navegador a entender que o nosso padrão é o Dark Mode!
+  color-scheme: dark;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+  // Substituindo as variáveis chatas do Material pelas NOSSAS cores noturnas
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  
+  // Aplicando a nossa fonte Operária no site inteiro
+  font-family: 'Urbanist', sans-serif;
 
-  // Reset the user agent margin.
+  // Reset padrão
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+/* Importando a mágica da Tela de Carregamento que você criou no outro arquivo */
+@import 'preloader';

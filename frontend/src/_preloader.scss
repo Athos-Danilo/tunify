@@ -1,0 +1,88 @@
+/* Reset básico para não ter bordas brancas */
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: #0b1120; /* Fundo do app.html */
+    font-family: 'Urbanist', sans-serif;
+}
+
+/* O Container do Preloader */
+#tunify-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0b1120;
+    z-index: 9999; /* Fica por cima de tudo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    /* O FadeOut: A tela some suavemente após 3.5s */
+    animation: fadeOut 0.8s ease 3.5s forwards;
+}
+
+/* As Ondas Sonoras no Fundo */
+.sound-waves {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    /* Usando um SVG codificado no CSS para gerar a onda */
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q100,0 200,50 T400,50 T600,50 T800,50" fill="none" stroke="%23dbf1ff" stroke-width="2" opacity="0.05"/></svg>') repeat-x;
+    background-size: 400px 100%;
+    background-position: center;
+    /* Animação infinita da onda deslizando */
+    animation: waveMove 4s linear infinite;
+    z-index: 1;
+}
+
+/* O Texto "Tunify" Animado */
+.tunify-svg-text {
+    position: relative;
+    z-index: 2;
+    width: 300px;
+    height: 100px;
+}
+
+.tunify-text {
+    font-family: 'MuseoModerno', sans-serif;
+    font-size: 70px;
+    font-weight: 800;
+    fill: transparent; /* Começa transparente */
+    stroke: #0285ff;   /* Contorno Azul Elétrico */
+    stroke-width: 2px;
+    stroke-dasharray: 400;  /* Tamanho da linha para o truque */
+    stroke-dashoffset: 400; /* Esconde a linha inicialmente */
+    
+    /* Animação: Desenha a linha, depois preenche com cor e tira o contorno */
+    animation: 
+    drawLetter 2s ease forwards,
+    fillLetter 0.5s ease 2s forwards;
+}
+
+/* --- Keyframes (A Matemática da Animação) --- */
+@keyframes waveMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-400px); }
+}
+
+@keyframes drawLetter {
+    to { stroke-dashoffset: 0; } /* Revela a linha */
+}
+
+@keyframes fillLetter {
+    to { 
+    fill: #0285ff; 
+    stroke: transparent; 
+    filter: drop-shadow(0px 0px 10px rgba(2, 133, 255, 0.4)); /* Brilho Neon */
+    }
+}
+
+@keyframes fadeOut {
+    to { 
+    opacity: 0; 
+    visibility: hidden; 
+    transform: scale(1.1); /* Dá um leve zoom antes de sumir */
+    }
+}
