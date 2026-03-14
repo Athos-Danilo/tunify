@@ -1,10 +1,21 @@
-<div class="login-container">
-  <div class="login-box">
-    <h1>Tunify 🎧</h1>
-    <p>Descubra o DNA das suas playlists e o ritmo das suas músicas.</p>
-    
-    <button class="btn-spotify" (click)="fazerLogin()">
-      Conectar com o Spotify
-    </button>
+<div class="hero-container finisher-header" #headerContainer [ngClass]="{'tema-claro': !modoEscuro}">
+  
+  <button class="btn-toggle-tema" (click)="alternarTema()">
+    {{ modoEscuro ? '🌙 Escuro' : '☀️ Claro'}}
+  </button>
+
+  <div class="pelicula-overlay"></div>
+
+  <div class="hero-conteudo">
+    <div class="login-box">
+      <h1>Tunify 🎧</h1>
+      <p>Descubra o DNA das suas playlists e o ritmo das suas músicas.</p>
+      <button class="btn-spotify" (click)="fazerLogin()">
+        Conectar com o Spotify
+      </button>
+    </div>
   </div>
+
 </div>
+
+<router-outlet></router-outlet>

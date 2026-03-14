@@ -1,52 +1,99 @@
-/* Remove margens padrão do corpo da página */
-:host {
-  display: block;
-  min-height: 100vh;
-  background-color: #121212; /* Fundo escuro padrão Spotify */
-}
-
-.login-container {
+/* O PALCO */
+.hero-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: white;
 }
 
+/* ... o resto das cores e botões continua igual! ... */
+
+/* --- Estilos rápidos da sua caixa e textos para ficar apresentável --- */
 .login-box {
-  text-align: center;
-  background-color: #181818;
-  padding: 50px 70px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 600px;
+  padding: 40px;
 }
 
-h1 {
-  font-size: 3.5rem;
-  margin-bottom: 10px;
-  color: #1DB954; /* Verde Spotify */
+.login-box h1 {
+  font-family: var(--fonte-especial);
+  font-size: 80px;
+  margin: 0;
+  color: var(--azul-dk);
 }
 
-p {
-  margin-bottom: 40px;
-  color: #b3b3b3;
-  font-size: 1.1rem;
+.login-box p {
+  font-family: var(--fonte-principal);
+  font-size: 20px;
+  color: var(--branco-azulado-dk);
+  margin-bottom: 20px;
 }
 
 .btn-spotify {
-  background-color: #1DB954;
-  color: black;
+  background-color: var(--verde-spotify-dk);
+  color: var(--branco-dk);
+  font-family: var(--fonte-principal);
+  font-weight: 700;
+  font-size: 18px;
+  padding: 15px 40px;
   border: none;
-  padding: 16px 36px;
-  border-radius: 500px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  border-radius: 50px;
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
 }
 
 .btn-spotify:hover {
-  background-color: #1ed760;
-  transform: scale(1.05); /* Efeito de crescer um pouquinho quando passa o mouse */
+  background-color: #1ed760; /* Um verde um pouco mais claro do Spotify */
+  transform: scale(1.05);
+}
+
+
+
+
+
+/* --- O Botão Flutuante de Tema --- */
+.btn-toggle-tema {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  z-index: 10;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  color: var(--branco-dk, #fff);
+  font-family: var(--fonte-principal);
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px); /* Dá aquele efeitinho de vidro esfumaçado da Apple */
+  transition: all 0.3s ease;
+}
+
+.btn-toggle-tema:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* --- Cores Invertidas para o Modo Claro --- */
+/* Quando a div tem a classe .tema-claro, os textos mudam para escuro! */
+
+.tema-claro .login-box p {
+  color: #4a4a4a; /* Cor mais suave pro subtítulo */
+}
+
+.tema-claro .btn-toggle-tema {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #1a1a1a;
+}
+
+/* Se quiser inverter a película também pra não ficar muito escura no modo claro */
+.tema-claro .pelicula-overlay {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5));
 }
