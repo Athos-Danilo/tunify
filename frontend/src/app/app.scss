@@ -97,3 +97,70 @@
 .tema-claro .pelicula-overlay {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5));
 }
+
+/* --- A NOVA TIPOGRAFIA DO TUNIFY --- */
+
+.titulo-tunify {
+  text-align: center;
+  margin: 0 0 30px 0;
+  line-height: 1.1;
+}
+
+/* O display: block faz cada <span> pular para a linha de baixo automaticamente */
+.titulo-tunify span {
+  display: block; 
+}
+
+/* As linhas mais finas (Pare de pular...) */
+.texto-menor {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--branco-dk, #ffffff);
+  margin-bottom: -10px; /* Puxa a palavra gigante de baixo pra mais perto */
+}
+
+.texto-menor.espaco-extra {
+  margin-top: 15px; /* Dá um respiro antes da segunda frase */
+}
+
+/* O itálico dando ênfase na dor e na solução */
+.texto-menor em {
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* As palavras gigantes (Músicas e Playlists) */
+.texto-destaque {
+  font-family: var(--fonte-especial, sans-serif);
+  font-size: 85px;
+  font-weight: 800;
+  letter-spacing: -2px; /* Deixa as letras mais grudadinhas, visual bem moderno */
+}
+
+.texto-destaque.azul {
+  color: #1EA1F2; /* Ajuste para o código HEX exato do azul do seu Figma */
+}
+
+.texto-destaque.branco {
+  color: var(--branco-dk, #ffffff);
+}
+
+/* O Subtítulo de Impacto */
+.subtitulo-tunify {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8); /* Um branco um pouco transparente pra dar contraste */
+  line-height: 1.5;
+  margin-bottom: 40px;
+}
+
+
+.tema-claro .texto-destaque.branco,
+.tema-claro .texto-menor {
+  color: #1a1a1a; 
+}
+.tema-claro .subtitulo-tunify {
+  color: #4a4a4a;
+}
