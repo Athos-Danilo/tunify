@@ -1,4 +1,4 @@
-<div class="hero-container finisher-header" #headerContainer [ngClass]="{'tema-claro': !modoEscuro}">
+<div class="hero-container finisher-header" #headerContainer [ngClass]="{'tema-claro': !modoEscuro, 'play-animacoes' : animarTextos}">
   
   <button class="btn-toggle-tema" (click)="alternarTema()">
     {{ modoEscuro ? '🌙 Escuro' : '☀️ Claro'}}
@@ -9,11 +9,38 @@
   <div class="primeira-chamada">
       
       <h1 class="titulo-tunify">
-        <span class="texto-menor">Pare de <em>pular</em> suas</span>
-        <span class="texto-destaque azul">Músicas</span>
-        <span class="texto-menor espaco-extra">Comece a <em>Dominar</em> suas</span>
-        <span class="texto-destaque branco">Playlists</span>
+        <span class="texto-menor alinhar-esq">Pare de <em>pular</em> suas</span>
+        <span class="texto-destaque azul alinhar-esq">Músicas</span>
+        <span class="texto-menor espaco-extra alinhar-dir">Comece a <em>Dominar</em> suas</span>
+        <span class="texto-destaque branco alinhar-dir">Playlists</span>
       </h1>
+
+      <div class="player-frustracao">
+        
+        <svg class="icon-prev" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="2" height="20" rx="1" fill="white"/>
+          <path d="M24 23.36V4.64C24 3.91185 23.1918 3.47352 22.5807 3.87034L8.18074 13.2303C7.62947 13.5882 7.62947 14.4118 8.18074 14.7697L22.5807 24.1297C23.1918 24.5265 24 24.0881 24 23.36Z" fill="white"/>
+        </svg>
+
+        <svg class="icon-pausa" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="30" cy="30" r="30" fill="white"/>
+          <rect x="23" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+          <rect x="32" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+        </svg>
+
+        <div class="container-skip">
+          
+          <svg class="icon-next" [ngClass]="{'btn-pulsando': btnSkipActive}" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="22" y="4" width="2" height="20" rx="1" fill="white" class="cor-next"/>
+            <path d="M4 23.36V4.64C4 3.91185 4.80816 3.47352 5.41926 3.87034L19.8193 13.2303C20.3705 13.5882 20.3705 14.4118 19.8193 14.7697L5.41926 24.1297C4.80816 24.5265 4 24.0881 4 23.36Z" fill="white" class="cor-next"/>
+          </svg>
+
+          <span *ngFor="let skip of skips" class="valor-contador">
+            +1
+          </span>
+
+        </div>
+      </div>
 
       <p class="subtitulo-tunify">
         Assuma o controle total do algoritmo.<br>

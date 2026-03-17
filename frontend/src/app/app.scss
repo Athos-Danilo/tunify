@@ -10,40 +10,52 @@
 }
 
 
-/*---------- Primeira Chamada ----------*/
-/*--- Textos ---*/
+/*---------- PRIMEIRA CHAMADA ----------*/
+/*--- Caixa de Textos ---*/
 .titulo-tunify {
-  text-align: center;
-  margin: 0 0 30px 0;
-  line-height: 1.1;
+  display: flex;
+  flex-direction: column;
+  /* Limitamos a largura para a escada não ficar com os degraus muito distantes */
+  max-width: 20rem; /* Aproximadamente 320px */
+  margin: 0 auto 2rem auto; /* Centraliza a caixa na tela e dá margem embaixo */
+  line-height: 1.2;
 }
 
-.titulo-tunify span {
-  display: block; 
+/*--- Esquerda ---*/
+.alinhar-esq {
+  align-self: flex-start;
+  text-align: left;
+  opacity: 0; 
+}
+
+/*--- Direita ---*/
+.alinhar-dir {
+  align-self: flex-end;
+  text-align: right;
+  opacity: 0;
 }
 
 .texto-menor {
   font-family: var(--fonte-especial, sans-serif);
-  font-size: 26px;
-  font-weight: 400;
+  font-size: 1.5rem; 
+  font-weight: 300;
   color: var(--branco-dk);
-  margin-bottom: -10px; /* Puxa a palavra gigante de baixo pra mais perto */
+  margin-bottom: -0.5rem; 
 }
 
 .texto-menor.espaco-extra {
-  margin-top: 15px; /* Dá um respiro antes da segunda frase */
+  margin-top: -0.5rem; 
 }
 
 .texto-menor em {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .texto-destaque {
   font-family: var(--fonte-especial, sans-serif);
-  font-size: 85px;
+  font-size: 3.9rem; 
   font-weight: 800;
-  letter-spacing: -2px; /* Deixa as letras mais grudadinhas, visual bem moderno */
 }
 
 .texto-destaque.azul {
@@ -51,18 +63,90 @@
 }
 
 .texto-destaque.branco {
+  font-size: 2.45rem; 
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--branco-dk);
 }
+
+
+/* =========================================
+   O PLAYER DA FRUSTRAÇÃO COMPLETO (OPÇÃO B)
+========================================= */
+.player-frustracao {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem; /* Espaço reduzido para acomodar três ícones */
+  margin: -1rem 0 1rem 0;
+  
+  // Garante que o player inteiro entra na animação de cascata
+  opacity: 0; 
+}
+
+/* O Ícone Música Anterior (Voltar - Novo e Branco) */
+.icon-prev {
+  width: 1.8rem; /* ~28px - Mesmo tamanho do Next */
+  height: 1.8rem;
+}
+
+/* O Ícone de Pausa (Padrão Spotify, Branco) */
+.icon-pausa {
+  width: 3.5rem; /* ~56px */
+  height: 3.5rem;
+}
+
+/* O Container do botão Next e dos números flutuantes */
+.container-skip {
+  position: relative; /* Importante para o número +1 flutuar a partir daqui */
+  width: 1.8rem; /* ~28px */
+  height: 1.8rem;
+  z-index: 5;
+}
+
+/* O Ícone Next ($>|$) */
+.icon-next {
+  width: 100%; height: 100%;
+}
+
+/* A classe que o TS injeta pra simular o clique frenético */
+.icon-next.btn-pulsando {
+  animation: afundarBotao 0.4s ease-in-out;
+}
+
+/* Quando o botão pulsar, as partes de dentro viram azuis tecnológicos! */
+.icon-next.btn-pulsando .cor-next {
+  fill: var(--cinza-escuro-dk) !important;
+}
+
+/* O Número +1 Flutuante */
+.valor-contador {
+  position: absolute;
+  top: -10px; /* Nasce em cima do botão Next */
+  right: -20px; /* Deslocado para a direita pra não cobrir o ícone */
+  z-index: 6;
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.8rem; /* Grande e visível */
+  font-weight: 800;
+  color: var(--azul-claro-dk);
+  pointer-events: none; /* Não atrapalha o clique do mouse */
+  
+  /* A animação que faz o +1 subir e sumir */
+  animation: contadorFlutuante 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
 
 /*--- Subtítulo ---*/
 .subtitulo-tunify {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 18px;
+  font-size: 1rem; 
   font-weight: 400;
   color: var(--branco-azulado-dk); 
   line-height: 1.5;
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
   text-align: center;
+  padding: 0 1rem; 
+  opacity: 0;
 }
 
 /*--- Botão de Conectar com o Spotify ---*/
@@ -77,6 +161,7 @@
   border-radius: 50px;
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
+  opacity: 0;
 }
 
 .btn-spotify:hover {
@@ -85,7 +170,7 @@
 }
 
 
-/*---------- Botão do Tema ----------*/
+/*---------- BOTÃO DO TEMA ----------*/
 .btn-toggle-tema {
   position: absolute;
   top: 30px;
@@ -116,11 +201,90 @@
 }
 
 
-/* ---------- Cores Invertidas no Modo Claro ---------- */
+/* ---------- CORES INVERTIDAS DO MODO CLARO ---------- */
 .tema-claro .texto-destaque.branco,
 .tema-claro .texto-menor {
   color: var(--preto-lt); 
 }
 .tema-claro .subtitulo-tunify {
   color: var(--cinza-escuro-lt);
+}
+
+
+
+/*---------- ANIMAÇÕES ----------*/
+
+/* Só quando o TS injetar a classe 'play-animacoes' é que o show começa! */
+
+.play-animacoes .alinhar-esq {
+  animation: surgirDeBaixo 0.8s ease-out forwards;
+}
+
+.play-animacoes .alinhar-dir {
+  animation: surgirDeBaixo 0.8s ease-out 0.2s forwards; 
+}
+
+.play-animacoes .player-frustracao {
+  animation: surgirDeBaixo 0.8s ease-out 0.35s forwards;
+}
+
+.play-animacoes .subtitulo-tunify {
+  animation: surgirDeBaixo 0.8s ease-out 0.4s forwards;
+}
+
+.play-animacoes .btn-spotify {
+  animation: puloDoBotao 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s forwards; 
+}
+
+
+/* 1. Desliza de baixo para cima surgindo (Fade In Up) */
+@keyframes surgirDeBaixo {
+  0% {
+    opacity: 0;
+    transform: translateY(30px); /* Começa 30px mais pra baixo */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* Volta pra posição original */
+  }
+}
+
+/* 2. O Pulo do Botão (Efeito Elástico) */
+@keyframes puloDoBotao {
+  0% {
+    opacity: 0;
+    transform: scale(0.8); /* Nasce pequenininho */
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05); /* Passa um pouquinho do tamanho normal (o pulo) */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1); /* Assenta no tamanho perfeito */
+  }
+}
+
+/* 3. NOVO: O efeito realista do botão sendo pressionado (Afundando) */
+@keyframes afundarBotao {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.85); } /* Diminui 15% simulando o peso do dedo */
+  100% { transform: scale(1); }
+}
+
+/* 3. A animação do +1 ajustada para o novo tempo */
+@keyframes contadorFlutuante {
+  0% {
+    opacity: 1; 
+    transform: translateY(0) scale(0.5); 
+  }
+  10% { /* Mudei pra 10% pra ele dar o "Pop" inicial mais macio */
+    opacity: 1;
+    transform: translateY(-10px) scale(1); 
+  }
+  100% {
+    opacity: 0; 
+    /* Coloquei -50px no Y para ele subir um pouquinho mais durante os 2.5s */
+    transform: translateY(-50px) translateX(20px) rotate(15deg); 
+  }
 }
