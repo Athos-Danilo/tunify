@@ -139,14 +139,30 @@
 /*--- Subtítulo ---*/
 .subtitulo-tunify {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1rem; 
-  font-weight: 400;
+  font-size: 1.05rem; /* Um micro-ajuste de tamanho */
+  font-weight: 300; /* O texto base fica mais 'light' e elegante */
   color: var(--branco-azulado-dk); 
-  line-height: 1.5;
-  margin-bottom: 2.5rem;
+  line-height: 1.6; /* Um tiquinho mais de respiro entre as linhas */
+  margin-bottom: 2rem;
+  margin-top: 2rem;
   text-align: center;
   padding: 0 1rem; 
-  opacity: 0;
+}
+
+/*--- O Tchan do Subtítulo ---*/
+.txt-destaque {
+  font-family: var(--fonte-especial, sans-serif);
+  font-style: italic;
+  font-weight: 600; /* As palavras-chave ficam gordinhas (bold) */
+  letter-spacing: 0.5px; /* Um micro respiro entre as letras pra dar leitura */
+}
+
+.txt-destaque {
+  color: var(--verde-spotify-dk); /* Ou var(--azul-dk), veja qual dá mais leitura! */
+}
+
+.tema-claro .txt-destaque {
+  color: var(--azul-lt);
 }
 
 /*--- Botão de Conectar com o Spotify ---*/
@@ -162,6 +178,18 @@
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
   opacity: 0;
+  /* NOVO: Alinhando o ícone com o texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px; /* Espaço entre o logo e o texto */
+  margin: 0 auto; /* Garante que o botão fique no centro da tela */
+}
+
+/* Tamanho do Ícone SVG dentro do botão */
+.btn-spotify svg {
+  width: 24px;
+  height: 24px;
 }
 
 .btn-spotify:hover {
