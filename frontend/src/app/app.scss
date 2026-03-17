@@ -1,4 +1,4 @@
-/* O PALCO */
+/*--- Container da Tela ---*/
 .hero-container {
   position: relative;
   width: 100vw;
@@ -9,32 +9,63 @@
   align-items: center;
 }
 
-/* ... o resto das cores e botões continua igual! ... */
 
-/* --- Estilos rápidos da sua caixa e textos para ficar apresentável --- */
-.login-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  max-width: 600px;
-  padding: 40px;
+/*---------- Primeira Chamada ----------*/
+/*--- Textos ---*/
+.titulo-tunify {
+  text-align: center;
+  margin: 0 0 30px 0;
+  line-height: 1.1;
 }
 
-.login-box h1 {
-  font-family: var(--fonte-especial);
-  font-size: 80px;
-  margin: 0;
-  color: var(--azul-dk);
+.titulo-tunify span {
+  display: block; 
 }
 
-.login-box p {
-  font-family: var(--fonte-principal);
-  font-size: 20px;
-  color: var(--branco-azulado-dk);
-  margin-bottom: 20px;
+.texto-menor {
+  font-family: var(--fonte-especial, sans-serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--branco-dk);
+  margin-bottom: -10px; /* Puxa a palavra gigante de baixo pra mais perto */
 }
 
+.texto-menor.espaco-extra {
+  margin-top: 15px; /* Dá um respiro antes da segunda frase */
+}
+
+.texto-menor em {
+  font-style: italic;
+  font-weight: 600;
+}
+
+.texto-destaque {
+  font-family: var(--fonte-especial, sans-serif);
+  font-size: 85px;
+  font-weight: 800;
+  letter-spacing: -2px; /* Deixa as letras mais grudadinhas, visual bem moderno */
+}
+
+.texto-destaque.azul {
+  color: var(--azul-dk); 
+}
+
+.texto-destaque.branco {
+  color: var(--branco-dk);
+}
+
+/*--- Subtítulo ---*/
+.subtitulo-tunify {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--branco-azulado-dk); 
+  line-height: 1.5;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+/*--- Botão de Conectar com o Spotify ---*/
 .btn-spotify {
   background-color: var(--verde-spotify-dk);
   color: var(--branco-dk);
@@ -49,15 +80,12 @@
 }
 
 .btn-spotify:hover {
-  background-color: #1ed760; /* Um verde um pouco mais claro do Spotify */
+  background-color: var(--verde-spotify-hover-dk); 
   transform: scale(1.05);
 }
 
 
-
-
-
-/* --- O Botão Flutuante de Tema --- */
+/*---------- Botão do Tema ----------*/
 .btn-toggle-tema {
   position: absolute;
   top: 30px;
@@ -71,7 +99,7 @@
   font-family: var(--fonte-principal);
   font-weight: 600;
   cursor: pointer;
-  backdrop-filter: blur(10px); /* Dá aquele efeitinho de vidro esfumaçado da Apple */
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
@@ -80,87 +108,19 @@
   transform: scale(1.05);
 }
 
-/* --- Cores Invertidas para o Modo Claro --- */
-/* Quando a div tem a classe .tema-claro, os textos mudam para escuro! */
-
-.tema-claro .login-box p {
-  color: #4a4a4a; /* Cor mais suave pro subtítulo */
-}
-
+/*--- Botão do Tema Invertido (Modo Claro) ---*/
 .tema-claro .btn-toggle-tema {
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.2);
   color: #1a1a1a;
 }
 
-/* Se quiser inverter a película também pra não ficar muito escura no modo claro */
-.tema-claro .pelicula-overlay {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5));
-}
 
-/* --- A NOVA TIPOGRAFIA DO TUNIFY --- */
-
-.titulo-tunify {
-  text-align: center;
-  margin: 0 0 30px 0;
-  line-height: 1.1;
-}
-
-/* O display: block faz cada <span> pular para a linha de baixo automaticamente */
-.titulo-tunify span {
-  display: block; 
-}
-
-/* As linhas mais finas (Pare de pular...) */
-.texto-menor {
-  font-family: var(--fonte-principal, sans-serif);
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--branco-dk, #ffffff);
-  margin-bottom: -10px; /* Puxa a palavra gigante de baixo pra mais perto */
-}
-
-.texto-menor.espaco-extra {
-  margin-top: 15px; /* Dá um respiro antes da segunda frase */
-}
-
-/* O itálico dando ênfase na dor e na solução */
-.texto-menor em {
-  font-style: italic;
-  font-weight: 600;
-}
-
-/* As palavras gigantes (Músicas e Playlists) */
-.texto-destaque {
-  font-family: var(--fonte-especial, sans-serif);
-  font-size: 85px;
-  font-weight: 800;
-  letter-spacing: -2px; /* Deixa as letras mais grudadinhas, visual bem moderno */
-}
-
-.texto-destaque.azul {
-  color: #1EA1F2; /* Ajuste para o código HEX exato do azul do seu Figma */
-}
-
-.texto-destaque.branco {
-  color: var(--branco-dk, #ffffff);
-}
-
-/* O Subtítulo de Impacto */
-.subtitulo-tunify {
-  font-family: var(--fonte-principal, sans-serif);
-  font-size: 18px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.8); /* Um branco um pouco transparente pra dar contraste */
-  line-height: 1.5;
-  margin-bottom: 40px;
-}
-
-
+/* ---------- Cores Invertidas no Modo Claro ---------- */
 .tema-claro .texto-destaque.branco,
 .tema-claro .texto-menor {
-  color: #1a1a1a; 
+  color: var(--preto-lt); 
 }
 .tema-claro .subtitulo-tunify {
-  color: #4a4a4a;
+  color: var(--cinza-escuro-lt);
 }
