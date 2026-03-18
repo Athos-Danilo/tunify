@@ -8,56 +8,85 @@
 
   <div class="primeira-chamada">
       
-      <h1 class="titulo-tunify">
-        <span class="texto-menor alinhar-esq">Pare de <em>pular</em> suas</span>
-        <span class="texto-destaque azul alinhar-esq">Músicas</span>
-        <span class="texto-menor espaco-extra alinhar-dir">Comece a <em>Dominar</em> suas</span>
-        <span class="texto-destaque branco alinhar-dir">Playlists</span>
-      </h1>
+    <div class="layout-duas-colunas">
 
-      <div class="player-frustracao">
-        
-        <svg class="icon-prev" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="2" height="20" rx="1" fill="white"/>
-          <path d="M24 23.36V4.64C24 3.91185 23.1918 3.47352 22.5807 3.87034L8.18074 13.2303C7.62947 13.5882 7.62947 14.4118 8.18074 14.7697L22.5807 24.1297C23.1918 24.5265 24 24.0881 24 23.36Z" fill="white"/>
-        </svg>
-
-        <svg class="icon-pausa" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="30" cy="30" r="30" fill="white"/>
-          <rect x="23" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
-          <rect x="32" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
-        </svg>
-
-        <div class="container-skip">
-          
-          <svg class="icon-next" [ngClass]="{'btn-pulsando': btnSkipActive}" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="22" y="4" width="2" height="20" rx="1" fill="white" class="cor-next"/>
-            <path d="M4 23.36V4.64C4 3.91185 4.80816 3.47352 5.41926 3.87034L19.8193 13.2303C20.3705 13.5882 20.3705 14.4118 19.8193 14.7697L5.41926 24.1297C4.80816 24.5265 4 24.0881 4 23.36Z" fill="white" class="cor-next"/>
-          </svg>
-
-          <span *ngFor="let skip of skips" class="valor-contador">
-            +1
-          </span>
-
-        </div>
+      <div class="coluna-texto">
+        <h1 class="titulo-tunify">
+          <span class="texto-menor alinhar-esq">Pare de <em>pular</em> suas</span>
+          <span class="texto-destaque azul alinhar-esq">Músicas</span>
+          <span class="texto-menor espaco-extra alinhar-dir">Comece a <em>Dominar</em> suas</span>
+          <span class="texto-destaque branco alinhar-dir">Playlists</span>
+        </h1>
       </div>
 
-      <p class="subtitulo-tunify">
-        Assuma o controle total do <span class="txt-destaque">algoritmo</span>.<br>
-        Use a <span class="txt-destaque">ciência de dados</span> a seu favor e crie<br>
-        jornadas sonoras impecáveis, faixa por faixa.
-      </p>
-      
-      <button class="btn-spotify" (click)="fazerLogin()">
+      <div class="coluna-player">
         
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0C5.373 0 0 5.373 0 12C0 18.627 5.373 24 12 24C18.627 24 24 18.627 24 12C24 5.373 18.627 0 12 0ZM17.518 17.306C17.306 17.652 16.852 17.765 16.505 17.553C13.682 15.83 10.16 15.434 5.968 16.388C5.58 16.476 5.19 16.236 5.098 15.845C5.006 15.454 5.247 15.064 5.638 14.972C10.217 13.93 14.12 14.374 17.272 16.305C17.619 16.518 17.731 16.973 17.518 17.306ZM18.988 14.053C18.724 14.482 18.163 14.613 17.733 14.349C14.488 12.35 9.53 11.758 5.72 12.913C5.233 13.061 4.721 12.784 4.573 12.296C4.425 11.808 4.702 11.296 5.19 11.148C9.553 9.824 15.013 10.493 18.75 12.788C19.18 13.051 19.311 13.612 18.988 14.053ZM19.136 10.64C15.228 8.317 8.84 8.106 5.152 9.225C4.558 9.405 3.924 9.07 3.743 8.476C3.563 7.882 3.897 7.248 4.492 7.067C8.718 5.786 15.753 6.027 20.3 8.725C20.825 9.037 20.998 9.715 20.686 10.24C20.375 10.765 19.697 10.938 19.136 10.64Z"/>
-        </svg>
+        <div class="info-musica somente-desktop">
+          <h3 class="nome-musica">{{ musicaAtual.nome }}</h3>
+          <p class="nome-artista">{{ musicaAtual.artista }}</p>
+        </div>
 
-        Conectar com o Spotify
-      </button>
+        <div class="timeline-container somente-desktop">
+          
+          <span class="tempo">{{ tempoExibicao }}</span> 
+          
+          <div class="barra-progresso" [ngClass]="{'sem-transicao': progressoPorcentagem === 0}">
+            <div class="progresso-preenchido" [style.width.%]="progressoPorcentagem"></div>
+          </div>
+          
+          <span class="tempo">{{ musicaAtual.duracao }}</span>
+        </div>
 
+        <div class="player-frustracao">
+          
+          <svg class="icon-secundario somente-desktop" viewBox="0 0 16 19" fill="var(--verde-spotify-dk)" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(0, 1)"> <path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V11h.391c.327 0 .618-.168.793-.39l6.173-7.356A5.25 5.25 0 0 1 11.16 1.5h1.95L12.09.439a.75.75 0 1 0 1.06-1.061l2.5 2.5a.75.75 0 0 0 0 1.061l-2.5 2.5z"/>
+              <path d="M0 3.5h.391c.327 0 .618.168.793.39l2.227 2.655a.75.75 0 1 1-1.144.96L.04 4.85A2.25 2.25 0 0 1 0 4.5v-1zm14.53 7.44a.75.75 0 0 0-1.06 1.06l1.019 1.019H11.16a5.25 5.25 0 0 1-4.02-1.895l-2.226-2.655a.75.75 0 0 0-1.144.96l2.227 2.655A6.75 6.75 0 0 0 11.16 14.5h3.328l-1.018 1.019a.75.75 0 0 0 1.06 1.06l2.5-2.5a.75.75 0 0 0 0-1.06l-2.5-2.5z"/>
+            </g>
+            <circle cx="8" cy="17.5" r="1.5"/>
+          </svg>
+
+          <svg class="icon-prev" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="2" height="20" rx="1" fill="white"/>
+            <path d="M24 23.36V4.64C24 3.91185 23.1918 3.47352 22.5807 3.87034L8.18074 13.2303C7.62947 13.5882 7.62947 14.4118 8.18074 14.7697L22.5807 24.1297C23.1918 24.5265 24 24.0881 24 23.36Z" fill="white"/>
+          </svg>
+
+          <svg class="icon-pausa" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="30" fill="white"/>
+            <rect x="23" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+            <rect x="32" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+          </svg>
+
+          <div class="container-skip">
+            <svg class="icon-next" [ngClass]="{'btn-pulsando': btnSkipActive}" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="22" y="4" width="2" height="20" rx="1" fill="white" class="cor-next"/>
+              <path d="M4 23.36V4.64C4 3.91185 4.80816 3.47352 5.41926 3.87034L19.8193 13.2303C20.3705 13.5882 20.3705 14.4118 19.8193 14.7697L5.41926 24.1297C4.80816 24.5265 4 24.0881 4 23.36Z" fill="white" class="cor-next"/>
+            </svg>
+            <span *ngFor="let skip of skips" class="valor-contador">+1</span>
+          </div>
+
+          <svg class="icon-secundario somente-desktop" viewBox="0 0 16 16" fill="var(--branco-dk)" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/>
+          </svg>
+
+        </div>
+
+        <p class="subtitulo-tunify">
+          Assuma o controle total do <span class="txt-destaque verde">algoritmo</span>.<br>
+          Use a <span class="txt-destaque azul">ciência de dados</span> a seu favor e crie<br>
+          jornadas sonoras impecáveis, faixa por faixa.
+        </p>
+        
+        <button class="btn-spotify" (click)="fazerLogin()">
+          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.373 0 0 5.373 0 12C0 18.627 5.373 24 12 24C18.627 24 24 18.627 24 12C24 5.373 18.627 0 12 0ZM17.518 17.306C17.306 17.652 16.852 17.765 16.505 17.553C13.682 15.83 10.16 15.434 5.968 16.388C5.58 16.476 5.19 16.236 5.098 15.845C5.006 15.454 5.247 15.064 5.638 14.972C10.217 13.93 14.12 14.374 17.272 16.305C17.619 16.518 17.731 16.973 17.518 17.306ZM18.988 14.053C18.724 14.482 18.163 14.613 17.733 14.349C14.488 12.35 9.53 11.758 5.72 12.913C5.233 13.061 4.721 12.784 4.573 12.296C4.425 11.808 4.702 11.296 5.19 11.148C9.553 9.824 15.013 10.493 18.75 12.788C19.18 13.051 19.311 13.612 18.988 14.053ZM19.136 10.64C15.228 8.317 8.84 8.106 5.152 9.225C4.558 9.405 3.924 9.07 3.743 8.476C3.563 7.882 3.897 7.248 4.492 7.067C8.718 5.786 15.753 6.027 20.3 8.725C20.825 9.037 20.998 9.715 20.686 10.24C20.375 10.765 19.697 10.938 19.136 10.64Z"/>
+          </svg>
+          Conectar com o Spotify
+        </button>
+
+      </div>
     </div>
+  </div>
 
 </div>
 

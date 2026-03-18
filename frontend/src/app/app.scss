@@ -431,3 +431,149 @@
     transform: translateY(-50px) translateX(20px) rotate(15deg); 
   }
 }
+
+
+
+
+
+
+/* =========================================
+   LAYOUT DE DUAS COLUNAS
+========================================= */
+.layout-duas-colunas {
+  display: flex;
+  flex-direction: column; /* Mobile: Empilhado igual antes */
+  align-items: center;
+  width: 100%;
+
+  @include tela-grande {
+    flex-direction: row; /* Desktop: Fica lado a lado! */
+    justify-content: center;
+    gap: 6rem; /* Distância entre o Título e o Player */
+    margin-top: -3rem; /* Sobe um pouco pra centralizar na tela */
+  }
+}
+
+/* Colunas individuais */
+.coluna-texto {
+  width: 100%;
+  @include tela-grande { width: auto; }
+}
+
+.coluna-player {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  @include tela-grande {
+    /* No Desktop, os elementos do player descem em cascata juntos com a coluna da direita */
+    animation: surgirDeBaixo 0.8s ease-out 0.35s forwards;
+    opacity: 0;
+  }
+}
+
+/* =========================================
+   ELEMENTOS EXCLUSIVOS DO DESKTOP
+========================================= */
+.somente-desktop {
+  display: none; /* Esconde no celular pra não poluir */
+  
+  @include tela-grande {
+    display: flex; /* Aparece no monitor grandão */
+  }
+}
+
+/*--- Textos da Música ---*/
+.info-musica {
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.nome-musica {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--branco-dk);
+  margin: 0 0 5px 0;
+}
+
+.nome-artista {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1rem;
+  color: var(--cinza-escuro-lt); /* Cinza clarinho */
+  margin: 0;
+}
+
+/*--- A Timeline do Frustrado ---*/
+.timeline-container {
+  width: 100%;
+  max-width: 400px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 2rem;
+}
+
+.tempo {
+  font-family: var(--fonte-principal, monospace); /* Font mono pra números não balançarem */
+  font-size: 0.85rem;
+  color: var(--cinza-escuro-lt);
+}
+
+.barra-progresso {
+  flex-grow: 1;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  /* IMPORTANTE: Tire o overflow: hidden pra bolinha poder aparecer pra fora! */
+  position: relative;
+}
+
+/* =========================================
+   A MÁGICA DO RESET INSTANTÂNEO
+========================================= */
+/* Quando essa classe estiver na div pai (barra-progresso),
+   a div filha (progresso-preenchido) NÃO terá animação! */
+.sem-transicao .progresso-preenchido {
+  transition: none !important; 
+}
+
+/* O estado normal continua com a animação suave */
+.progresso-preenchido {
+  height: 100%;
+  background-color: var(--branco-dk);
+  border-radius: 2px;
+  position: relative; 
+  transition: width 1s linear; // <-- SÓ roda se .sem-transicao NÃO estiver no pai
+}
+
+/* O Demarcador (A Bolinha Branca do Spotify) */
+.progresso-preenchido::after {
+  content: '';
+  position: absolute;
+  right: -5px; /* Fica metadinha pra fora da barra */
+  top: 50%;
+  transform: translateY(-50%); /* Centraliza perfeitamente no meio da linha */
+  width: 10px;
+  height: 10px;
+  background-color: var(--branco-dk);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3); /* Uma sombrinha pra dar relevo */
+}
+
+/*--- Ícones Auxiliares (Shuffle/Repeat) ---*/
+.icon-secundario {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Inversões do Modo Claro */
+.tema-claro .nome-musica { color: var(--preto-lt); }
+.tema-claro .tempo { color: #555; }
+.tema-claro .barra-progresso { background-color: rgba(0, 0, 0, 0.1); }
+.tema-claro .progresso-preenchido { background-color: var(--preto-lt); }
+.tema-claro .progresso-preenchido::after { background-color: var(--preto-lt); }
+.tema-claro .icon-secundario[fill="var(--cinza-escuro-lt)"] { fill: #888; }

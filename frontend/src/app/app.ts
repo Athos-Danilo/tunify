@@ -13,6 +13,13 @@ interface SkipsContados {
   id: number;
 }
 
+// Molde das Músicas.
+interface Musica {
+  nome: string;
+  artista: string;
+  duracao: string;
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -50,6 +57,27 @@ export class App implements OnInit, AfterViewInit {
   // ---------------------------------------------------------------------------------------- //
   constructor(private cdr: ChangeDetectorRef) {}
 
+  // Lista de Músicas.
+  playlist: Musica[] = [
+    { nome: "Bohemian Rhapsody", artista: "Queen", duracao: "5:54" },
+    { nome: "Blinding Lights", artista: "The Weeknd", duracao: "3:20" },
+    { nome: "Hotel California", artista: "Eagles", duracao: "6:30" },
+    { nome: "Shape of You", artista: "Ed Sheeran", duracao: "3:53" },
+    { nome: "Sorry", artista: "Justin Bieber", duracao: "3:20" },
+    { nome: "Billie Jean", artista: "Michael Jackson", duracao: "4:54" },
+    { nome: "As It Was", artista: "Harry Styles", duracao: "2:47" },
+    { nome: "Cirles", artista: "Post Malone", duracao: "3:35" },
+    { nome: "Chihiro", artista: "Billie Eilish", duracao: "5:03" },
+    { nome: "Opalite", artista: "Taylor Swift", duracao: "3:55" }
+  ];
+  
+  // Controladores da música atual
+  indexMusicaAtual = 0;
+  musicaAtual: Musica = this.playlist[0]
+
+  // Variáveis para a Timeline.
+  tempoExibicao = '0:00';
+  progressoPorcentagem = 0;
 
   // ======> Ciclo de Vida: Nascimento.
   // 1) Dispara a simulação de botões assim que a página é construída.
@@ -75,29 +103,57 @@ export class App implements OnInit, AfterViewInit {
   // 1) Cria um ciclo de 3 segundos entre cada ação;
   // 2) Simula o dedo afundando o botão (ativa a classe CSS correspondente);
   // 3) Aguarda 400ms (tempo físico do clique) para soltar o botão e instanciar o "+1";
-  // 4) Configura a autodestruição do "+1" instanciado após o fim do seu CSS (2.5s).
+  // 4) Configura a autodestruição do "+1" instanciado após o fim do seu CSS (2.5s);
+  // 5) Troca a música toda vez que pula.
+  // 6) Tempo da música tocando.
   // ------------------------------------------------------------------------------------- //
   iniciarSimulacaoSkips() {
+    
+    // Esse ciclo inteiro dura exatos 3.6 segundos e recomeça
     setInterval(() => {
       
-      this.btnSkipActive = true; 
+      // Nasce a música no 0:00
+      this.tempoExibicao = '0:00';
+      this.progressoPorcentagem = 0;
       this.cdr.detectChanges();
+      
+      // Cronômetro rodando...
+      setTimeout(() => { this.tempoExibicao = '0:01'; this.progressoPorcentagem = 1.5; this.cdr.detectChanges(); }, 1000);
+      setTimeout(() => { this.tempoExibicao = '0:02'; this.progressoPorcentagem = 3.0; this.cdr.detectChanges(); }, 2000);
+      setTimeout(() => { this.tempoExibicao = '0:03'; this.progressoPorcentagem = 4.5; this.cdr.detectChanges(); }, 3000);
 
-      setTimeout(() => { 
-        this.btnSkipActive = false; 
-        
-        this.totalSkips++; 
-        const novoSkip: SkipsContados = { id: this.totalSkips };
-        this.skips.push(novoSkip); 
+      // Aos 3.2 segundos, o usuário perde a paciência e aperta o botão
+      setTimeout(() => {
+        this.btnSkipActive = true;
         this.cdr.detectChanges();
 
+        // Aos 3.6 segundos, o botão solta, o +1 voa e a música troca!
         setTimeout(() => {
-          this.removerSkip(novoSkip.id);
-        }, 2500);
+          this.btnSkipActive = false;
+          this.pularMusica();
+        }, 400); // 400ms é o tempo do clique afundado
 
-      }, 400); 
+      }, 3200);
 
-    }, 3000); 
+    }, 3600); // Fim do ciclo. Recomeça!
+  }
+
+  // Trocar a Música.
+  pularMusica() {
+    // Avança na playlist.
+    this.indexMusicaAtual = (this.indexMusicaAtual + 1) % this.playlist.length;
+    this.musicaAtual = this.playlist[this.indexMusicaAtual];
+
+    // Gera o +1 flutuante.
+    this.totalSkips++; 
+    const novoSkip: SkipsContados = { id: this.totalSkips };
+    this.skips.push(novoSkip); 
+    this.cdr.detectChanges();
+
+    // Lixeiro do +1.
+    setTimeout(() => {
+      this.removerSkip(novoSkip.id);
+    }, 2500);
   }
 
   // ======> Lixeiro da Animação.
