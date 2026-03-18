@@ -1,12 +1,16 @@
+// Ferramentas base do Angular.
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common'; // Precisamos disso para mudar as cores do texto
 
+// Importa ferramentas comuns, essenciais para as diretivas do HTML (como ngClass e ngFor).
+import { CommonModule } from '@angular/common';
+
+// Variável global do fundo animado (Canvas).
 declare var FinisherHeader: any;
 
-// 2. Crie uma interface simples para os números flutuantes
+// Molde do Contador, estrutura dos números flutuantes (+1).
 interface SkipsContados {
-  id: number; // Identificador único pra gente poder remover depois
+  id: number;
 }
 
 @Component({
@@ -16,28 +20,48 @@ interface SkipsContados {
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-
 export class App implements OnInit, AfterViewInit {            
+  
+  // ======> Estado Global da Tela.
+  // 1) modoEscuro: Controla qual configuração do Canvas será carregada;
+  // 2) animarTextos: Trava a cascata de animação até o tempo do preloader esgotar.
+  // --------------------------------------------------------------------------------- //
   title = 'Tunify';
   modoEscuro = true;
   animarTextos = false;
 
-  // 4. Variáveis da simulação de frustração
-  skips: SkipsContados[] = []; // A lista que vai guardar os "+1" da tela
-  totalSkips = 0; // O contador interno
-  btnSkipActive = false; // Controla se o botão está piscando
+  // ======> Estado da Simulação de Frustração.
+  // 1) skips (Pulos): A lista que segura os objetos "+1" ativos na tela;
+  // 2) totalSkips: O contador numérico interno para gerar os IDs;
+  // 3) btnSkipActive: Controla o CSS de pulso/afundamento do botão Next (>|).
+  // ---------------------------------------------------------------------------- //
+  skips: SkipsContados[] = []; 
+  totalSkips = 0; 
+  btnSkipActive = false; 
 
-  // 2. Pega a div principal lá do HTML para podermos limpar o canvas antigo
+  // ======> Conexões com a DOM.
+  // 1) headerContainer: Captura a div pai para manipular o elemento <canvas>.
+  // ---------------------------------------------------------------------------- //
   @ViewChild('headerContainer') headerContainer!: ElementRef;
 
-  // 2. Injete o "despertador" aqui
+  // ======> Construtor e Injeção de Dependências.
+  // 1) cdr: O "despertador" manual, usado para forçar o Angular a atualizar a tela quando
+  //    funções assíncronas (como setTimeout) alteram variáveis.
+  // ---------------------------------------------------------------------------------------- //
   constructor(private cdr: ChangeDetectorRef) {}
 
+
+  // ======> Ciclo de Vida: Nascimento.
+  // 1) Dispara a simulação de botões assim que a página é construída.
+  // -------------------------------------------------------------------- //
   ngOnInit() {
-    // 5. Dá o play na simulação assim que o app nasce
     this.iniciarSimulacaoSkips();
   }
 
+  // ======> Ciclo de Vida: Pós-Renderização.
+  // 1) Aguarda 5 segundos (tempo do preloader visual) para soltar a trava dos textos;
+  // 2) Acorda o Angular para injetar a classe 'play-animacoes' no HTML.
+  // ------------------------------------------------------------------------------------ //
   ngAfterViewInit() {
     this.renderizarFundo(); 
 
@@ -47,15 +71,18 @@ export class App implements OnInit, AfterViewInit {
     }, 5000);
   }
 
-  // --- O MOTOR DA FRUSTRAÇÃO (MUUUITO MAIS SUAVE) ---
+  // ======> O Contador de Passar Músicas.
+  // 1) Cria um ciclo de 3 segundos entre cada ação;
+  // 2) Simula o dedo afundando o botão (ativa a classe CSS correspondente);
+  // 3) Aguarda 400ms (tempo físico do clique) para soltar o botão e instanciar o "+1";
+  // 4) Configura a autodestruição do "+1" instanciado após o fim do seu CSS (2.5s).
+  // ------------------------------------------------------------------------------------- //
   iniciarSimulacaoSkips() {
-    // Loop principal: um novo clique a cada 3 segundos
     setInterval(() => {
       
       this.btnSkipActive = true; 
       this.cdr.detectChanges();
 
-      // 1. O botão fica "afundado" por 400ms (dobro do tempo)
       setTimeout(() => { 
         this.btnSkipActive = false; 
         
@@ -64,27 +91,37 @@ export class App implements OnInit, AfterViewInit {
         this.skips.push(novoSkip); 
         this.cdr.detectChanges();
 
-        // 2. O número flutua calmamente por 2.5 segundos (2500ms) antes de sumir
         setTimeout(() => {
           this.removerSkip(novoSkip.id);
         }, 2500);
 
-      }, 400); // <-- Aqui mudamos para 400ms
+      }, 400); 
 
-    }, 3000); // <-- Aqui mudamos para 3000ms
+    }, 3000); 
   }
 
+  // ======> Lixeiro da Animação.
+  // 1) Recebe o ID do elemento que terminou de voar;
+  // 2) Filtra a lista principal removendo apenas ele, evitando vazamento de memória.
+  // ----------------------------------------------------------------------------------- //
   removerSkip(id: number) {
-    // Filtra a lista e mantém só os skips que NÃO têm esse ID
     this.skips = this.skips.filter(s => s.id !== id);
-    this.cdr.detectChanges(); // Atualiza a tela sem o número
+    this.cdr.detectChanges(); 
   }
 
+  // ======> Seletor de Tema.
+  // 1) Inverte o booleano principal e re-desenha a tela de fundo inteira.
+  // ------------------------------------------------------------------------ //
   alternarTema() {
     this.modoEscuro = !this.modoEscuro; 
     this.renderizarFundo();
   }
 
+  // ======> Pintor do Fundo (Canvas).
+  // 1) Busca se já existe um Canvas antigo rodando na div pai;
+  // 2) Destrói o antigo caso exista;
+  // 3) Lê qual a configuração de cores usar e inicializa o FinisherHeader novo.
+  // ------------------------------------------------------------------------------ //
   renderizarFundo() {
     const container = this.headerContainer.nativeElement;
     const canvasAntigo = container.querySelector('canvas');
@@ -92,21 +129,16 @@ export class App implements OnInit, AfterViewInit {
       canvasAntigo.remove();
     }
 
-    // Escolhe qual configuração usar baseado no tema atual
     const config = this.modoEscuro ? this.getConfigDark() : this.getConfigLight();
-    
-    // Injeta o novo fundo
     new FinisherHeader(config);
   }
 
+  // ======> Esquema de Cores: Modo Escuro.
   getConfigDark() {
     return {
       "count": 12,
       "size": { "min": 1000, "max": 1500, "pulse": 1 },
-      "speed": {
-        "x": { "min": 0.6, "max": 3 },
-        "y": { "min": 0.6, "max": 3 }
-      },
+      "speed": { "x": { "min": 0.6, "max": 3 }, "y": { "min": 0.6, "max": 3 } },
       "colors": {
         "background": "#0b1120",
         "particles": ["#0b1120", "#151e32", "#1e2e48", "#263c5e", "#22406e"]
@@ -118,17 +150,15 @@ export class App implements OnInit, AfterViewInit {
     };
   }
 
+  // ======> Esquema de Cores: Modo Claro.
   getConfigLight() {
     return {
       "count": 12,
       "size": { "min": 1000, "max": 1500, "pulse": 0 },
-      "speed": {
-        "x": { "min": 0.3, "max": 2 },
-        "y": { "min": 0.6, "max": 3 }
-      },
+      "speed": { "x": { "min": 0.3, "max": 2 }, "y": { "min": 0.6, "max": 3 } },
       "colors": {
         "background": "#FFFFFF",
-        "particles": ["#FFFFFF", "#EEEEEE", "#DADADA", "#CFCFCF", "#7e7d7d"]
+        "particles": ["#FFFFFF", "#EEEEEE", "#CFCFCF", "#7e7d7d", "#656464"]
       },
       "blending": "lighten",
       "opacity": { "center": 0.6, "edge": 0 },
@@ -137,6 +167,9 @@ export class App implements OnInit, AfterViewInit {
     };
   }
 
+  // ======> Porteiro do Sistema.
+  // 1) Dispara a navegação direta para o backend iniciar o fluxo Oauth2.
+  // ----------------------------------------------------------------------- //
   fazerLogin() {
     window.location.href = 'http://127.0.0.1:8000/api/v1/auth/login';
   }

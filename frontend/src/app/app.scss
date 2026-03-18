@@ -10,14 +10,13 @@
 }
 
 
-/*---------- PRIMEIRA CHAMADA ----------*/
-/*--- Caixa de Textos ---*/
+/*-------------------- PRIMEIRA CHAMADA --------------------*/
+/*---------- Título ----------*/
 .titulo-tunify {
   display: flex;
   flex-direction: column;
-  /* Limitamos a largura para a escada não ficar com os degraus muito distantes */
-  max-width: 20rem; /* Aproximadamente 320px */
-  margin: 0 auto 2rem auto; /* Centraliza a caixa na tela e dá margem embaixo */
+  max-width: 20rem; 
+  margin: 0 auto 2rem auto; 
   line-height: 1.2;
 }
 
@@ -58,6 +57,12 @@
   font-weight: 800;
 }
 
+// Título <<< Modo Claro >>>
+.tema-claro .texto-destaque.branco,
+.tema-claro .texto-menor {
+  color: var(--preto-lt); 
+}
+
 .texto-destaque.azul {
   color: var(--azul-dk); 
 }
@@ -69,103 +74,94 @@
   color: var(--branco-dk);
 }
 
-
-/* =========================================
-   O PLAYER DA FRUSTRAÇÃO COMPLETO (OPÇÃO B)
-========================================= */
+/*---------- Player da Frustração ----------*/
 .player-frustracao {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.2rem; /* Espaço reduzido para acomodar três ícones */
+  gap: 1.2rem; 
   margin: -1rem 0 1rem 0;
-  
-  // Garante que o player inteiro entra na animação de cascata
   opacity: 0; 
 }
 
-/* O Ícone Música Anterior (Voltar - Novo e Branco) */
 .icon-prev {
-  width: 1.8rem; /* ~28px - Mesmo tamanho do Next */
+  width: 1.8rem; 
   height: 1.8rem;
 }
 
-/* O Ícone de Pausa (Padrão Spotify, Branco) */
 .icon-pausa {
-  width: 3.5rem; /* ~56px */
+  width: 3.5rem; 
   height: 3.5rem;
 }
 
-/* O Container do botão Next e dos números flutuantes */
 .container-skip {
-  position: relative; /* Importante para o número +1 flutuar a partir daqui */
-  width: 1.8rem; /* ~28px */
+  position: relative; 
+  width: 1.8rem; 
   height: 1.8rem;
   z-index: 5;
 }
 
-/* O Ícone Next ($>|$) */
 .icon-next {
   width: 100%; height: 100%;
 }
 
-/* A classe que o TS injeta pra simular o clique frenético */
 .icon-next.btn-pulsando {
   animation: afundarBotao 0.4s ease-in-out;
 }
 
-/* Quando o botão pulsar, as partes de dentro viram azuis tecnológicos! */
 .icon-next.btn-pulsando .cor-next {
   fill: var(--cinza-escuro-dk) !important;
 }
 
-/* O Número +1 Flutuante */
+/*--- O Número +1 Flutuante ---*/
 .valor-contador {
   position: absolute;
-  top: -10px; /* Nasce em cima do botão Next */
-  right: -20px; /* Deslocado para a direita pra não cobrir o ícone */
+  top: -10px; 
+  right: -20px; 
   z-index: 6;
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.8rem; /* Grande e visível */
+  font-size: 1.8rem; 
   font-weight: 800;
   color: var(--azul-claro-dk);
-  pointer-events: none; /* Não atrapalha o clique do mouse */
-  
-  /* A animação que faz o +1 subir e sumir */
+  pointer-events: none; 
   animation: contadorFlutuante 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
-
-/*--- Subtítulo ---*/
+/*---------- Subtítulo ----------*/
 .subtitulo-tunify {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.05rem; /* Um micro-ajuste de tamanho */
-  font-weight: 300; /* O texto base fica mais 'light' e elegante */
+  font-size: 1.05rem; 
+  font-weight: 300; 
   color: var(--branco-azulado-dk); 
-  line-height: 1.6; /* Um tiquinho mais de respiro entre as linhas */
+  line-height: 1.6; 
   margin-bottom: 2rem;
   margin-top: 2rem;
   text-align: center;
   padding: 0 1rem; 
 }
 
-/*--- O Tchan do Subtítulo ---*/
 .txt-destaque {
   font-family: var(--fonte-especial, sans-serif);
   font-style: italic;
-  font-weight: 600; /* As palavras-chave ficam gordinhas (bold) */
-  letter-spacing: 0.5px; /* Um micro respiro entre as letras pra dar leitura */
+  font-weight: 600; 
+  letter-spacing: 0.5px; 
 }
 
 .txt-destaque {
-  color: var(--verde-spotify-dk); /* Ou var(--azul-dk), veja qual dá mais leitura! */
+  color: var(--verde-spotify-dk);
 }
 
+// Subtitulo <<< Modo Claro >>>
+.tema-claro .subtitulo-tunify {
+  color: var(--cinza-escuro-lt);
+}
+
+// Subtitulo Destaque <<< Modo Claro >>>
 .tema-claro .txt-destaque {
   color: var(--azul-lt);
 }
 
-/*--- Botão de Conectar com o Spotify ---*/
+/*---------- Botão de Conectar com o Spotify ----------*/
 .btn-spotify {
   background-color: var(--verde-spotify-dk);
   color: var(--branco-dk);
@@ -178,15 +174,13 @@
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
   opacity: 0;
-  /* NOVO: Alinhando o ícone com o texto */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px; /* Espaço entre o logo e o texto */
-  margin: 0 auto; /* Garante que o botão fique no centro da tela */
+  gap: 12px; 
+  margin: 0 auto; 
 }
 
-/* Tamanho do Ícone SVG dentro do botão */
 .btn-spotify svg {
   width: 24px;
   height: 24px;
@@ -197,8 +191,7 @@
   transform: scale(1.05);
 }
 
-
-/*---------- BOTÃO DO TEMA ----------*/
+/*---------- Botão do Tema ----------*/
 .btn-toggle-tema {
   position: absolute;
   top: 30px;
@@ -221,29 +214,14 @@
   transform: scale(1.05);
 }
 
-/*--- Botão do Tema Invertido (Modo Claro) ---*/
+/*--- Botão do Tema Invertido <<< Modo Claro >>> ---*/
 .tema-claro .btn-toggle-tema {
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.2);
   color: #1a1a1a;
 }
 
-
-/* ---------- CORES INVERTIDAS DO MODO CLARO ---------- */
-.tema-claro .texto-destaque.branco,
-.tema-claro .texto-menor {
-  color: var(--preto-lt); 
-}
-.tema-claro .subtitulo-tunify {
-  color: var(--cinza-escuro-lt);
-}
-
-
-
-/*---------- ANIMAÇÕES ----------*/
-
-/* Só quando o TS injetar a classe 'play-animacoes' é que o show começa! */
-
+/*---------- Animações ----------*/
 .play-animacoes .alinhar-esq {
   animation: surgirDeBaixo 0.8s ease-out forwards;
 }
@@ -264,55 +242,53 @@
   animation: puloDoBotao 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s forwards; 
 }
 
-
-/* 1. Desliza de baixo para cima surgindo (Fade In Up) */
+/*--- Desliza de baixo para cima surgindo ---*/
 @keyframes surgirDeBaixo {
   0% {
     opacity: 0;
-    transform: translateY(30px); /* Começa 30px mais pra baixo */
+    transform: translateY(30px); 
   }
   100% {
     opacity: 1;
-    transform: translateY(0); /* Volta pra posição original */
+    transform: translateY(0); 
   }
 }
 
-/* 2. O Pulo do Botão (Efeito Elástico) */
+/*--- Salto do Botão ---*/
 @keyframes puloDoBotao {
   0% {
     opacity: 0;
-    transform: scale(0.8); /* Nasce pequenininho */
+    transform: scale(0.8); 
   }
   70% {
     opacity: 1;
-    transform: scale(1.05); /* Passa um pouquinho do tamanho normal (o pulo) */
+    transform: scale(1.05); 
   }
   100% {
     opacity: 1;
-    transform: scale(1); /* Assenta no tamanho perfeito */
+    transform: scale(1); 
   }
 }
 
-/* 3. NOVO: O efeito realista do botão sendo pressionado (Afundando) */
+/*--- Botão sendo pressionado ---*/
 @keyframes afundarBotao {
   0% { transform: scale(1); }
-  50% { transform: scale(0.85); } /* Diminui 15% simulando o peso do dedo */
+  50% { transform: scale(0.85); } 
   100% { transform: scale(1); }
 }
 
-/* 3. A animação do +1 ajustada para o novo tempo */
+/*--- Número +1 Flutuando ---*/
 @keyframes contadorFlutuante {
   0% {
     opacity: 1; 
     transform: translateY(0) scale(0.5); 
   }
-  10% { /* Mudei pra 10% pra ele dar o "Pop" inicial mais macio */
+  10% { 
     opacity: 1;
     transform: translateY(-10px) scale(1); 
   }
   100% {
     opacity: 0; 
-    /* Coloquei -50px no Y para ele subir um pouquinho mais durante os 2.5s */
     transform: translateY(-50px) translateX(20px) rotate(15deg); 
   }
 }
