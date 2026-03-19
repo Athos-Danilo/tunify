@@ -1,4 +1,4 @@
-/* Importa as variáveis e mixins globais */
+/*--- Importa as variáveis e mixins globais ---*/
 @import '../styles.scss';
 
 /*--- Container da Tela ---*/
@@ -14,6 +14,42 @@
 
 
 /*-------------------- PRIMEIRA CHAMADA --------------------*/
+
+/*---------- Layout de Duas Colunas (Apenas para Telas Grandes) ----------*/
+.layout-duas-colunas {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  width: 100%;
+
+  @include tela-grande {
+    flex-direction: row; 
+    justify-content: center;
+    gap: 10rem; 
+    margin-top: -3rem; 
+  }
+}
+
+.coluna-texto {
+  width: 100%;
+
+  @include tela-grande { 
+    width: auto; 
+  }
+}
+
+.coluna-player {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  @include tela-grande {
+    animation: surgirDeBaixo 0.8s ease-out 0.35s forwards;
+    opacity: 0;
+  }
+}
+
 /*---------- Título ----------*/
 .titulo-tunify {
   display: flex;
@@ -23,12 +59,14 @@
   line-height: 1.2;
 
   @include tela-media {
-    max-width: 28rem;
+    width: 26.5rem;
+    max-width: 100%;
     margin-bottom: 2.5rem;
   }
 
   @include tela-grande {
-    max-width: 35rem;
+    width: 33rem;
+    max-width: 100%;
     margin-bottom: 3rem;
   }
 }
@@ -111,6 +149,182 @@
   color: var(--preto-lt); 
 }
 
+/*---------- Notas Músicais (Apenas para Telas Médias e Grandes) ----------*/
+.wrapper-musicas {
+  position: relative; 
+  align-items: center;
+  display: block; 
+  width: 100%;
+
+  @include tela-media { 
+    display: inline-flex; 
+    width: auto;
+  }
+}
+
+/*--- Estilo Base das Notas ---*/
+.nota-musical {
+  position: absolute;
+  fill: var(--azul-claro-dk);
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(168, 216, 234, 0.4));
+  pointer-events: none;
+  display: none; 
+  overflow: visible;
+
+  @include tela-media { 
+    display: block; 
+  }
+}
+
+.nota-1 {
+  width: 1rem;
+  right: -25px; top: -10px;
+  transform: rotate(-15deg);
+  animation: flutuarOrganico 3s ease-in-out infinite 0s;
+}
+
+.nota-2 {
+  width: 1.2rem;
+  right: -50px; top: -35px;
+  transform: rotate(20deg);
+  animation: flutuarOrganico 4s ease-in-out infinite 1s;
+}
+
+.nota-3 {
+  width: 0.9rem;
+  right: -55px; top: 5px;
+  transform: rotate(-30deg);
+  animation: flutuarOrganico 2.5s ease-in-out infinite 0.5s;
+}
+
+// Notas Músicais <<< Modo Claro >>>
+.tema-claro .nota-musical {
+  fill: var(--azul-lt);
+}
+
+/*---------- Músicas (Apenas para Telas Grandes) ----------*/
+.somente-desktop {
+  display: none; 
+  
+  @include tela-grande {
+    display: flex; 
+  }
+}
+
+/*--- Informações da Música ---*/
+.info-musica {
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  opacity: 0;
+}
+
+.nome-musica {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--branco-dk);
+  margin: 0 0 5px 0;
+}
+
+// Nome da Música <<< Modo Claro >>>
+.tema-claro .nome-musica { 
+  color: var(--preto-lt); 
+}
+
+.nome-artista {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1rem;
+  color: var(--cinza-claro-dk); 
+  margin: 0;
+}
+
+.tema-claro .nome-artista {
+  color: var(--cinza-escuro-lt);
+}
+
+
+/*--- Timeline ---*/
+.timeline-container {
+  display: flex; 
+  width: 100%;
+  max-width: 400px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 2rem;
+  opacity: 0;
+}
+
+.tempo {
+  font-family: var(--fonte-principal, sans-serif); 
+  font-size: 0.85rem;
+  color: var(--cinza-claro-dk);
+  font-variant-numeric: tabular-nums; 
+  min-width: 38px; 
+  text-align: center; 
+}
+
+// Números do Tempo <<< Modo Claro >>>
+.tema-claro .tempo { 
+  color: var(--cinza-escuro-lt); 
+}
+
+.barra-progresso {
+  flex-grow: 1;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  position: relative;
+}
+
+// Barra de Progresso <<< Modo Claro >>>
+.tema-claro .barra-progresso { 
+  background-color: rgba(0, 0, 0, 0.1); 
+}
+
+.sem-transicao .progresso-preenchido {
+  transition: none !important; 
+}
+
+.progresso-preenchido {
+  width: 0%; 
+  height: 100%;
+  background-color: var(--branco-dk);
+  border-radius: 2px;
+  position: relative; 
+}
+
+// Progresso da Música <<< Modo Claro >>>
+.tema-claro .progresso-preenchido { 
+  background-color: var(--preto-lt); 
+}
+
+.animar-progresso {
+  animation: tocarMusica 3.2s linear forwards;
+}
+
+/*--- Bolinha ---*/
+.progresso-preenchido::after {
+  content: '';
+  position: absolute;
+  right: -5px; 
+  top: 50%;
+  transform: translateY(-50%); 
+  width: 10px;
+  height: 10px;
+  background-color: var(--branco-dk);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3); 
+}
+
+// Bolinha <<< Modo Claro >>>
+.tema-claro .progresso-preenchido::after { 
+  background-color: var(--preto-lt); 
+}
+
 /*---------- Player da Frustração ----------*/
 .player-frustracao {
   display: flex;
@@ -129,6 +343,17 @@
     gap: 1.8rem; 
     margin: -1.5rem 0 2rem 0; 
   }
+}
+
+/*--- Ícones (Aleatório / Repetir) ---*/
+.icon-secundario {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+// Ícones (Aleatório / Repetir) <<< Modo Claro >>>
+.tema-claro .icon-secundario {
+  fill: var(--cinza-escuro-lt);
 }
 
 .icon-prev {
@@ -252,6 +477,7 @@
     max-width: 500px; 
     margin-left: auto; margin-right: auto;
   }
+
   @include tela-grande {
     font-size: 1.3rem;
     max-width: 650px; 
@@ -346,6 +572,7 @@
   cursor: pointer;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  opacity: 0;
 }
 
 .btn-toggle-tema:hover {
@@ -369,6 +596,13 @@
   animation: surgirDeBaixo 0.8s ease-out 0.2s forwards; 
 }
 
+.play-animacoes .info-musica {
+  animation: surgirDeBaixo 0.8s ease-out 0.25s forwards;
+}
+.play-animacoes .timeline-container {
+  animation: surgirDeBaixo 0.8s ease-out 0.3s forwards;
+}
+
 .play-animacoes .player-frustracao {
   animation: surgirDeBaixo 0.8s ease-out 0.35s forwards;
 }
@@ -379,6 +613,10 @@
 
 .play-animacoes .btn-spotify {
   animation: puloDoBotao 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s forwards; 
+}
+
+.play-animacoes .btn-toggle-tema {
+  animation: zoomInSuave 0.5s ease-out 1.4s forwards; /* Espera 1.4s pra aparecer! */
 }
 
 /*--- Desliza de baixo para cima surgindo ---*/
@@ -409,7 +647,7 @@
   }
 }
 
-/*--- Botão sendo pressionado ---*/
+/*--- Botão sendo Pressionado ---*/
 @keyframes afundarBotao {
   0% { transform: scale(1); }
   50% { transform: scale(0.85); } 
@@ -432,167 +670,28 @@
   }
 }
 
-
-
-
-
-
-/* =========================================
-   LAYOUT DE DUAS COLUNAS
-========================================= */
-.layout-duas-colunas {
-  display: flex;
-  flex-direction: column; /* Mobile: Empilhado igual antes */
-  align-items: center;
-  width: 100%;
-
-  @include tela-grande {
-    flex-direction: row; /* Desktop: Fica lado a lado! */
-    justify-content: center;
-    gap: 6rem; /* Distância entre o Título e o Player */
-    margin-top: -3rem; /* Sobe um pouco pra centralizar na tela */
-  }
-}
-
-/* Colunas individuais */
-.coluna-texto {
-  width: 100%;
-  @include tela-grande { width: auto; }
-}
-
-.coluna-player {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-  @include tela-grande {
-    /* No Desktop, os elementos do player descem em cascata juntos com a coluna da direita */
-    animation: surgirDeBaixo 0.8s ease-out 0.35s forwards;
-    opacity: 0;
-  }
-}
-
-/* =========================================
-   ELEMENTOS EXCLUSIVOS DO DESKTOP
-========================================= */
-.somente-desktop {
-  display: none; /* Esconde no celular pra não poluir */
-  
-  @include tela-grande {
-    display: flex; /* Aparece no monitor grandão */
-  }
-}
-
-/*--- Textos da Música ---*/
-.info-musica {
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.nome-musica {
-  font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--branco-dk);
-  margin: 0 0 5px 0;
-}
-
-.nome-artista {
-  font-family: var(--fonte-principal, sans-serif);
-  font-size: 1rem;
-  color: var(--cinza-escuro-lt); /* Cinza clarinho */
-  margin: 0;
-}
-
-/*--- A Timeline do Frustrado ---*/
-.timeline-container {
-  display: flex; /* <-- Garante que isso está aqui! */
-  width: 100%;
-  max-width: 400px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 2rem;
-}
-
-.tempo {
-  font-family: var(--fonte-principal, sans-serif); 
-  font-size: 0.85rem;
-  color: var(--cinza-escuro-lt);
-  
-  /* AS MÁGICAS PARA MATAR O PULO DA BARRA 👇 */
-  font-variant-numeric: tabular-nums; /* Força todo número a ter a mesma exata largura */
-  min-width: 38px; /* Trava o tamanho da caixa de texto, mesmo que a música tenha 10:00 */
-  text-align: center; /* Deixa o número alinhado dentro da caixa dele */
-}
-
-.barra-progresso {
-  flex-grow: 1;
-  height: 4px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  /* IMPORTANTE: Tire o overflow: hidden pra bolinha poder aparecer pra fora! */
-  position: relative;
-}
-
-/* =========================================
-   A MÁGICA DO RESET INSTANTÂNEO
-========================================= */
-/* Quando essa classe estiver na div pai (barra-progresso),
-   a div filha (progresso-preenchido) NÃO terá animação! */
-.sem-transicao .progresso-preenchido {
-  transition: none !important; 
-}
-
-/* O estado base da barra (sempre morta e no zero) */
-.progresso-preenchido {
-  width: 0%; /* Quando não tem animação, ela fica travada no 0 */
-  height: 100%;
-  background-color: var(--branco-dk);
-  border-radius: 2px;
-  position: relative; 
-  /* APAGUE O TRANSITION QUE ESTAVA AQUI! */
-}
-
-/* A CLASSE INQUEBRÁVEL (O Angular injeta essa classe e a barra anda) */
-.animar-progresso {
-  animation: tocarMusica 3.2s linear forwards;
-}
-
-/* O Roteiro Exato da Barra */
+/*--- Progresso da Linha do Tempo ---*/
 @keyframes tocarMusica {
   0%   { width: 0%; }
-  100% { width: 6%; } /* Chega nos 6% exatamente aos 3.2 segundos! */
+  100% { width: 6%; } 
 }
 
-/* O Demarcador (A Bolinha Branca do Spotify) */
-/* O Demarcador (A Bolinha Branca do Spotify continua igual) */
-.progresso-preenchido::after {
-  content: '';
-  position: absolute;
-  right: -5px; 
-  top: 50%;
-  transform: translateY(-50%); 
-  width: 10px;
-  height: 10px;
-  background-color: var(--branco-dk);
-  border-radius: 50%;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3); 
+/*--- Notas Flutuando ---*/
+@keyframes flutuarOrganico {
+  0% { opacity: 0; transform: translateY(0px) rotate(-15deg) scale(0.5); }
+  15% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-40px) rotate(15deg) scale(1.1); }
 }
 
-/*--- Ícones Auxiliares (Shuffle/Repeat) ---*/
-.icon-secundario {
-  width: 1.4rem;
-  height: 1.4rem;
+/*--- Zoom Suave ---*/
+@keyframes zoomInSuave {
+  0% {
+    opacity: 0;
+    transform: scale(0.5); 
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-
-/* Inversões do Modo Claro */
-.tema-claro .nome-musica { color: var(--preto-lt); }
-.tema-claro .tempo { color: #555; }
-.tema-claro .barra-progresso { background-color: rgba(0, 0, 0, 0.1); }
-.tema-claro .progresso-preenchido { background-color: var(--preto-lt); }
-.tema-claro .progresso-preenchido::after { background-color: var(--preto-lt); }
-.tema-claro .icon-secundario[fill="var(--cinza-escuro-lt)"] { fill: #888; }
