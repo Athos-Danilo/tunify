@@ -509,6 +509,7 @@
 
 /*--- A Timeline do Frustrado ---*/
 .timeline-container {
+  display: flex; /* <-- Garante que isso está aqui! */
   width: 100%;
   max-width: 400px;
   align-items: center;
@@ -518,9 +519,14 @@
 }
 
 .tempo {
-  font-family: var(--fonte-principal, monospace); /* Font mono pra números não balançarem */
+  font-family: var(--fonte-principal, sans-serif); 
   font-size: 0.85rem;
   color: var(--cinza-escuro-lt);
+  
+  /* AS MÁGICAS PARA MATAR O PULO DA BARRA 👇 */
+  font-variant-numeric: tabular-nums; /* Força todo número a ter a mesma exata largura */
+  min-width: 38px; /* Trava o tamanho da caixa de texto, mesmo que a música tenha 10:00 */
+  text-align: center; /* Deixa o número alinhado dentro da caixa dele */
 }
 
 .barra-progresso {
@@ -541,27 +547,40 @@
   transition: none !important; 
 }
 
-/* O estado normal continua com a animação suave */
+/* O estado base da barra (sempre morta e no zero) */
 .progresso-preenchido {
+  width: 0%; /* Quando não tem animação, ela fica travada no 0 */
   height: 100%;
   background-color: var(--branco-dk);
   border-radius: 2px;
   position: relative; 
-  transition: width 1s linear; // <-- SÓ roda se .sem-transicao NÃO estiver no pai
+  /* APAGUE O TRANSITION QUE ESTAVA AQUI! */
+}
+
+/* A CLASSE INQUEBRÁVEL (O Angular injeta essa classe e a barra anda) */
+.animar-progresso {
+  animation: tocarMusica 3.2s linear forwards;
+}
+
+/* O Roteiro Exato da Barra */
+@keyframes tocarMusica {
+  0%   { width: 0%; }
+  100% { width: 6%; } /* Chega nos 6% exatamente aos 3.2 segundos! */
 }
 
 /* O Demarcador (A Bolinha Branca do Spotify) */
+/* O Demarcador (A Bolinha Branca do Spotify continua igual) */
 .progresso-preenchido::after {
   content: '';
   position: absolute;
-  right: -5px; /* Fica metadinha pra fora da barra */
+  right: -5px; 
   top: 50%;
-  transform: translateY(-50%); /* Centraliza perfeitamente no meio da linha */
+  transform: translateY(-50%); 
   width: 10px;
   height: 10px;
   background-color: var(--branco-dk);
   border-radius: 50%;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3); /* Uma sombrinha pra dar relevo */
+  box-shadow: 0 0 4px rgba(0,0,0,0.3); 
 }
 
 /*--- Ícones Auxiliares (Shuffle/Repeat) ---*/

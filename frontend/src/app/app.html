@@ -30,8 +30,8 @@
           
           <span class="tempo">{{ tempoExibicao }}</span> 
           
-          <div class="barra-progresso" [ngClass]="{'sem-transicao': progressoPorcentagem === 0}">
-            <div class="progresso-preenchido" [style.width.%]="progressoPorcentagem"></div>
+          <div class="barra-progresso">
+            <div class="progresso-preenchido" [ngClass]="{'animar-progresso': isTocando}"></div>
           </div>
           
           <span class="tempo">{{ musicaAtual.duracao }}</span>

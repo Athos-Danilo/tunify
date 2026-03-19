@@ -1,5 +1,5 @@
 // Ferramentas base do Angular.
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 // Importa ferramentas comuns, essenciais para as diretivas do HTML (como ngClass e ngFor).
@@ -46,6 +46,10 @@ export class App implements OnInit, AfterViewInit {
   totalSkips = 0; 
   btnSkipActive = false; 
 
+  // --- NOVAS VARIÁVEIS DE CONTROLE BLINDADO ---
+  simulacaoAtiva = true; // O "Botão de Pânico" contra os fantasmas do Hot Reload
+  isResetando = true; // Trava explícita para o CSS  
+
   // ======> Conexões com a DOM.
   // 1) headerContainer: Captura a div pai para manipular o elemento <canvas>.
   // ---------------------------------------------------------------------------- //
@@ -77,7 +81,7 @@ export class App implements OnInit, AfterViewInit {
 
   // Variáveis para a Timeline.
   tempoExibicao = '0:00';
-  progressoPorcentagem = 0;
+  isTocando = false;
 
   // ======> Ciclo de Vida: Nascimento.
   // 1) Dispara a simulação de botões assim que a página é construída.
@@ -99,6 +103,11 @@ export class App implements OnInit, AfterViewInit {
     }, 5000);
   }
 
+  // MATA OS FANTASMAS: Quando o Angular recarregar, ele desativa o motor antigo!
+  ngOnDestroy() {
+    this.simulacaoAtiva = false; 
+  }
+
   // ======> O Contador de Passar Músicas.
   // 1) Cria um ciclo de 3 segundos entre cada ação;
   // 2) Simula o dedo afundando o botão (ativa a classe CSS correspondente);
@@ -107,35 +116,47 @@ export class App implements OnInit, AfterViewInit {
   // 5) Troca a música toda vez que pula.
   // 6) Tempo da música tocando.
   // ------------------------------------------------------------------------------------- //
+  // Dá o pontapé inicial na nossa engrenagem
   iniciarSimulacaoSkips() {
-    
-    // Esse ciclo inteiro dura exatos 3.6 segundos e recomeça
-    setInterval(() => {
-      
-      // Nasce a música no 0:00
-      this.tempoExibicao = '0:00';
-      this.progressoPorcentagem = 0;
+    this.simulacaoAtiva = true;
+    this.cicloDeFrustracao();
+  }
+
+  // O Motor Blindado
+  cicloDeFrustracao() {
+    if (!this.simulacaoAtiva) return;
+
+    // 1. O CORTE SECO (Desliga a animação, o CSS zera a barra instantaneamente)
+    this.isTocando = false; 
+    this.tempoExibicao = '0:00';
+    this.btnSkipActive = false; 
+    this.cdr.detectChanges();
+
+    // 2. O PLAY DA MÚSICA (Espera 50ms e injeta a animação)
+    setTimeout(() => {
+      if (!this.simulacaoAtiva) return;
+      this.isTocando = true; // Ativa o keyframe de 3.2 segundos
       this.cdr.detectChanges();
-      
-      // Cronômetro rodando...
-      setTimeout(() => { this.tempoExibicao = '0:01'; this.progressoPorcentagem = 1.5; this.cdr.detectChanges(); }, 1000);
-      setTimeout(() => { this.tempoExibicao = '0:02'; this.progressoPorcentagem = 3.0; this.cdr.detectChanges(); }, 2000);
-      setTimeout(() => { this.tempoExibicao = '0:03'; this.progressoPorcentagem = 4.5; this.cdr.detectChanges(); }, 3000);
+    }, 50);
 
-      // Aos 3.2 segundos, o usuário perde a paciência e aperta o botão
-      setTimeout(() => {
-        this.btnSkipActive = true;
-        this.cdr.detectChanges();
+    // 3. O CRONÔMETRO DE TEXTO (Separado da barra)
+    setTimeout(() => { if (this.simulacaoAtiva) { this.tempoExibicao = '0:01'; this.cdr.detectChanges(); } }, 1000);
+    setTimeout(() => { if (this.simulacaoAtiva) { this.tempoExibicao = '0:02'; this.cdr.detectChanges(); } }, 2000);
+    setTimeout(() => { if (this.simulacaoAtiva) { this.tempoExibicao = '0:03'; this.cdr.detectChanges(); } }, 3000);
 
-        // Aos 3.6 segundos, o botão solta, o +1 voa e a música troca!
-        setTimeout(() => {
-          this.btnSkipActive = false;
-          this.pularMusica();
-        }, 400); // 400ms é o tempo do clique afundado
+    // 4. O CLIQUE
+    setTimeout(() => {
+      if (!this.simulacaoAtiva) return;
+      this.btnSkipActive = true;
+      this.cdr.detectChanges();
+    }, 3200);
 
-      }, 3200);
-
-    }, 3600); // Fim do ciclo. Recomeça!
+    // 5. A TROCA E O RECOMEÇO
+    setTimeout(() => {
+      if (!this.simulacaoAtiva) return;
+      this.pularMusica(); 
+      this.cicloDeFrustracao(); 
+    }, 3600);
   }
 
   // Trocar a Música.
