@@ -697,6 +697,7 @@
 }
 
 /*-------------------- SEGUNDA SEÇÃO --------------------*/
+/*-------------------- SEGUNDA SEÇÃO (PEGADA NERD) --------------------*/
 
 /*--- O Divisor de Onda Fluida (Canvas) ---*/
 .divisor-canvas {
@@ -704,83 +705,149 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px; /* Um pouco mais alto pra onda respirar */
+  height: 60px;
   pointer-events: none;
   opacity: 0.8;
-  filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.5)); /* Brilho neon */
+  filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.5));
 }
 
-/* Modo Claro */
-.tema-claro .divisor-canvas {
-  opacity: 0.4;
-  filter: none;
-}
+.tema-claro .divisor-canvas { opacity: 0.4; filter: none; }
 
-
-
-
+// ===> A SEÇÃO PAI (Padrão de Margens da Primeira Seção)
+/*--- A SEÇÃO PAI ---*/
 .secao-dados {
   position: relative;
-  z-index: 10; /* Efeito Cortina: Passa por cima do Canvas! */
-  width: 100vw;
+  z-index: 10;
+  width: 100%; /* 🚨 MUDE DE 100vw PARA 100% */
   min-height: 100vh;
-  background-color: var(--azul-muito-escuro-dk); /* Fundo sólido padrão */
+  background-color: var(--azul-muito-escuro-dk);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 4rem 2rem; /* Esse padding agora não vai mais estourar a tela */
   overflow: hidden;
+  box-sizing: border-box; /* 🚨 A MÁGICA AQUI: Obriga o padding a ficar para dentro! */
 }
 
-/*--- A Mágica do Tema Claro ---*/
-.tema-claro .secao-dados {
-  background-color: var(--branco-lt);
-}
+.tema-claro .secao-dados { background-color: var(--branco-lt); }
 
+/*--- O CONTAINER CENTRAL ---*/
 .container-dados {
-  max-width: 1200px;
   width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box;
+  
+  /* 🚨 OVERRIDE DO MOBILE: Quebra a classe 'layout-duas-colunas' no celular */
+  display: flex;
+  flex-direction: column; /* Força o texto e o terminal a ficarem um embaixo do outro */
+  align-items: center;
+  gap: 3rem; /* Dá um respiro entre o texto e o terminal */
+
+  @include tela-grande {
+    flex-direction: row; /* No desktop volta a ficar lado a lado lindamente */
+    align-items: center;
+    gap: 2rem;
+  }
 }
 
-/*--- Textos ---*/
+// Colunas Auxiliares
+.coluna-texto-dados, .coluna-codigo {
+  width: 100%; /* No mobile ocupam tudo */
+  max-width: 600px; /* Evita que o texto estique muito */
+}
+
+/* Garante que a coluna de texto não force a barra */
+.coluna-texto-dados {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.coluna-codigo {
+  // Centraliza o terminal em mobile
+  display: flex;
+  justify-content: center;
+
+  @include tela-grande {
+    justify-content: flex-end; /* Manda o terminal pra direita no desktop */
+  }
+}
+
+/*--- Textos (Ajuste de Tamanho Mobile) ---*/
 .titulo-dados {
-  font-family: var(--fonte-especial, sans-serif);
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-family: var(--fonte-principal, sans-serif); 
+  
+  // --- CORREÇÃO MOBILE-FIRST ---
+  font-size: 1.8rem; /* Tamanho confortável pra celular */
+  
+  font-weight: 600;
   color: var(--branco-dk);
   line-height: 1.2;
   margin-bottom: 1.5rem;
+  text-align: inherit; /* Segue o text-align do pai */
+
+  /* Spans Especiais herdando o mobile-first */
+  .txt-special-azul {
+    font-family: var(--fonte-especial, sans-serif);
+    font-weight: 700;
+    font-size: 2rem; /* Mantendo a proporção */
+    color: var(--azul-dk);
+  }
   
-  @include tela-grande { font-size: 3.5rem; }
+  .txt-special {
+    font-family: var(--fonte-especial, sans-serif);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  // --- ESCALONAMENTO RESPONSIVO ---
+  @include tela-media {
+    font-size: 2.2rem;
+    .txt-special-azul { font-size: 2.5rem; }
+  }
+
+  @include tela-grande { 
+    font-size: 2.8rem; /* Desktop não precisa ser gigante */
+    .txt-special-azul { font-size: 3.1rem; }
+  } 
 }
 
-.tema-claro .titulo-dados {
-  color: var(--preto-lt);
-}
-
-.destaque-azul {
-  color: var(--azul-dk);
-}
+// Título <<< Modo Claro >>>
+.tema-claro .titulo-dados { font-weight: 700; color: var(--preto-lt); }
+.tema-claro .txt-special-azul { color: var(--azul-lt); }
+.tema-claro .txt-special { font-style: italic; font-weight: 600; }
 
 .texto-dados {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.1rem;
+  font-size: 1.0rem; /* mobile-first */
+  font-weight: 300;
+  text-align: inherit; /* Segue o text-align do pai */
   color: var(--branco-azulado-dk);
   line-height: 1.6;
   margin-bottom: 1.5rem;
   
+  @include tela-media { font-size: 1.15rem; }
   @include tela-grande { font-size: 1.25rem; }
+
+  // Os destaques Strong responsivos
+  strong {
+    color: var(--verde-spotify-dk);
+    font-size: 1.05rem; /* mobile-first */
+    font-weight: 500;
+    font-style: italic;
+    @include tela-media { font-size: 1.2rem; }
+    @include tela-grande { font-size: 1.3rem; }
+  }
 }
 
-.tema-claro .texto-dados {
-  color: var(--cinza-escuro-lt);
-}
+// Texto <<< Modo Claro >>>
+.tema-claro .texto-dados { color: var(--cinza-escuro-lt); }
+.tema-claro .texto-dados strong { color: var(--azul-lt); }
 
 /*--- Botão Secundário ---*/
 .btn-analisar {
   background-color: transparent;
-  color: #0285ff; /* O Azul Elétrico */
-  border: 2px solid #0285ff;
+  color: var(--azul-dk); 
+  border: 2px solid var(--azul-dk);
   font-family: var(--fonte-principal);
   font-weight: 700;
   font-size: 18px;
@@ -788,23 +855,72 @@
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 1rem;
+  
+  /* 🚨 A MÁGICA DA CENTRALIZAÇÃO AQUI 🚨 */
+  display: block; /* Transforma em bloco independente */
+  margin: 2rem auto 0 auto; /* Top: 2rem, Direita: auto, Baixo: 0, Esquerda: auto */
 }
 
 .btn-analisar:hover {
-  background-color: #0285ff;
-  color: #fff;
+  background-color: var(--azul-dk);
+  color: var(--branco-dk);
   transform: scale(1.05);
 }
 
+/*=========================================
+   TERMINAL VS CODE (RESPONSIVO E VERTICAL)
+=========================================*/
+.mockup-vscode {
+  width: 100%;
+  max-width: 500px; /* Mantemos o tamanho máximo pra não estourar */
+  background-color: #0d1117; /* Fundo padrão GitHub Dark / VS Code */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  
+  /* 🚨 CORREÇÃO DO ALINHAMENTO GERAL 🚨 */
+  // Garante que o terminal como um todo fique centralizado na coluna da direita
+  margin: 0 auto; 
+}
 
+.vscode-header {
+  background-color: #161b22;
+  padding: 10px 14px; /* Ajuste mobile-first */
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mac-dots {
+  display: flex;
+  gap: 6px; /* Ajuste mobile-first */
+  
+  .dot {
+    width: 10px; /* Ajuste mobile-first */
+    height: 10px; /* Ajuste mobile-first */
+    border-radius: 50%;
+  }
+  .red { background-color: #ff5f56; }
+  .yellow { background-color: #ffbd2e; }
+  .green { background-color: #27c93f; }
+}
+
+.vscode-title {
+  flex-grow: 1;
+  text-align: center;
+  color: #8b949e;
+  font-family: var(--fonte-principal, monospace);
+  font-size: 0.8rem; /* Ajuste mobile-first */
+  margin-right: 32px; /* Ajuste mobile-first */
+}
 
 /*=========================================
    TERMINAL VS CODE (MOCKUP JSON)
 =========================================*/
 .mockup-vscode {
   width: 100%;
-  max-width: 500px; /* Evita que fique gigante em telas grandes */
+  max-width: 500px; /* Mantemos o tamanho máximo pra não estourar */
   background-color: #0d1117; /* Fundo padrão GitHub Dark / VS Code */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -846,14 +962,12 @@
 
 .vscode-body {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* VERTICAL EM QUALQUER TELA */
   padding: 20px;
   gap: 20px;
-
-  @include tela-grande {
-    flex-direction: row;
-    align-items: center;
-  }
+  align-items: center; /* Centraliza a foto */
+  
+  /* 🚨 Removemos qualquer @include tela-grande que tinha aqui para garantir que fique sempre empilhado! */
 }
 
 .album-wrapper {
@@ -878,26 +992,54 @@
   transition: filter 0.2s ease;
 }
 
-/* Sintaxe do JSON */
-.codigo-json {
-  font-family: 'Courier New', Courier, monospace; /* Fonte real de código */
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #c9d1d9;
+// =========================================
+// 🚨 NOVO WRAPPER DE DADOS MUSICAIS 🚨
+// =========================================
+.dados-musica-wrapper {
+  width: 100%; 
+  display: flex;
+  justify-content: flex-start;
   
-  pre { margin: 0; }
-  
-  .chaves { color: #ffd700; } /* Amarelo */
-  .chave { color: #7ee787; } /* Verde Água */
-  .string { color: #a5d6ff; } /* Azul Claro */
-  .numero { color: #ff7b72; } /* Laranja/Salmão */
+  /* 🚨 A MÁGICA DO MOBILE: Se a tela for muito pequena, ele cria 
+     uma barra de rolagem no código em vez de quebrar as palavras! */
+  overflow-x: auto; 
+  padding-bottom: 10px; /* Dá um respiro pro scroll */
 }
 
-/* Animações de Troca de Música (O Efeito Glitch/Loading) */
-.piscar {
-  filter: blur(4px) brightness(0.5);
+/* Sintaxe do JSON */
+/* =========================================
+   A NOVA SINTAXE DO JSON (BASEADA EM LINHAS)
+=========================================*/
+.codigo-json {
+  font-family: 'Courier New', Courier, monospace; 
+  font-size: 0.85rem; 
+  line-height: 1.6; 
+  color: #c9d1d9;
+  text-align: left; /* Crava na esquerda */
+  min-width: 280px; /* Garante que não amassa no celular */
+
+  /* As nossas novas linhas de código */
+  .linha {
+    white-space: nowrap; /* Proíbe o texto de quebrar de linha no meio! */
+  }
+
+  /* Os nossos "Tabs" artificiais */
+  .tab-1 { padding-left: 1.5rem; }
+  .tab-2 { padding-left: 3.0rem; }
+
+  @include tela-grande {
+    font-size: 0.95rem; /* Aumenta um pouco no desktop */
+  }
+
+  /* Cores da sintaxe */
+  .chaves { color: #ffd700; } 
+  .chave { color: #7ee787; } 
+  .string { color: #a5d6ff; } 
+  .numero { color: #ff7b72; } 
 }
-.piscar-codigo {
-  opacity: 0.3;
-  transition: opacity 0.2s;
-}
+
+/* Animações de Troca de Música (Mantidas) */
+.piscar { filter: blur(4px) brightness(0.5); }
+.piscar-codigo { opacity: 0.3; transition: opacity 0.2s; }
+
+
