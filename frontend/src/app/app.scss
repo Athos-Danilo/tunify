@@ -698,36 +698,26 @@
 
 /*-------------------- SEGUNDA SEÇÃO --------------------*/
 
-/*--- O Divisor de Onda Sonora ---*/
-.divisor-sonoro {
+/*--- O Divisor de Onda Fluida (Canvas) ---*/
+.divisor-canvas {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 40px; /* Altura da ondinha */
-  opacity: 0.6; /* Fica sutil para não gritar muito */
-  pointer-events: none; /* Pra não atrapalhar cliques */
+  height: 60px; /* Um pouco mais alto pra onda respirar */
+  pointer-events: none;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.5)); /* Brilho neon */
 }
 
-.divisor-sonoro svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+/* Modo Claro */
+.tema-claro .divisor-canvas {
+  opacity: 0.4;
+  filter: none;
 }
 
-.divisor-sonoro path {
-  stroke: var(--azul-dk, #0285ff);
-  filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.6)); /* Brilho neon premium */
-}
 
-/*--- Ajuste pro Modo Claro ---*/
-.tema-claro .divisor-sonoro {
-  opacity: 0.2;
-}
-.tema-claro .divisor-sonoro path {
-  stroke: var(--preto-lt);
-  filter: none; /* Tira o neon no modo claro pra ficar minimalista */
-}
+
 
 .secao-dados {
   position: relative;
@@ -807,14 +797,107 @@
   transform: scale(1.05);
 }
 
-/*--- Caixinha temporária pro Código ---*/
+
+
+/*=========================================
+   TERMINAL VS CODE (MOCKUP JSON)
+=========================================*/
 .mockup-vscode {
   width: 100%;
-  min-height: 300px;
-  background-color: rgba(0, 0, 0, 0.4);
+  max-width: 500px; /* Evita que fique gigante em telas grandes */
+  background-color: #0d1117; /* Fundo padrão GitHub Dark / VS Code */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  margin-left: auto;
+}
+
+.vscode-header {
+  background-color: #161b22;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mac-dots {
+  display: flex;
+  gap: 8px;
+  
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .red { background-color: #ff5f56; }
+  .yellow { background-color: #ffbd2e; }
+  .green { background-color: #27c93f; }
+}
+
+.vscode-title {
+  flex-grow: 1;
+  text-align: center;
+  color: #8b949e;
+  font-family: var(--fonte-principal, monospace);
+  font-size: 0.85rem;
+  margin-right: 44px; /* Compensa o espaço dos dots para centralizar perfeito */
+}
+
+.vscode-body {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 20px;
+
+  @include tela-grande {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.album-wrapper {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+  @include tela-grande {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+.capa-album {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.2s ease;
+}
+
+/* Sintaxe do JSON */
+.codigo-json {
+  font-family: 'Courier New', Courier, monospace; /* Fonte real de código */
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #c9d1d9;
+  
+  pre { margin: 0; }
+  
+  .chaves { color: #ffd700; } /* Amarelo */
+  .chave { color: #7ee787; } /* Verde Água */
+  .string { color: #a5d6ff; } /* Azul Claro */
+  .numero { color: #ff7b72; } /* Laranja/Salmão */
+}
+
+/* Animações de Troca de Música (O Efeito Glitch/Loading) */
+.piscar {
+  filter: blur(4px) brightness(0.5);
+}
+.piscar-codigo {
+  opacity: 0.3;
+  transition: opacity 0.2s;
 }

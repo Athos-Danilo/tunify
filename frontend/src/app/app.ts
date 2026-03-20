@@ -18,6 +18,10 @@ interface Musica {
   nome: string;
   artista: string;
   duracao: string;
+  capa: string;     
+  energia: string;  
+  valencia: string;
+  acustica: string;
 }
 
 @Component({
@@ -55,6 +59,12 @@ export class App implements OnInit, AfterViewInit {
   // ---------------------------------------------------------------------------- //
   @ViewChild('headerContainer') headerContainer!: ElementRef;
 
+  // --- VARIÁVEIS DA ONDA FLUIDA (CANVAS) <--- NOVO AQUI ---
+  @ViewChild('ondaCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  private ctx!: CanvasRenderingContext2D;
+  private tempoOnda = 0; 
+  private animationFrameId!: number;
+
   // ======> Construtor e Injeção de Dependências.
   // 1) cdr: O "despertador" manual, usado para forçar o Angular a atualizar a tela quando
   //    funções assíncronas (como setTimeout) alteram variáveis.
@@ -63,16 +73,16 @@ export class App implements OnInit, AfterViewInit {
 
   // Lista de Músicas.
   playlist: Musica[] = [
-    { nome: "Bohemian Rhapsody", artista: "Queen", duracao: "5:54" },
-    { nome: "Blinding Lights", artista: "The Weeknd", duracao: "3:20" },
-    { nome: "We can't be friends (wait for your love)", artista: "Ariana Grande", duracao: "3:48" },
-    { nome: "Shape of You", artista: "Ed Sheeran", duracao: "3:53" },
-    { nome: "Sorry", artista: "Justin Bieber", duracao: "3:20" },
-    { nome: "Billie Jean", artista: "Michael Jackson", duracao: "4:54" },
-    { nome: "As It Was", artista: "Harry Styles", duracao: "2:47" },
-    { nome: "Cirles", artista: "Post Malone", duracao: "3:35" },
-    { nome: "Chihiro", artista: "Billie Eilish", duracao: "5:03" },
-    { nome: "Opalite", artista: "Taylor Swift", duracao: "3:55" }
+    { nome: "Bohemian Rhapsody", artista: "Queen", duracao: "5:54", capa: "/albuns/bohemianrhapsody.webp", energia: "0.40", valencia: "0.22", acustica: "0.27" },
+    { nome: "Blinding Lights", artista: "The Weeknd", duracao: "3:20", capa: "/albuns/blindinglights.webp", energia: "0.73", valencia: "0.33", acustica: "0.00" },
+    { nome: "We can't be friends", artista: "Ariana Grande", duracao: "3:48", capa: "/albuns/wecantbefriends.webp", energia: "0.66", valencia: "0.59", acustica: "0.06" },
+    { nome: "Shape of You", artista: "Ed Sheeran", duracao: "3:53", capa: "/albuns/shapeofyou.webp", energia: "0.65", valencia: "0.93", acustica: "0.58" },
+    { nome: "Sorry", artista: "Justin Bieber", duracao: "3:20", capa: "/albuns/sorry.webp", energia: "0.76", valencia: "0.41", acustica: "0.08" },
+    { nome: "Billie Jean", artista: "Michael Jackson", duracao: "4:54", capa: "/albuns/billiejean.webp", energia: "0.65", valencia: "0.84", acustica: "0.02" },
+    { nome: "As It Was", artista: "Harry Styles", duracao: "2:47", capa: "/albuns/asitwas.webp", energia: "0.73", valencia: "0.66", acustica: "0.34" },
+    { nome: "Circles", artista: "Post Malone", duracao: "3:35", capa: "/albuns/circles.webp", energia: "0.76", valencia: "0.55", acustica: "0.19" },
+    { nome: "WILDFLOWER", artista: "Billie Eilish", duracao: "4:21", capa: "/albuns/wildflower.webp", energia: "0.35", valencia: "0.56", acustica: "0.35" },
+    { nome: "Fortnight (feat. Post Malone)", artista: "Taylor Swift, Post Malone", duracao: "3:48", capa: "/albuns/fortnight.webp", energia: "0.39", valencia: "0.28", acustica: "0.50" },
   ];
   
   // Controladores da música atual
@@ -96,6 +106,7 @@ export class App implements OnInit, AfterViewInit {
   // ------------------------------------------------------------------------------------ //
   ngAfterViewInit() {
     this.renderizarFundo(); 
+    this.iniciarOndaFluida();
 
     setTimeout(() => {
       this.animarTextos = true;
@@ -105,7 +116,8 @@ export class App implements OnInit, AfterViewInit {
 
   // MATA OS FANTASMAS: Quando o Angular recarregar, ele desativa o motor antigo!
   ngOnDestroy() {
-    this.simulacaoAtiva = false; 
+    this.simulacaoAtiva = false;
+    cancelAnimationFrame(this.animationFrameId); 
   }
 
   // ======> O Contador de Passar Músicas.
@@ -250,4 +262,69 @@ export class App implements OnInit, AfterViewInit {
   fazerLogin() {
     window.location.href = 'http://127.0.0.1:8000/api/v1/auth/login';
   }
+
+  // ======> MOTOR DA ONDA FLUIDA (CANVAS) <--- NOVO AQUI ---
+  // 1) Usa trigonometria (Math.sin) para desenhar uma onda orgânica.
+  // ------------------------------------------------------------------------ //
+  iniciarOndaFluida() {
+    if (!this.canvasRef) return;
+
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx = canvas.getContext('2d')!;
+    
+    canvas.width = window.innerWidth;
+    canvas.height = 60;
+
+    const desenharFrame = () => {
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, canvas.height / 2);
+
+      // O pulso que faz a onda "bater" mais forte e mais fraco
+      const batida = Math.sin(this.tempoOnda * 2.5) * 0.4 + 1; 
+
+      for (let x = 0; x < canvas.width; x++) {
+        
+        // A MÁGICA DO SILÊNCIO: Cria bolsões onde a onda zera (linha reta)
+        // O "+ 0.2" controla o tamanho do silêncio. Quanto menor, mais tempo a linha fica reta.
+        const mascaraSilencio = Math.max(0, Math.sin(x * 0.003 - this.tempoOnda * 1.2) + 0.2);
+
+        // A MÁGICA DA DIREÇÃO: Todos os "tempoOnda" usam sinal de MENOS (-) para fluir para a Direita.
+        const y = (
+            Math.sin(x * 0.015 - this.tempoOnda * 3.0) * 8  // Grave longo
+          + Math.sin(x * 0.040 - this.tempoOnda * 4.0) * 6  // Médio
+          + Math.sin(x * 0.090 - this.tempoOnda * 5.0) * 4  // Agudo 
+          + Math.sin(x * 0.200 - this.tempoOnda * 6.0) * 2  // Textura rasgada
+        ) * batida * mascaraSilencio; // Multiplicamos pela máscara para gerar as pausas!
+
+        this.ctx.lineTo(x, canvas.height / 2 + y);
+      }
+
+      this.ctx.strokeStyle = '#0285ff';
+      this.ctx.lineWidth = 2;
+      this.ctx.stroke();
+
+      this.tempoOnda += 0.02; 
+      this.animationFrameId = requestAnimationFrame(desenharFrame);
+    };
+
+    desenharFrame();
+  }
+
+  // ======> Navegação Suave (Smooth Scroll)
+  // Faz a tela deslizar de volta para o botão oficial do Spotify
+  rolarParaLogin() {
+    // Procura o botão verde lá da primeira seção
+    const btnSpotify = document.querySelector('.btn-spotify');
+    
+    if (btnSpotify) {
+      // Desliza a tela até ele e centraliza no meio da visão do usuário
+      btnSpotify.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // Fallback de segurança: se não achar o botão, rola pro topo da página
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+  
 }

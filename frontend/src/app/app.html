@@ -108,12 +108,8 @@
   
   <section class="secao-dados">
     
-    <div class="divisor-sonoro">
-      <svg viewBox="0 0 1200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,20 H150 L160,5 L170,35 L180,10 L190,30 L200,20 H450 L460,5 L470,35 L480,10 L490,30 L500,20 H750 L760,5 L770,35 L780,10 L790,30 L800,20 H1050 L1060,5 L1070,35 L1080,10 L1090,30 L1100,20 H1200" fill="none" stroke="#0285ff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
+    <canvas #ondaCanvas class="divisor-canvas"></canvas>
+      
     <div class="container-dados layout-duas-colunas">
       
       <div class="coluna-texto-dados">
@@ -122,20 +118,49 @@
         </h2>
         
         <p class="texto-dados">
-          Por trás de cada música existe um esqueleto numérico que as plataformas normais escondem de você. O Tunify acessa as camadas ocultas da sua conta para extrair os níveis exatos de <strong>Energia</strong>, <strong>Acústica</strong> e <strong>Dançabilidade (Valência)</strong> do que você ouve. 
+          Por trás de cada música que você ama, existe um esqueleto numérico fascinante. O Tunify analisa faixa por faixa, avaliando matematicamente os níveis exatos de <strong>Energia</strong>, <strong>Acústica</strong> e <strong>Dançabilidade (Valência)</strong> de cada batida.
         </p>
         <p class="texto-dados">
-          Nós mapeamos o seu cérebro musical e te entregamos a sua verdadeira <em>"Tabela Nutricional Sonora"</em> para que você nunca mais dependa do modo aleatório.
+          Ao mapear as músicas que você mais escuta, nós construímos a sua verdadeira "Tabela Nutricional Sonora". Com esses dados em mãos, você deixa o modo aleatório para trás e assume o controle total das suas reproduções musicais.
         </p>
 
-        <button class="btn-analisar">Analisar meu Histórico Agora</button>
+        <button class="btn-analisar" (click)="rolarParaLogin()">Analisar meu Histórico Agora</button>
       </div>
 
       <div class="coluna-codigo">
-        <div class="mockup-vscode">
-            <p style="color: white; text-align: center; padding: 2rem;">[ O Raio-X JSON entra aqui ]</p>
-        </div>
-      </div>
+            
+            <div class="mockup-vscode">
+              <div class="vscode-header">
+                <div class="mac-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+                <div class="vscode-title">tunify-scanner.json</div>
+              </div>
+
+              <div class="vscode-body">
+                
+                <div class="album-wrapper">
+                  <img [src]="musicaAtual.capa" alt="Capa do Álbum" class="capa-album" [ngClass]="{'piscar': btnSkipActive}">
+                </div>
+                
+                <div class="codigo-json" [ngClass]="{'piscar-codigo': btnSkipActive}">
+                  <pre><code><span class="chaves">{{ '{' }}</span>
+                    <span class="chave">"track"</span>: <span class="string">"{{ musicaAtual.nome }}"</span>,
+                    <span class="chave">"artist"</span>: <span class="string">"{{ musicaAtual.artista }}"</span>,
+                    <span class="chave">"audio_features"</span>: <span class="chaves">{{ '{' }}</span>
+                      <span class="chave">"energy"</span>: <span class="numero">{{ musicaAtual.energia }}</span>,
+                      <span class="chave">"valence"</span>: <span class="numero">{{ musicaAtual.valencia }}</span>,
+                      <span class="chave">"acousticness"</span>: <span class="numero">{{ musicaAtual.acustica }}</span>
+                    <span class="chaves">{{ '}' }}</span>
+                  <span class="chaves">{{ '}' }}</span></code></pre>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
 
     </div>
   </section>
