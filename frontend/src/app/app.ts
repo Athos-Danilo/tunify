@@ -65,7 +65,7 @@ export class App implements OnInit, AfterViewInit {
   playlist: Musica[] = [
     { nome: "Bohemian Rhapsody", artista: "Queen", duracao: "5:54" },
     { nome: "Blinding Lights", artista: "The Weeknd", duracao: "3:20" },
-    { nome: "Hotel California", artista: "Eagles", duracao: "6:30" },
+    { nome: "We can't be friends (wait for your love)", artista: "Ariana Grande", duracao: "3:48" },
     { nome: "Shape of You", artista: "Ed Sheeran", duracao: "3:53" },
     { nome: "Sorry", artista: "Justin Bieber", duracao: "3:20" },
     { nome: "Billie Jean", artista: "Michael Jackson", duracao: "4:54" },

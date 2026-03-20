@@ -13,7 +13,7 @@
 }
 
 
-/*-------------------- PRIMEIRA CHAMADA --------------------*/
+/*-------------------- PRIMEIRA SEÇÃO --------------------*/
 
 /*---------- Layout de Duas Colunas (Apenas para Telas Grandes) ----------*/
 .layout-duas-colunas {
@@ -694,4 +694,127 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/*-------------------- SEGUNDA SEÇÃO --------------------*/
+
+/*--- O Divisor de Onda Sonora ---*/
+.divisor-sonoro {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px; /* Altura da ondinha */
+  opacity: 0.6; /* Fica sutil para não gritar muito */
+  pointer-events: none; /* Pra não atrapalhar cliques */
+}
+
+.divisor-sonoro svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.divisor-sonoro path {
+  stroke: var(--azul-dk, #0285ff);
+  filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.6)); /* Brilho neon premium */
+}
+
+/*--- Ajuste pro Modo Claro ---*/
+.tema-claro .divisor-sonoro {
+  opacity: 0.2;
+}
+.tema-claro .divisor-sonoro path {
+  stroke: var(--preto-lt);
+  filter: none; /* Tira o neon no modo claro pra ficar minimalista */
+}
+
+.secao-dados {
+  position: relative;
+  z-index: 10; /* Efeito Cortina: Passa por cima do Canvas! */
+  width: 100vw;
+  min-height: 100vh;
+  background-color: var(--azul-muito-escuro-dk); /* Fundo sólido padrão */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  overflow: hidden;
+}
+
+/*--- A Mágica do Tema Claro ---*/
+.tema-claro .secao-dados {
+  background-color: var(--branco-lt);
+}
+
+.container-dados {
+  max-width: 1200px;
+  width: 100%;
+}
+
+/*--- Textos ---*/
+.titulo-dados {
+  font-family: var(--fonte-especial, sans-serif);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--branco-dk);
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  
+  @include tela-grande { font-size: 3.5rem; }
+}
+
+.tema-claro .titulo-dados {
+  color: var(--preto-lt);
+}
+
+.destaque-azul {
+  color: var(--azul-dk);
+}
+
+.texto-dados {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.1rem;
+  color: var(--branco-azulado-dk);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  
+  @include tela-grande { font-size: 1.25rem; }
+}
+
+.tema-claro .texto-dados {
+  color: var(--cinza-escuro-lt);
+}
+
+/*--- Botão Secundário ---*/
+.btn-analisar {
+  background-color: transparent;
+  color: #0285ff; /* O Azul Elétrico */
+  border: 2px solid #0285ff;
+  font-family: var(--fonte-principal);
+  font-weight: 700;
+  font-size: 18px;
+  padding: 15px 40px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-analisar:hover {
+  background-color: #0285ff;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/*--- Caixinha temporária pro Código ---*/
+.mockup-vscode {
+  width: 100%;
+  min-height: 300px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
