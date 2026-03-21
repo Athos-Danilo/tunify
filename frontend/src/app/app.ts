@@ -1,5 +1,6 @@
 // Ferramentas base do Angular.
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+// --- ADICIONADO PARA ANIMAÇÕES ---: Renderer2 e HostListener
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, Renderer2, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 // Importa ferramentas comuns, essenciais para as diretivas do HTML (como ngClass e ngFor).
@@ -31,7 +32,7 @@ interface Musica {
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit, AfterViewInit {            
+export class App implements OnInit, AfterViewInit, OnDestroy {            
   
   // ======> Estado Global da Tela.
   // 1) modoEscuro: Controla qual configuração do Canvas será carregada;
@@ -65,11 +66,17 @@ export class App implements OnInit, AfterViewInit {
   private tempoOnda = 0; 
   private animationFrameId!: number;
 
+  // --- ADICIONADO PARA ANIMAÇÕES ---
+  // Variáveis para guardar estado do scroll e os elementos que vão aparecer
+  private elementosAnimados: HTMLElement[] = [];
+  private canvasY: number = 0;
+
   // ======> Construtor e Injeção de Dependências.
   // 1) cdr: O "despertador" manual, usado para forçar o Angular a atualizar a tela quando
   //    funções assíncronas (como setTimeout) alteram variáveis.
+  // --- ADICIONADO PARA ANIMAÇÕES ---: private renderer: Renderer2
   // ---------------------------------------------------------------------------------------- //
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private renderer: Renderer2, private el: ElementRef) {}
 
   // Lista de Músicas.
   playlist: Musica[] = [
@@ -87,7 +94,7 @@ export class App implements OnInit, AfterViewInit {
   
   // Controladores da música atual
   indexMusicaAtual = 0;
-  musicaAtual: Musica = this.playlist[0]
+  musicaAtual: Musica = this.playlist[0];
 
   // Variáveis para a Timeline.
   tempoExibicao = '0:00';
@@ -107,6 +114,9 @@ export class App implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.renderizarFundo(); 
     this.iniciarOndaFluida();
+
+    // --- ADICIONADO PARA ANIMAÇÕES ---: Aciona o vigia de scroll
+    this.configurarAnimacoesScroll();
 
     setTimeout(() => {
       this.animarTextos = true;
@@ -327,4 +337,25 @@ export class App implements OnInit, AfterViewInit {
     }
   }
   
+  // ========================================================================= //
+  // --- ADICIONADO PARA ANIMAÇÕES ---: BLOCO NOVO DE EFEITOS ESPECIAIS
+  // ========================================================================= //
+
+  // EFEITO 1: Fade-in e Slide Up (IntersectionObserver)
+  private configurarAnimacoesScroll() {
+    this.elementosAnimados = Array.from(this.el.nativeElement.querySelectorAll('.animacao-fade-in'));
+    
+    const options = { root: null, rootMargin: '-10% 0px', threshold: 0.1 };
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.renderer.addClass(entry.target, 'visivel');
+          obs.unobserve(entry.target); 
+        }
+      });
+    }, options);
+
+    this.elementosAnimados.forEach(elemento => observer.observe(elemento));
+  }
 }

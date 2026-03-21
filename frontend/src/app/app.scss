@@ -1032,3 +1032,34 @@
     .numero { color: #f03a4c; } 
   }
 }
+
+/*=========================================
+   ANIMAÇÕES DE SCROLL (EFEITO 1 E 3)
+=========================================*/
+
+/*--- EFEITO 1: FADE-IN + SLIDE (Classes Iniciais) ---*/
+.animacao-fade-in {
+  opacity: 0; /* Começa invisível */
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1); /* Transição suave e gringa */
+  will-change: transform, opacity; /* Ajuda o navegador a otimizar */
+  
+  // Direções do Slide
+  &.slide-up { transform: translateY(40px); } // Vem de baixo
+  &.slide-left { transform: translateX(-40px); } // Vem da esquerda
+  &.slide-right { transform: translateX(40px); } // Vem da direita
+}
+
+/*--- A CLASSE MÁGICA (Adicionada pelo JS no Scroll) ---*/
+.animacao-fade-in.visivel {
+  opacity: 1; /* Fica visível */
+  transform: translate(0, 0) !important; /* Volta pra posição original */
+}
+
+/*--- DELAYS (Efeito Cascata no mobile) ---*/
+.delay-1 { transition-delay: 0.2s; }
+.delay-2 { transition-delay: 0.4s; }
+
+// No desktop, o terminal pode vir logo depois do texto
+@include tela-grande {
+  .coluna-codigo { transition-delay: 0.3s; }
+}
