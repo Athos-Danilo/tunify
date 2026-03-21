@@ -168,5 +168,134 @@
     </div>
   </section>
 
+  <section class="secao-playlists-v2">
+    
+    <div class="grid-background"></div>
+
+    <div class="container-playlists-v2">
+      
+      <div class="cabecalho-fluxo animacao-fade-in slide-up">
+        <h2 class="titulo-fluxo-v2">
+          <span class="alinhar-esq-v2">Do <span class="txt-caos-v2">caos</span> do aleatório</span>
+          <span class="alinhar-dir-v2">para o <span class="txt-flow-v2">Flow perfeito.</span></span>
+        </h2>
+      </div>
+
+      <div class="cockpit-dados animacao-fade-in delay-1">
+        
+        <div class="painel-analise painel-caos slide-left">
+          <div class="status-header">
+            <span class="ponto-status status-ruim"></span>
+            <span class="label-status ruim">STATUS: Instável</span>
+          </div>
+          <h4 class="titulo-painel">Modo Aleatório</h4>
+          
+          <div class="visual-caos">
+            <div class="data-points-caos">
+              <span class="ponto-dado" style="top: 20%; left: 10%;"></span>
+              <span class="ponto-dado" style="top: 70%; left: 20%;"></span>
+              <span class="ponto-dado" style="top: 10%; left: 35%;"></span>
+              <span class="ponto-dado" style="top: 85%; left: 50%;"></span>
+              <span class="ponto-dado" style="top: 40%; left: 65%;"></span>
+              <span class="ponto-dado" style="top: 90%; left: 80%;"></span>
+              <span class="ponto-dado" style="top: 30%; left: 95%;"></span>
+            </div>
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2 line-caos">
+              <path d="M0,50 L40,80 L80,20 L120,90 L160,10 L200,70 L240,30 L280,85 L320,15 L360,60 L400,25 L450,75 L500,50" />
+            </svg>
+          </div>
+          <p class="legenda-painel">Quebras bruscas de energia e ritmo. Vibe inconsistente.</p>
+        </div>
+
+        <div class="divisor-processamento">
+          <div class="linha-vertical"></div>
+          <div class="circulo-processo">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/></svg>
+          </div>
+        </div>
+
+        <div class="painel-analise painel-flow slide-right delay-2">
+          <div class="status-header">
+            <span class="ponto-status status-boa pulsando"></span>
+            <span class="label-status boa">STATUS: Otimizado</span>
+          </div>
+          <h4 class="titulo-painel">O Flow do Tunify</h4>
+          
+          <div class="visual-flow">
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2 line-flow">
+              <defs>
+                <linearGradient id="gradiente-neon" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#1db954;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#02d3ff;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path d="M0,80 Q125,80 250,50 T500,20" stroke="url(#gradiente-neon)"/>
+            </svg>
+            <div class="data-markers-flow">
+              <span class="marcador" style="left: 10%; bottom: 18%;"></span>
+              <span class="marcador" style="left: 30%; bottom: 35%;"></span>
+              <span class="marcador" style="left: 50%; bottom: 50%;"></span>
+              <span class="marcador" style="left: 70%; bottom: 65%;"></span>
+              <span class="marcador" style="left: 90%; bottom: 80%;"></span>
+            </div>
+          </div>
+          <p class="legenda-painel">Progressão suave e inteligente. Vibe mantida em todas as faixas.</p>
+        </div>
+
+      </div>
+
+      <div class="stack-vibes animacao-fade-in slide-up delay-2">
+        <h3 class="titulo-stack">Sua jornada, <span class="txt-special">sua vibe.</span></h3>
+        
+        <div class="wrapper-cards-v2">
+          
+          <div class="card-vibe-3d vibe-treino">
+            <div class="card-bg-image" style="background-image: url('/cards/vibe-treino.webp');"></div>
+            <div class="card-content-v2">
+              <div class="card-icon-v2">🏋️‍♂️</div>
+              <div class="card-meta-v2">
+                <h4>Treino Pesado</h4>
+                <p>Energia cravada em 0.90+</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-vibe-3d vibe-foco">
+            <div class="card-bg-image" style="background-image: url('/cards/vibe-foco.webp');"></div>
+            <div class="card-content-v2">
+              <div class="card-icon-v2">🌧️</div>
+              <div class="card-meta-v2">
+                <h4>Foco Absoluto</h4>
+                <p>Acústica 0.85, sem distrações</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-vibe-3d vibe-estrada">
+            <div class="card-bg-image" style="background-image: url('/cards/vibe-estrada.webp');"></div>
+            <div class="card-content-v2">
+              <div class="card-icon-v2">🚗</div>
+              <div class="card-meta-v2">
+                <h4>Estrada à Noite</h4>
+                <p>Valência e progressão perfeitas</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="cta-final-v2 animacao-fade-in slide-up delay-3">
+        <button class="btn-spotify btn-pulsando-neon" (click)="fazerLogin()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.72 1.621.539.3.719 1.02.419 1.56-.239.54-.959.72-1.559.3z"/>
+          </svg>
+          Criar minha Jornada Sonora
+        </button>
+      </div>
+
+    </div>
+  </section>
+
 </main> 
 <router-outlet></router-outlet>

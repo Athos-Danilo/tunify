@@ -1072,3 +1072,457 @@
 @include tela-grande {
   .coluna-codigo { transition-delay: 0.3s; }
 }
+
+
+/*---------------------------------------- TERCEIRA SEÇÃO ----------------------------------------*/
+
+/*=========================================================================
+   SEÇÃO 3: LAB DE FLOW E PLAYLISTS 3D (O CLÍMAX) <<< NOVO >>>
+=========================================================================*/
+.secao-playlists-v2 {
+  position: relative;
+  width: 100%;
+  padding: 6rem 1rem; /* Mobile first: Respiro nas laterais */
+  background-color: var(--azul-muito-escuro-dk);
+  overflow: hidden; /* Garante que nada corte pro lado no celular */
+  box-sizing: border-box;
+
+  @include tela-media { padding: 8rem 2rem; }
+  @include tela-grande { padding: 10rem 2rem; }
+}
+
+.tema-claro .secao-playlists-v2 { background-color: var(--branco-cinza-lt); }
+
+/*--- 1. Grid Técnico de Fundo (A vibe laboratório) ---*/
+.grid-background {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  
+  // Cria um grid sutil de linhas finas
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px; /* Tamanho dos quadrados do grid */
+  background-position: center;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tema-claro .grid-background {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  opacity: 1;
+}
+
+.container-playlists-v2 {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 5; /* Fica acima do grid */
+  display: flex;
+  flex-direction: column;
+  gap: 4rem; /* Espaço entre os blocos no mobile */
+
+  @include tela-grande { gap: 6rem; }
+}
+
+/*--- 2. Cabeçalho Cascata (Estilo Seção 1) ---*/
+.cabecalho-fluxo {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.titulo-fluxo-v2 {
+  font-family: var(--fonte-principal);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--branco-dk);
+  line-height: 1.1;
+  display: flex;
+  flex-direction: column;
+  max-width: 24rem; /* Centraliza no mobile */
+  margin: 0 auto;
+
+  span { display: block; }
+  
+  .alinhar-esq-v2 { align-self: flex-start; text-align: left; }
+  .alinhar-dir-v2 { align-self: flex-end; text-align: right; }
+
+  .txt-caos-v2 { color: #ff5f56; font-style: italic; text-decoration: line-through; }
+  .txt-flow-v2 { color: var(--azul-dk); font-family: var(--fonte-especial); font-size: 2.6rem; }
+
+  @include tela-media {
+    font-size: 3.2rem;
+    max-width: 32rem;
+    .txt-flow-v2 { font-size: 3.8rem; }
+  }
+
+  @include tela-grande {
+    font-size: 4rem;
+    max-width: 100%; /* Ocupa a largura total no desktop */
+    margin-bottom: 2rem;
+    
+    // No desktop, volta a ser uma linha cravada nas pontas interatindo com o gráfico
+    flex-direction: row;
+    justify-content: center;
+    gap: 3rem;
+    .alinhar-esq-v2, .alinhar-dir-v2 { align-self: center; text-align: center; }
+  }
+}
+
+.tema-claro .titulo-fluxo-v2 { color: var(--preto-lt); }
+
+/*--- 3. Cockpit Analítico de Dados (O Novo Gráfico) ---*/
+.cockpit-dados {
+  width: 100%;
+  display: flex;
+  flex-direction: column; /* Mobile first: Um embaixo do outro */
+  gap: 2.5rem;
+  box-sizing: border-box;
+
+  @include tela-grande {
+    flex-direction: row; /* Desktop: Lado a lado */
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+.painel-analise {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.tema-claro .painel-analise {
+  background-color: var(--branco-azulado-lt);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/*--- Status Header ---*/
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.ponto-status {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.status-ruim { background-color: #ff5f56; }
+.status-boa { background-color: var(--verde-spotify-dk); }
+
+.label-status {
+  font-family: var(--fonte-principal);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.label-status.ruim { color: #ff5f56; }
+.label-status.boa { color: var(--verde-spotify-dk); }
+
+.titulo-painel {
+  font-family: var(--fonte-principal);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--branco-dk);
+  margin: 0 0 1.5rem 0;
+}
+.tema-claro .titulo-painel { color: var(--preto-lt); }
+
+/*--- Visuais dos Gráficos ---*/
+.visual-caos, .visual-flow {
+  width: 100%;
+  height: 120px; /* Altura da área de dados */
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.linha-svg-v2 {
+  width: 100%; height: 100%;
+  overflow: visible; /* Crucial para o drop-shadow */
+  
+  path {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/*--- O Caos ---*/
+.line-caos { stroke: #ff5f56; opacity: 0.5; }
+
+.data-points-caos {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.ponto-dado {
+  position: absolute;
+  width: 4px; height: 4px;
+  background-color: rgba(255, 95, 86, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 95, 86, 0.4);
+}
+
+/*--- O Flow Neon Pulsante ---*/
+.line-flow {
+  // 🚨 Oefeito Bloom/Glow Neon: Cria uma luz difusa
+  filter: drop-shadow(0 0 10px rgba(30, 215, 96, 0.7)) 
+          drop-shadow(0 0 20px rgba(30, 215, 96, 0.4));
+}
+
+.data-markers-flow {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.marcador {
+  position: absolute;
+  width: 6px; height: 6px;
+  background-color: var(--branco-dk);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--branco-dk);
+  opacity: 0.8;
+}
+
+.legenda-painel {
+  font-family: var(--fonte-principal);
+  font-size: 0.85rem;
+  color: var(--cinza-claro-dk);
+  line-height: 1.5;
+  margin: 0;
+}
+.tema-claro .legenda-painel { color: var(--cinza-escuro-lt); }
+
+/*--- O Divisor (O Processamento) ---*/
+.divisor-processamento {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 40px; /* Mobile */
+
+  @include tela-grande {
+    width: 60px; height: auto;
+    flex-direction: column;
+    margin-top: -10rem;
+  }
+}
+
+.linha-vertical {
+  position: absolute;
+  width: 100%; height: 1px; /* Mobile */
+  background-color: rgba(255, 255, 255, 0.05);
+
+  @include tela-grande {
+    width: 1px; height: 150px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent);
+  }
+}
+
+.circulo-processo {
+  width: 36px; height: 36px;
+  background-color: rgba(2, 133, 255, 0.1);
+  border: 1px solid rgba(2, 133, 255, 0.2);
+  border-radius: 50%;
+  color: var(--azul-dk);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+  backdrop-filter: blur(4px);
+  animation: girarProcesso 4s linear infinite;
+
+  svg { width: 20px; height: 20px; }
+}
+
+/*--- 4. Cards de Vibe Imersivos ---*/
+.stack-vibes {
+  width: 100%;
+  text-align: center;
+  // 🚨 Habilita a perspectiva 3D para o Stack
+  perspective: 1200px; 
+}
+
+.titulo-stack {
+  font-family: var(--fonte-principal);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--branco-dk);
+  margin-bottom: 3rem;
+
+  @include tela-media { font-size: 2.2rem; }
+}
+.tema-claro .titulo-stack { color: var(--preto-lt); }
+
+.wrapper-cards-v2 {
+  display: flex;
+  flex-direction: column; /* Mobile first: Empilhado verticalmente */
+  gap: 2rem;
+  width: 100%;
+  align-items: center; /* Centraliza os cards no mobile */
+  box-sizing: border-box;
+
+  @include tela-grande {
+    flex-direction: row; /* Desktop: O "leque" 3D */
+    justify-content: center;
+    gap: 0; /* Remove o gap pra sobrepor */
+    position: relative;
+    height: 350px; /* Altura da área do stack */
+  }
+}
+
+/*--- Estilo Base do Card Imersivo V2 ---*/
+.card-vibe-3d {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* Garante que não estoure no mobile */
+  height: 220px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); /* Transição suave e gringa */
+  
+  // O gradiente base imersivo que envolve o card
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /*--- Imagem de Fundo (Imersiva e Desfocada) ---*/
+  .card-bg-image {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(2px) brightness(0.4); /* Escurece e desfoca a imagem */
+    z-index: 1;
+    transition: all 0.5s ease;
+  }
+
+  /*--- Conteúdo (Fica acima da imagem) ---*/
+  .card-content-v2 {
+    position: relative;
+    z-index: 5;
+    width: 100%; height: 100%;
+    padding: 2rem 1.5rem;
+    display: flex;
+    align-items: flex-end; /* Conteúdo na base do card */
+    box-sizing: border-box;
+    gap: 1rem;
+    
+    // Gradiente de cor de base que se mistura com a imagem
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+  }
+
+  .card-icon-v2 { font-size: 3rem; flex-shrink: 0; }
+  
+  .card-meta-v2 { text-align: left; }
+  
+  .card-meta-v2 h4 {
+    font-family: var(--fonte-principal);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--branco-dk);
+    margin: 0 0 5px 0;
+  }
+  
+  .card-meta-v2 p {
+    font-family: var(--fonte-principal);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+}
+
+/*--- GRADIENTES E CORES ESPECÍFICAS DE CADA VIBE ---*/
+.vibe-treino {
+  // Borda neon Deep Red
+  border-color: rgba(255, 95, 86, 0.2);
+  .card-content-v2 { background: linear-gradient(to top, rgba(255, 95, 86, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  &:hover { box-shadow: 0 15px 40px rgba(255, 95, 86, 0.3); }
+}
+
+.vibe-foco {
+  // Borda neon Deep Blue
+  border-color: rgba(2, 133, 255, 0.2);
+  .card-content-v2 { background: linear-gradient(to top, rgba(2, 133, 255, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  &:hover { box-shadow: 0 15px 40px rgba(2, 133, 255, 0.3); }
+}
+
+.vibe-estrada {
+  // Borda neon Deep Purple
+  border-color: rgba(183, 108, 237, 0.2);
+  .card-content-v2 { background: linear-gradient(to top, rgba(183, 108, 237, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  &:hover { box-shadow: 0 15px 40px rgba(183, 108, 237, 0.3); }
+}
+
+/*--- A LÓGICA DO STACK 3D NO DESKTOP ---*/
+@include tela-grande {
+  .card-vibe-3d {
+    position: absolute;
+    width: 280px;
+    height: 200px;
+    backface-visibility: hidden; /* Evita falhas no render 3D */
+    
+    // Efeito de reflexo de luz
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 40%);
+      z-index: 6;
+      pointer-events: none;
+    }
+  }
+
+  // Card 1: Vibe Treino (Fica à esquerda, girado pra dentro)
+  .vibe-treino {
+    left: calc(50% - 380px); /* Posiciona em relação ao centro */
+    transform: rotateY(30deg) translateZ(0);
+    z-index: 10;
+  }
+
+  // Card 2: Vibe Foco (Fica no centro, cravado e mais pra frente)
+  .vibe-foco {
+    left: calc(50% - 140px); /* Posiciona no centro */
+    transform: rotateY(0) translateZ(100px); /* Traz pra frente */
+    z-index: 20; /* Fica acima dos outros */
+  }
+
+  // Card 3: Vibe Estrada (Fica à direita, girado pra dentro)
+  .vibe-estrada {
+    left: calc(50% + 100px); /* Posiciona em relação ao centro */
+    transform: rotateY(-30deg) translateZ(0);
+    z-index: 10;
+  }
+}
+
+/*--- 5. CTA Final ---*/
+.cta-final-v2 {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Animações e Status Gerais */
+@keyframes girarProcesso { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.pulsando { animation: pulsoStatus 1.5s infinite; }
+@keyframes pulsoStatus { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* Botão Neon Pulsante */
+.btn-pulsando-neon {
+  animation: pulsoNeon 2.5s infinite;
+}
+@keyframes pulsoNeon {
+  0% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(30, 215, 96, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0); }
+}
