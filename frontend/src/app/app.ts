@@ -82,7 +82,7 @@ export class App implements OnInit, AfterViewInit {
     { nome: "As It Was", artista: "Harry Styles", duracao: "2:47", capa: "/albuns/asitwas.webp", energia: "0.73", valencia: "0.66", acustica: "0.34" },
     { nome: "Circles", artista: "Post Malone", duracao: "3:35", capa: "/albuns/circles.webp", energia: "0.76", valencia: "0.55", acustica: "0.19" },
     { nome: "WILDFLOWER", artista: "Billie Eilish", duracao: "4:21", capa: "/albuns/wildflower.webp", energia: "0.35", valencia: "0.56", acustica: "0.35" },
-    { nome: "Fortnight (feat. Post Malone)", artista: "Taylor Swift, Post Malone", duracao: "3:48", capa: "/albuns/fortnight.webp", energia: "0.39", valencia: "0.28", acustica: "0.50" },
+    { nome: "Cruel Summer", artista: "Taylor Swift", duracao: "2:58", capa: "/albuns/cruelsummer.webp", energia: "0.70", valencia: "0.56", acustica: "0.11" },
   ];
   
   // Controladores da música atual

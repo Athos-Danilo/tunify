@@ -877,13 +877,16 @@
 /*--- Terminal do VS Code---*/
 .mockup-vscode {
   width: 100%;
-  max-width: 500px; 
+  max-width: 380px; 
+  height: 520px; 
   background-color: #0d1117; 
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   margin: 0 auto; 
+  display: flex;
+  flex-direction: column;
 }
 
 .vscode-header {
@@ -892,6 +895,7 @@
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0; 
 }
 
 .mac-dots {
@@ -923,6 +927,8 @@
   padding: 20px;
   gap: 20px;
   align-items: center; 
+  flex-grow: 1; 
+  justify-content: center; 
 }
 
 /*--- Imagens Albuns---*/
@@ -957,7 +963,7 @@
 .dados-musica-wrapper {
   width: 100%; 
   display: flex;
-  justify-content: flex-start;
+  justify-content: center; 
   overflow-x: auto; 
   padding-bottom: 10px; 
 }
@@ -968,7 +974,8 @@
   line-height: 1.6; 
   color: #c9d1d9;
   text-align: left; 
-  min-width: 280px; 
+  width: auto; 
+  min-width: 250px; 
 
   .linha {
     white-space: nowrap; 
@@ -992,3 +999,36 @@
 .piscar { filter: blur(4px) brightness(0.5); }
 .piscar-codigo { opacity: 0.3; transition: opacity 0.2s; }
 
+// Terminal Vs Code <<< Modo Claro >>>
+.tema-claro {
+  
+  .mockup-vscode {
+    background-color: #e6e6e7; 
+    border: 1px solid var(--cinza-claro-lt); 
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); 
+  }
+
+  .vscode-header {
+    background-color: var(--branco-escuro-lt); 
+    border-bottom: 1px solid var(--cinza-claro-lt);
+  }
+
+  .vscode-title {
+    color: var(--cinza-escuro-lt); 
+    font-weight: 500;
+  }
+
+  .album-wrapper {
+    border: 1px solid var(--cinza-claro-lt);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+  }
+
+  .codigo-json {
+    color: var(--cinza-escuro-lt); 
+
+    .chaves { color: var(--cinza-escuro-lt); font-weight: bold; } 
+    .chave { color: #0451a8; } 
+    .string { color: #24ac44; } 
+    .numero { color: #f03a4c; } 
+  }
+}
