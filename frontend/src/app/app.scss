@@ -13,7 +13,7 @@
 }
 
 
-/*-------------------- PRIMEIRA SEÇÃO --------------------*/
+/*---------------------------------------- PRIMEIRA SEÇÃO ----------------------------------------*/
 
 /*---------- Layout de Duas Colunas (Apenas para Telas Grandes) ----------*/
 .layout-duas-colunas {
@@ -696,10 +696,10 @@
   }
 }
 
-/*-------------------- SEGUNDA SEÇÃO --------------------*/
-/*-------------------- SEGUNDA SEÇÃO (PEGADA NERD) --------------------*/
+/*---------------------------------------- SEGUNDA SEÇÃO ----------------------------------------*/
 
-/*--- O Divisor de Onda Fluida (Canvas) ---*/
+/*---------- Layout da Seção ----------*/
+/*--- Divisor (Onda Fluida) ---*/
 .divisor-canvas {
   position: absolute;
   top: 0;
@@ -711,85 +711,76 @@
   filter: drop-shadow(0 0 6px rgba(2, 133, 255, 0.5));
 }
 
-.tema-claro .divisor-canvas { opacity: 0.4; filter: none; }
-
-// ===> A SEÇÃO PAI (Padrão de Margens da Primeira Seção)
-/*--- A SEÇÃO PAI ---*/
 .secao-dados {
   position: relative;
   z-index: 10;
-  width: 100%; /* 🚨 MUDE DE 100vw PARA 100% */
+  width: 100%; 
   min-height: 100vh;
   background-color: var(--azul-muito-escuro-dk);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem; /* Esse padding agora não vai mais estourar a tela */
+  padding: 4rem 2rem; 
   overflow: hidden;
-  box-sizing: border-box; /* 🚨 A MÁGICA AQUI: Obriga o padding a ficar para dentro! */
+  box-sizing: border-box; 
 }
 
-.tema-claro .secao-dados { background-color: var(--branco-lt); }
+// Fundo <<< Modo Claro >>>
+.tema-claro .secao-dados { 
+  background-color: var(--branco-lt); 
+}
 
-/*--- O CONTAINER CENTRAL ---*/
+/*--- Container da Tela ---*/
 .container-dados {
   width: 100%;
   max-width: 1200px;
   box-sizing: border-box;
-  
-  /* 🚨 OVERRIDE DO MOBILE: Quebra a classe 'layout-duas-colunas' no celular */
   display: flex;
-  flex-direction: column; /* Força o texto e o terminal a ficarem um embaixo do outro */
+  flex-direction: column; 
   align-items: center;
-  gap: 3rem; /* Dá um respiro entre o texto e o terminal */
+  gap: 3rem; 
 
   @include tela-grande {
-    flex-direction: row; /* No desktop volta a ficar lado a lado lindamente */
+    flex-direction: row; 
     align-items: center;
-    gap: 2rem;
+    gap: 5rem;
   }
 }
 
-// Colunas Auxiliares
+/*--- Colunas Auxiliares ---*/
 .coluna-texto-dados, .coluna-codigo {
-  width: 100%; /* No mobile ocupam tudo */
-  max-width: 600px; /* Evita que o texto estique muito */
+  width: 100%; 
+  max-width: 600px; 
 }
 
-/* Garante que a coluna de texto não force a barra */
 .coluna-texto-dados {
   width: 100%;
   box-sizing: border-box;
 }
 
 .coluna-codigo {
-  // Centraliza o terminal em mobile
   display: flex;
   justify-content: center;
 
   @include tela-grande {
-    justify-content: flex-end; /* Manda o terminal pra direita no desktop */
+    justify-content: flex-end; 
   }
 }
 
-/*--- Textos (Ajuste de Tamanho Mobile) ---*/
+/*---------- Coluna Textos ----------*/
 .titulo-dados {
   font-family: var(--fonte-principal, sans-serif); 
-  
-  // --- CORREÇÃO MOBILE-FIRST ---
-  font-size: 1.8rem; /* Tamanho confortável pra celular */
-  
+  font-size: 1.8rem; 
   font-weight: 600;
   color: var(--branco-dk);
   line-height: 1.2;
   margin-bottom: 1.5rem;
-  text-align: inherit; /* Segue o text-align do pai */
+  text-align: inherit; 
 
-  /* Spans Especiais herdando o mobile-first */
   .txt-special-azul {
     font-family: var(--fonte-especial, sans-serif);
     font-weight: 700;
-    font-size: 2rem; /* Mantendo a proporção */
+    font-size: 2rem; 
     color: var(--azul-dk);
   }
   
@@ -799,28 +790,43 @@
     font-weight: 500;
   }
 
-  // --- ESCALONAMENTO RESPONSIVO ---
   @include tela-media {
+    text-align: left;
     font-size: 2.2rem;
-    .txt-special-azul { font-size: 2.5rem; }
+
+    .txt-special-azul { 
+      font-size: 2.5rem; 
+    }
   }
 
   @include tela-grande { 
-    font-size: 2.8rem; /* Desktop não precisa ser gigante */
-    .txt-special-azul { font-size: 3.1rem; }
+    text-align: inherit;
+    font-size: 2.8rem; 
+
+    .txt-special-azul { 
+      font-size: 3.1rem; 
+    }
   } 
 }
 
 // Título <<< Modo Claro >>>
-.tema-claro .titulo-dados { font-weight: 700; color: var(--preto-lt); }
-.tema-claro .txt-special-azul { color: var(--azul-lt); }
-.tema-claro .txt-special { font-style: italic; font-weight: 600; }
+.tema-claro .titulo-dados { 
+  font-weight: 700; 
+  color: var(--preto-lt); 
+}
+.tema-claro .txt-special-azul { 
+  color: var(--azul-lt); 
+}
+.tema-claro .txt-special { 
+  font-style: italic; 
+  font-weight: 600; 
+}
 
 .texto-dados {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.0rem; /* mobile-first */
+  font-size: 1.0rem; 
   font-weight: 300;
-  text-align: inherit; /* Segue o text-align do pai */
+  text-align: justify; 
   color: var(--branco-azulado-dk);
   line-height: 1.6;
   margin-bottom: 1.5rem;
@@ -828,12 +834,13 @@
   @include tela-media { font-size: 1.15rem; }
   @include tela-grande { font-size: 1.25rem; }
 
-  // Os destaques Strong responsivos
+
   strong {
     color: var(--verde-spotify-dk);
-    font-size: 1.05rem; /* mobile-first */
+    font-size: 1.05rem; 
     font-weight: 500;
     font-style: italic;
+
     @include tela-media { font-size: 1.2rem; }
     @include tela-grande { font-size: 1.3rem; }
   }
@@ -855,10 +862,8 @@
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
-  
-  /* 🚨 A MÁGICA DA CENTRALIZAÇÃO AQUI 🚨 */
-  display: block; /* Transforma em bloco independente */
-  margin: 2rem auto 0 auto; /* Top: 2rem, Direita: auto, Baixo: 0, Esquerda: auto */
+  display: block; 
+  margin: 2rem auto 0 auto; 
 }
 
 .btn-analisar:hover {
@@ -867,26 +872,23 @@
   transform: scale(1.05);
 }
 
-/*=========================================
-   TERMINAL VS CODE (RESPONSIVO E VERTICAL)
-=========================================*/
+/*---------- Coluna Código ----------*/
+
+/*--- Terminal do VS Code---*/
 .mockup-vscode {
   width: 100%;
-  max-width: 500px; /* Mantemos o tamanho máximo pra não estourar */
-  background-color: #0d1117; /* Fundo padrão GitHub Dark / VS Code */
+  max-width: 500px; 
+  background-color: #0d1117; 
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  
-  /* 🚨 CORREÇÃO DO ALINHAMENTO GERAL 🚨 */
-  // Garante que o terminal como um todo fique centralizado na coluna da direita
   margin: 0 auto; 
 }
 
 .vscode-header {
   background-color: #161b22;
-  padding: 10px 14px; /* Ajuste mobile-first */
+  padding: 10px 14px; 
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -894,56 +896,11 @@
 
 .mac-dots {
   display: flex;
-  gap: 6px; /* Ajuste mobile-first */
+  gap: 6px; 
   
   .dot {
-    width: 10px; /* Ajuste mobile-first */
-    height: 10px; /* Ajuste mobile-first */
-    border-radius: 50%;
-  }
-  .red { background-color: #ff5f56; }
-  .yellow { background-color: #ffbd2e; }
-  .green { background-color: #27c93f; }
-}
-
-.vscode-title {
-  flex-grow: 1;
-  text-align: center;
-  color: #8b949e;
-  font-family: var(--fonte-principal, monospace);
-  font-size: 0.8rem; /* Ajuste mobile-first */
-  margin-right: 32px; /* Ajuste mobile-first */
-}
-
-/*=========================================
-   TERMINAL VS CODE (MOCKUP JSON)
-=========================================*/
-.mockup-vscode {
-  width: 100%;
-  max-width: 500px; /* Mantemos o tamanho máximo pra não estourar */
-  background-color: #0d1117; /* Fundo padrão GitHub Dark / VS Code */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  margin-left: auto;
-}
-
-.vscode-header {
-  background-color: #161b22;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mac-dots {
-  display: flex;
-  gap: 8px;
-  
-  .dot {
-    width: 12px;
-    height: 12px;
+    width: 10px; 
+    height: 10px; 
     border-radius: 50%;
   }
   .red { background-color: #ff5f56; }
@@ -957,31 +914,35 @@
   color: #8b949e;
   font-family: var(--fonte-principal, monospace);
   font-size: 0.85rem;
-  margin-right: 44px; /* Compensa o espaço dos dots para centralizar perfeito */
+  margin-right: 44px; 
 }
 
 .vscode-body {
   display: flex;
-  flex-direction: column; /* VERTICAL EM QUALQUER TELA */
+  flex-direction: column; 
   padding: 20px;
   gap: 20px;
-  align-items: center; /* Centraliza a foto */
-  
-  /* 🚨 Removemos qualquer @include tela-grande que tinha aqui para garantir que fique sempre empilhado! */
+  align-items: center; 
 }
 
+/*--- Imagens Albuns---*/
 .album-wrapper {
   flex-shrink: 0;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 
+  @include tela-media {
+    width: 170px;
+    height: 170px;
+  }
+
   @include tela-grande {
-    width: 140px;
-    height: 140px;
+    width: 190px;
+    height: 190px;
   }
 }
 
@@ -992,54 +953,42 @@
   transition: filter 0.2s ease;
 }
 
-// =========================================
-// 🚨 NOVO WRAPPER DE DADOS MUSICAIS 🚨
-// =========================================
+/*--- JSON do Spotify ---*/
 .dados-musica-wrapper {
   width: 100%; 
   display: flex;
   justify-content: flex-start;
-  
-  /* 🚨 A MÁGICA DO MOBILE: Se a tela for muito pequena, ele cria 
-     uma barra de rolagem no código em vez de quebrar as palavras! */
   overflow-x: auto; 
-  padding-bottom: 10px; /* Dá um respiro pro scroll */
+  padding-bottom: 10px; 
 }
 
-/* Sintaxe do JSON */
-/* =========================================
-   A NOVA SINTAXE DO JSON (BASEADA EM LINHAS)
-=========================================*/
 .codigo-json {
   font-family: 'Courier New', Courier, monospace; 
   font-size: 0.85rem; 
   line-height: 1.6; 
   color: #c9d1d9;
-  text-align: left; /* Crava na esquerda */
-  min-width: 280px; /* Garante que não amassa no celular */
+  text-align: left; 
+  min-width: 280px; 
 
-  /* As nossas novas linhas de código */
   .linha {
-    white-space: nowrap; /* Proíbe o texto de quebrar de linha no meio! */
+    white-space: nowrap; 
   }
 
-  /* Os nossos "Tabs" artificiais */
   .tab-1 { padding-left: 1.5rem; }
   .tab-2 { padding-left: 3.0rem; }
 
   @include tela-grande {
-    font-size: 0.95rem; /* Aumenta um pouco no desktop */
+    font-size: 0.95rem; 
   }
 
-  /* Cores da sintaxe */
+  /*--- Cores da sintaxe ---*/
   .chaves { color: #ffd700; } 
   .chave { color: #7ee787; } 
   .string { color: #a5d6ff; } 
   .numero { color: #ff7b72; } 
 }
 
-/* Animações de Troca de Música (Mantidas) */
+/*--- Animações de Troca de Música ---*/
 .piscar { filter: blur(4px) brightness(0.5); }
 .piscar-codigo { opacity: 0.3; transition: opacity 0.2s; }
-
 
