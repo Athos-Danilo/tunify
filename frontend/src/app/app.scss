@@ -1067,6 +1067,7 @@
 /*--- DELAYS (Efeito Cascata no mobile) ---*/
 .delay-1 { transition-delay: 0.2s; }
 .delay-2 { transition-delay: 0.4s; }
+.delay-3 { transition-delay: 0.6s; } 
 
 // No desktop, o terminal pode vir logo depois do texto
 @include tela-grande {
@@ -1076,10 +1077,7 @@
 
 /*---------------------------------------- TERCEIRA SEÇÃO ----------------------------------------*/
 
-/*=========================================================================
-   SEÇÃO 3: LAB DE FLOW E PLAYLISTS 3D (O CLÍMAX) <<< NOVO >>>
-=========================================================================*/
-.secao-playlists-v2 {
+.secao-playlists {
   position: relative;
   width: 100%;
   padding: 6rem 1rem; /* Mobile first: Respiro nas laterais */
@@ -1091,7 +1089,7 @@
   @include tela-grande { padding: 10rem 2rem; }
 }
 
-.tema-claro .secao-playlists-v2 { background-color: var(--branco-cinza-lt); }
+.tema-claro .secao-playlists { background-color: var(--branco-lt); }
 
 /*--- 1. Grid Técnico de Fundo (A vibe laboratório) ---*/
 .grid-background {
@@ -1100,23 +1098,27 @@
   
   // Cria um grid sutil de linhas finas
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(var(--azul-escuro-dk) 1px, transparent 1px),
+    linear-gradient(90deg, var(--azul-escuro-dk) 1px, transparent 1px);
   background-size: 50px 50px; /* Tamanho dos quadrados do grid */
   background-position: center;
-  opacity: 0.6;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 1;
 }
 
 .tema-claro .grid-background {
+  // Grudamos o parêntese no nome da função (sintaxe correta)
   background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-  opacity: 1;
+    linear-gradient(var(--cinza-claro-lt) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cinza-claro-lt) 1px, transparent 1px);
+  
+  // Como o fundo é branco e as linhas são verdes, 
+  // pode deixar o opacity em 1 pra elas ficarem bem visíveis.
+  opacity: 0.3; 
 }
 
-.container-playlists-v2 {
+.container-playlists {
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
@@ -1130,49 +1132,100 @@
 
 /*--- 2. Cabeçalho Cascata (Estilo Seção 1) ---*/
 .cabecalho-fluxo {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.titulo-fluxo-v2 {
-  font-family: var(--fonte-principal);
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--branco-dk);
-  line-height: 1.1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  max-width: 24rem; /* Centraliza no mobile */
-  margin: 0 auto;
+  align-items: center;
+  box-sizing: border-box;
+  margin-bottom: 3rem; /* Espaço entre o texto e os gráficos */
+}
+
+/*--- O Título Principal ---*/
+.titulo-fluxo-figma {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 2.2rem; 
+  font-weight: 600;
+  color: var(--branco-dk);
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column; 
+  align-items: center; /* Mobile: Tudo centralizado */
+  width: 100%;
+  margin: 0 auto 1.5rem auto;
 
   span { display: block; }
-  
-  .alinhar-esq-v2 { align-self: flex-start; text-align: left; }
-  .alinhar-dir-v2 { align-self: flex-end; text-align: right; }
 
-  .txt-caos-v2 { color: #ff5f56; font-style: italic; text-decoration: line-through; }
-  .txt-flow-v2 { color: var(--azul-dk); font-family: var(--fonte-especial); font-size: 2.6rem; }
-
-  @include tela-media {
-    font-size: 3.2rem;
-    max-width: 32rem;
-    .txt-flow-v2 { font-size: 3.8rem; }
+  /* A palavra "caos" riscada e branca */
+  .txt-caos-figma {
+    font-family: var(--fonte-especial, sans-serif);
+    font-weight: 800;
+    font-style: italic;
+    color: var(--branco-dk);
+    display: inline-block;
   }
 
+  /* O "Flow Perfeito" Neon */
+  .txt-flow-figma {
+    font-family: var(--fonte-especial, sans-serif);
+    color: var(--azul-dk);
+    font-size: 2.6rem;
+    font-weight: 700;
+    display: inline-block;
+  }
+
+  @include tela-media {
+    font-size: 2.8rem;
+    .txt-flow-figma { font-size: 3.2rem; }
+  }
+
+  /* 🚨 A MÁGICA DO DESKTOP (Efeito Degrau) 🚨 */
   @include tela-grande {
-    font-size: 4rem;
-    max-width: 100%; /* Ocupa a largura total no desktop */
-    margin-bottom: 2rem;
+    font-size: 3.5rem;
+    max-width: 800px; /* Controla a largura do bloco degrau */
+    align-items: stretch; /* Permite que as linhas se movam para os lados */
     
-    // No desktop, volta a ser uma linha cravada nas pontas interatindo com o gráfico
-    flex-direction: row;
-    justify-content: center;
-    gap: 3rem;
-    .alinhar-esq-v2, .alinhar-dir-v2 { align-self: center; text-align: center; }
+    .linha-1 { 
+      align-self: flex-start; /* Joga a primeira linha pra esquerda */
+    }
+    
+    .linha-2 { 
+      align-self: flex-end; /* Joga a segunda linha pra direita */
+      margin-top: -10px; /* Gruda um pouco mais as linhas */
+    }
+
+    .txt-flow-figma { font-size: 4rem; }
   }
 }
 
-.tema-claro .titulo-fluxo-v2 { color: var(--preto-lt); }
+.tema-claro .titulo-fluxo-figma { color: var(--preto-lt); }
+.tema-claro .txt-caos-figma { color: var(--preto-lt); }
+
+/*--- O Parágrafo Analítico ---*/
+.relatorio-analitico {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.subtitulo-playlists-figma {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1rem; 
+  font-weight: 300;
+  color: var(--branco-azulado-dk);
+  line-height: 1.6;
+  text-align: center; 
+  margin: 0;
+  padding: 0 1rem; 
+
+  @include tela-media { font-size: 1.15rem; }
+  @include tela-grande { font-size: 1.25rem; }
+}
+
+.tema-claro .subtitulo-playlists-figma { color: var(--cinza-escuro-lt); }
+
 
 /*--- 3. Cockpit Analítico de Dados (O Novo Gráfico) ---*/
 .cockpit-dados {
@@ -1347,62 +1400,114 @@
 /*--- 4. Cards de Vibe Imersivos ---*/
 .stack-vibes {
   width: 100%;
-  text-align: center;
   // 🚨 Habilita a perspectiva 3D para o Stack
   perspective: 1200px; 
 }
 
-.titulo-stack {
-  font-family: var(--fonte-principal);
+/*--- Contêiner do Layout Híbrido ---*/
+.container-vibes-layout {
+  display: flex;
+  flex-direction: column; /* Mobile first: Texto em cima, Cards embaixo */
+  gap: 3rem;
+  align-items: center;
+  box-sizing: border-box;
+
+  @include tela-grande {
+    flex-direction: row-reverse; /* 🚨 MÁGICA: Texto Direita, Cards Esquerda */
+    justify-content: space-between;
+    align-items: center;
+    gap: 4rem;
+  }
+}
+
+/*--- Coluna de Texto (Direita no Desktop) ---*/
+.coluna-texto-vibes {
+  width: 100%;
+  text-align: center; /* Mobile: Tudo centralizado */
+  box-sizing: border-box;
+
+  @include tela-grande {
+    width: 45%; /* Limita a largura do bloco de texto no desktop */
+    text-align: left; /* Desktop: Alinhado à esquerda dentro da coluna */
+  }
+}
+
+.titulo-stack-v3 {
+  font-family: var(--fonte-principal, sans-serif);
   font-size: 1.8rem;
   font-weight: 600;
   color: var(--branco-dk);
-  margin-bottom: 3rem;
+  margin: 0 0 1rem 0;
 
   @include tela-media { font-size: 2.2rem; }
+  @include tela-grande { font-size: 2.5rem; }
 }
-.tema-claro .titulo-stack { color: var(--preto-lt); }
+.tema-claro .titulo-stack-v3 { color: var(--preto-lt); }
 
-.wrapper-cards-v2 {
+.texto-vibes-v3 {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--branco-azulado-dk);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0 1rem; /* Margem extra no mobile */
+
+  @include tela-grande { padding: 0; }
+}
+.tema-claro .texto-vibes-v3 { color: var(--cinza-escuro-lt); }
+
+/*--- Coluna de Cards (Esquerda no Desktop) ---*/
+.coluna-cards-vibes {
+  width: 100%;
+  box-sizing: border-box;
+
+  @include tela-grande {
+    width: 50%; /* Limita a largura do bloco de cards no desktop */
+  }
+}
+
+.wrapper-cards-v3 {
   display: flex;
   flex-direction: column; /* Mobile first: Empilhado verticalmente */
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
   align-items: center; /* Centraliza os cards no mobile */
   box-sizing: border-box;
 
   @include tela-grande {
-    flex-direction: row; /* Desktop: O "leque" 3D */
-    justify-content: center;
-    gap: 0; /* Remove o gap pra sobrepor */
+    flex-direction: row; /* Horizontal para o efeito de leque */
+    justify-content: flex-start; /* 🚨 Alinha os cards à esquerda */
+    gap: 0; /* Remove o gap para sobrepor */
     position: relative;
-    height: 350px; /* Altura da área do stack */
+    height: 300px; /* Altura da área do stack absolute */
   }
 }
 
-/*--- Estilo Base do Card Imersivo V2 ---*/
+/*--- Estilo Base do Card Imersivo V3 (QUADRADO) ---*/
 .card-vibe-3d {
   position: relative;
   width: 100%;
-  max-width: 300px; /* Garante que não estoure no mobile */
-  height: 220px;
+  max-width: 280px; /* Garante que não estoure no mobile */
+  
+  // 🚨 A MÁGICA: Força o card a ser perfeitamente quadrado
+  aspect-ratio: 1 / 1; 
+  
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); /* Transição suave e gringa */
-  
-  // O gradiente base imersivo que envolve o card
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 
-  /*--- Imagem de Fundo (Imersiva e Desfocada) ---*/
+  /*--- Imagem de Fundo (Mais Nítida - Menos Blur) ---*/
   .card-bg-image {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(2px) brightness(0.4); /* Escurece e desfoca a imagem */
+    filter: blur(1px) brightness(0.4); /* 🚨 Diminuímos o desfoque de 2px para 1px */
     z-index: 1;
     transition: all 0.5s ease;
   }
@@ -1412,22 +1517,22 @@
     position: relative;
     z-index: 5;
     width: 100%; height: 100%;
-    padding: 2rem 1.5rem;
+    padding: 1.5rem; /* Padding mais clean */
     display: flex;
     align-items: flex-end; /* Conteúdo na base do card */
     box-sizing: border-box;
     gap: 1rem;
     
     // Gradiente de cor de base que se mistura com a imagem
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%);
   }
 
-  .card-icon-v2 { font-size: 3rem; flex-shrink: 0; }
+  /* card-icon-v2 removido do SCSS pois foi removido do HTML */
   
   .card-meta-v2 { text-align: left; }
   
   .card-meta-v2 h4 {
-    font-family: var(--fonte-principal);
+    font-family: var(--fonte-principal, sans-serif);
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--branco-dk);
@@ -1435,41 +1540,39 @@
   }
   
   .card-meta-v2 p {
-    font-family: var(--fonte-principal);
+    font-family: var(--fonte-principal, sans-serif);
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
     margin: 0;
   }
 }
 
-/*--- GRADIENTES E CORES ESPECÍFICAS DE CADA VIBE ---*/
+/* GRADIENTES E CORES ESPECÍFICAS DE CADA VIBE (Mantidos) */
 .vibe-treino {
-  // Borda neon Deep Red
   border-color: rgba(255, 95, 86, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(255, 95, 86, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  .card-content-v2 { background: linear-gradient(to top, rgba(255, 95, 86, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
   &:hover { box-shadow: 0 15px 40px rgba(255, 95, 86, 0.3); }
 }
 
 .vibe-foco {
-  // Borda neon Deep Blue
   border-color: rgba(2, 133, 255, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(2, 133, 255, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  .card-content-v2 { background: linear-gradient(to top, rgba(2, 133, 255, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
   &:hover { box-shadow: 0 15px 40px rgba(2, 133, 255, 0.3); }
 }
 
 .vibe-estrada {
-  // Borda neon Deep Purple
   border-color: rgba(183, 108, 237, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(183, 108, 237, 0.2) 0%, transparent 60%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  .card-content-v2 { background: linear-gradient(to top, rgba(183, 108, 237, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
   &:hover { box-shadow: 0 15px 40px rgba(183, 108, 237, 0.3); }
 }
 
-/*--- A LÓGICA DO STACK 3D NO DESKTOP ---*/
+/*--- A LÓGICA DO STACK 3D NO DESKTOP (Alinhado à ESQUERDA) ---*/
 @include tela-grande {
   .card-vibe-3d {
     position: absolute;
-    width: 280px;
-    height: 200px;
+    width: 250px; /* Tamanho fixo para o leque */
+    // aspect-ratio já está definido acima
+    
     backface-visibility: hidden; /* Evita falhas no render 3D */
     
     // Efeito de reflexo de luz
@@ -1485,22 +1588,22 @@
 
   // Card 1: Vibe Treino (Fica à esquerda, girado pra dentro)
   .vibe-treino {
-    left: calc(50% - 380px); /* Posiciona em relação ao centro */
-    transform: rotateY(30deg) translateZ(0);
+    left: 0; 
+    transform: rotateY(25deg) translateZ(0) rotateX(5deg);
     z-index: 10;
   }
 
-  // Card 2: Vibe Foco (Fica no centro, cravado e mais pra frente)
+  // Card 2: Vibe Foco (Pop forward e centralizado em relação ao stack da esquerda)
   .vibe-foco {
-    left: calc(50% - 140px); /* Posiciona no centro */
-    transform: rotateY(0) translateZ(100px); /* Traz pra frente */
-    z-index: 20; /* Fica acima dos outros */
+    left: 100px; // Offset para criar a sobreposição
+    transform: rotateY(15deg) translateZ(100px); // Pop forward
+    z-index: 20; // Fica acima dos outros
   }
 
-  // Card 3: Vibe Estrada (Fica à direita, girado pra dentro)
+  // Card 3: Vibe Estrada (Fica à direita do stack, girado pra dentro)
   .vibe-estrada {
-    left: calc(50% + 100px); /* Posiciona em relação ao centro */
-    transform: rotateY(-30deg) translateZ(0);
+    left: 200px; // Offset final
+    transform: rotateY(0) translateZ(0) rotateX(-5deg);
     z-index: 10;
   }
 }
@@ -1509,7 +1612,11 @@
 .cta-final-v2 {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
+  margin-top: 2rem; /* Dei um respiro a mais aqui também */
+  
+  /* 🚨 BLINDAGEM CONTRA O 3D: Garante que o botão fique na frente de tudo */
+  position: relative;
+  z-index: 50; 
 }
 
 /* Animações e Status Gerais */
@@ -1525,4 +1632,140 @@
   0% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0.5); }
   70% { box-shadow: 0 0 0 20px rgba(30, 215, 96, 0); }
   100% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0); }
+}
+
+
+
+
+
+
+
+
+
+/*=========================================
+   FOOTER: O GRAND FINALE
+=========================================*/
+.footer-tunify {
+  /* Um tom absurdamente escuro, quase preto, pra fechar a página com peso */
+  background-color: #050810; 
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 4rem; /* Descola um pouco da seção de cima */
+}
+
+.tema-claro .footer-tunify {
+  background-color: var(--branco-escuro-lt, #f0f2f5);
+}
+
+/*--- Linha Divisória Neon (Separa a Seção 3 do Footer) ---*/
+.footer-divisor {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--azul-dk), var(--verde-spotify-dk), transparent);
+  opacity: 0.4;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile: As 3 colunas ficam empilhadas */
+  gap: 3rem;
+
+  @include tela-media {
+    /* Desktop: A primeira coluna (Marca) ocupa o dobro do espaço das outras */
+    grid-template-columns: 2fr 1fr 1fr; 
+    gap: 2rem;
+  }
+}
+
+/*--- Coluna 1: A Marca ---*/
+.footer-logo {
+  font-family: var(--fonte-especial, sans-serif); /* A fonte do Milhão de Dólares */
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--branco-dk);
+  margin: 0 0 1rem 0;
+  letter-spacing: -1px;
+
+  .ponto-azul { color: var(--azul-dk); }
+}
+.tema-claro .footer-logo { color: var(--preto-lt); }
+
+.footer-descricao {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 0.95rem;
+  color: var(--cinza-claro-dk);
+  line-height: 1.6;
+  max-width: 300px; /* Impede que o texto fique comprido demais */
+  margin: 0;
+}
+.tema-claro .footer-descricao { color: var(--cinza-escuro-lt); }
+
+/*--- Colunas 2 e 3: Links ---*/
+.footer-titulo-coluna {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--branco-dk);
+  margin: 0 0 1.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.tema-claro .footer-titulo-coluna { color: var(--preto-lt); }
+
+.footer-links {
+  list-style: none; /* Remove as bolinhas da lista */
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  li a {
+    font-family: var(--fonte-principal, sans-serif);
+    font-size: 0.95rem;
+    color: var(--cinza-claro-dk);
+    text-decoration: none; /* Remove o sublinhado padrão dos links */
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+
+    /* O Efeito Gringo no Hover */
+    &:hover {
+      color: var(--verde-spotify-dk);
+      transform: translateX(5px); /* Dá um tapinha pro lado */
+    }
+  }
+}
+
+.tema-claro .footer-links li a {
+  color: var(--cinza-escuro-lt);
+  &:hover { color: var(--azul-lt); } /* No claro, hover azul fica melhor */
+}
+
+/*--- A Assinatura do Arquiteto ---*/
+.footer-bottom {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Linha sutil separando os créditos */
+  
+  p {
+    font-family: var(--fonte-principal, sans-serif);
+    font-size: 0.85rem;
+    color: var(--cinza-claro-dk);
+    margin: 0;
+    
+    strong {
+      color: var(--branco-dk);
+      font-weight: 600;
+    }
+  }
+}
+
+.tema-claro .footer-bottom {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  p { color: var(--cinza-escuro-lt); }
+  p strong { color: var(--preto-lt); }
 }
