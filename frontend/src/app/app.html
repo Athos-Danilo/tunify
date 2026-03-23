@@ -168,14 +168,13 @@
     </div>
   </section>
 
-  <section class="secao-playlists">
+<section class="secao-playlists">
     
     <div class="grid-background"></div>
 
     <div class="container-playlists">
       
       <div class="cabecalho-fluxo animacao-fade-in slide-up">
-        
         <h2 class="titulo-fluxo-figma">
           <span class="linha-1">
             Do <span class="txt-caos-figma">caos</span> do aleatório
@@ -190,7 +189,6 @@
                 Enquanto o modo aleatório oscila agressivamente entre picos de energia e silêncios acústicos sem critério, o algoritmo Tunify alinha as faixas por proximidade harmônica, criando um fluxo progressivo e consistente que respeita a sua vibe.
             </p>
         </div>
-
       </div>
 
       <div class="cockpit-dados animacao-fade-in delay-1">
@@ -203,18 +201,14 @@
           <h4 class="titulo-painel">Modo Aleatório</h4>
           
           <div class="visual-caos">
-            <div class="data-points-caos">
-              <span class="ponto-dado" style="top: 20%; left: 10%;"></span>
-              <span class="ponto-dado" style="top: 70%; left: 20%;"></span>
-              <span class="ponto-dado" style="top: 10%; left: 35%;"></span>
-              <span class="ponto-dado" style="top: 85%; left: 50%;"></span>
-              <span class="ponto-dado" style="top: 40%; left: 65%;"></span>
-              <span class="ponto-dado" style="top: 90%; left: 80%;"></span>
-              <span class="ponto-dado" style="top: 30%; left: 95%;"></span>
-            </div>
-            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2 line-caos">
-              <path d="M0,50 L40,80 L80,20 L120,90 L160,10 L200,70 L240,30 L280,85 L320,15 L360,60 L400,25 L450,75 L500,50" />
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2">
+              <path class="linha-base-caos" d="M0,50 Q20,10 50,50 T100,50 Q120,90 150,50 T200,50 Q220,5 250,50 T300,50 Q310,80 340,50 T400,50 Q430,20 460,50 T500,50" />
+              <path class="linha-scan-caos" d="M0,50 Q20,10 50,50 T100,50 Q120,90 150,50 T200,50 Q220,5 250,50 T300,50 Q310,80 340,50 T400,50 Q430,20 460,50 T500,50" />
             </svg>
+            
+            <div class="monitor-bpm bpm-flow">
+              <span>BPM:</span> <strong>{{ bpmFlow }}</strong>
+            </div>
           </div>
           <p class="legenda-painel">Quebras bruscas de energia e ritmo. Vibe inconsistente.</p>
         </div>
@@ -234,42 +228,36 @@
           <h4 class="titulo-painel">O Flow do Tunify</h4>
           
           <div class="visual-flow">
-            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2 line-flow">
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2">
               <defs>
-                <linearGradient id="gradiente-neon" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="gradiente-flow-scan" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" style="stop-color:#1db954;stop-opacity:1" />
                   <stop offset="100%" style="stop-color:#02d3ff;stop-opacity:1" />
                 </linearGradient>
               </defs>
-              <path d="M0,80 Q125,80 250,50 T500,20" stroke="url(#gradiente-neon)"/>
+              <path class="linha-base-flow" d="M0,80 C150,80 250,50 500,20" />
+              <path class="linha-scan-flow" d="M0,80 C150,80 250,50 500,20" stroke="url(#gradiente-flow-scan)" />
             </svg>
-            <div class="data-markers-flow">
-              <span class="marcador" style="left: 10%; bottom: 18%;"></span>
-              <span class="marcador" style="left: 30%; bottom: 35%;"></span>
-              <span class="marcador" style="left: 50%; bottom: 50%;"></span>
-              <span class="marcador" style="left: 70%; bottom: 65%;"></span>
-              <span class="marcador" style="left: 90%; bottom: 80%;"></span>
+
+            <div class="monitor-bpm bpm-flow">
+              <span>BPM:</span> <strong>{{ bpmFlow }}</strong>
             </div>
           </div>
           <p class="legenda-painel">Progressão suave e inteligente. Vibe mantida em todas as faixas.</p>
         </div>
-
       </div>
 
       <div class="stack-vibes animacao-fade-in slide-up delay-2">
-        
         <div class="container-vibes-layout">
 
           <div class="coluna-texto-vibes animacao-fade-in slide-right delay-2">
             <h3 class="titulo-stack-v3">Sua jornada sonora, <span class="txt-special">avaliada cientificamente.</span></h3>
-            
             <p class="texto-vibes-v3">
               Mergulhe em playlists criadas especificamente para cada momento do seu dia. Seja para dar um gás no treino, focar no trabalho ou relaxar na estrada, o algoritmo Tunify garante a trilha sonora ideal, avaliando matematicamente a energia, o clima e a acústica de cada faixa.
             </p>
           </div>
 
           <div class="coluna-cards-vibes animacao-fade-in slide-left delay-2">
-            
             <div class="grid-cards-figma">
               
               <div class="card-anki-wrap cor-frente-1" 
@@ -278,7 +266,7 @@
                    (mouseleave)="retomarAnimacao()">
                 <div class="anki-front">
                   <h4>Modo Foco</h4>
-                  </div>
+                </div>
                 <div class="anki-back">
                   <div class="anki-back-content">
                     <span class="vibe-tag boa">ALTA ACÚSTICA</span>
@@ -356,7 +344,10 @@
                 </div>
               </div>
 
-            </div> </div> </div> </div>
+            </div> 
+          </div> 
+        </div> 
+      </div>
 
       <div class="cta-final-v2 animacao-fade-in slide-up delay-3">
         <button class="btn-spotify btn-pulsando-neon" (click)="fazerLogin()">

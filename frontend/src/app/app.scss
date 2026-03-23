@@ -1227,29 +1227,33 @@
 .tema-claro .subtitulo-playlists-figma { color: var(--cinza-escuro-lt); }
 
 
-/*--- 3. Cockpit Analítico de Dados (O Novo Gráfico) ---*/
+/*=========================================================================
+   3. COCKPIT ANALÍTICOS V3 (DUAL-LINE SCAN + RADIAL GLOW + BPM)
+=========================================================================*/
 .cockpit-dados {
   width: 100%;
   display: flex;
-  flex-direction: column; /* Mobile first: Um embaixo do outro */
+  flex-direction: column; 
   gap: 2.5rem;
   box-sizing: border-box;
 
   @include tela-grande {
-    flex-direction: row; /* Desktop: Lado a lado */
+    flex-direction: row; 
     align-items: center;
     gap: 1.5rem;
   }
 }
 
+/*--- Painel Base (Com Overflow Hidden para segurar os brilhos) ---*/
 .painel-analise {
   flex: 1;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.4); 
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   padding: 1.5rem;
   position: relative;
   box-sizing: border-box;
+  overflow: hidden; 
 }
 
 .tema-claro .painel-analise {
@@ -1257,20 +1261,40 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/*--- Status Header ---*/
-.status-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 1rem;
+/*--- OS BRILHOS RADIAIS DE FUNDO ---*/
+.painel-caos::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 30%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255, 95, 86, 0.1) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.ponto-status {
-  width: 10px; height: 10px;
-  border-radius: 50%;
+.painel-flow::before {
+  content: '';
+  position: absolute;
+  top: 50%; right: 0%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(2, 211, 255, 0.1) 0%, transparent 70%);
+  transform: translate(0%, -50%);
+  pointer-events: none;
+  z-index: 0;
 }
-.status-ruim { background-color: #ff5f56; }
-.status-boa { background-color: var(--verde-spotify-dk); }
+
+/* Coloca o conteúdo do painel pra cima do brilho */
+.status-header, .titulo-painel, .visual-caos, .visual-flow, .legenda-painel {
+  position: relative;
+  z-index: 5;
+}
+
+/*--- Status Header ---*/
+.status-header { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+.ponto-status { width: 10px; height: 10px; border-radius: 50%; }
+.status-ruim { background-color: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.5); }
+.status-boa { background-color: var(--verde-spotify-dk); box-shadow: 0 0 8px rgba(30, 215, 96, 0.5); }
 
 .label-status {
   font-family: var(--fonte-principal);
@@ -1291,63 +1315,119 @@
 }
 .tema-claro .titulo-painel { color: var(--preto-lt); }
 
-/*--- Visuais dos Gráficos ---*/
+
+/*=========================================================================
+   A MÁGICA DOS GRÁFICOS (LINHAS + MONITORES BPM)
+=========================================================================*/
 .visual-caos, .visual-flow {
   width: 100%;
-  height: 120px; /* Altura da área de dados */
+  height: 120px; 
   position: relative;
   margin-bottom: 1.5rem;
 }
 
 .linha-svg-v2 {
   width: 100%; height: 100%;
-  overflow: visible; /* Crucial para o drop-shadow */
+  overflow: visible; 
   
   path {
     fill: none;
-    stroke-width: 4;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 }
 
-/*--- O Caos ---*/
-.line-caos { stroke: #ff5f56; opacity: 0.5; }
-
-.data-points-caos {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-}
-.ponto-dado {
-  position: absolute;
-  width: 4px; height: 4px;
-  background-color: rgba(255, 95, 86, 0.6);
-  border-radius: 50%;
-  box-shadow: 0 0 4px rgba(255, 95, 86, 0.4);
+/*--- 1. GRÁFICO DO CAOS (Vermelho, Instável) ---*/
+.linha-base-caos {
+  stroke: rgba(255, 95, 86, 0.15); 
+  stroke-width: 4;
 }
 
-/*--- O Flow Neon Pulsante ---*/
-.line-flow {
-  // 🚨 Oefeito Bloom/Glow Neon: Cria uma luz difusa
-  filter: drop-shadow(0 0 10px rgba(30, 215, 96, 0.7)) 
-          drop-shadow(0 0 20px rgba(30, 215, 96, 0.4));
+.linha-scan-caos {
+  stroke: #ff5f56;
+  stroke-width: 4;
+  stroke-dasharray: 120 1200; 
+  stroke-dashoffset: 1200;
+  /* 🚨 Velocidade reduzida pela metade (era 2.5s, virou 5s) */
+  animation: runScanLine 15s linear infinite; 
+  filter: drop-shadow(0 0 8px rgba(255, 95, 86, 0.8)); 
 }
 
-.data-markers-flow {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-}
-.marcador {
-  position: absolute;
-  width: 6px; height: 6px;
-  background-color: var(--branco-dk);
-  border-radius: 50%;
-  box-shadow: 0 0 6px var(--branco-dk);
-  opacity: 0.8;
+/*--- 2. GRÁFICO DO FLOW (Azul/Verde, Suave) ---*/
+.linha-base-flow {
+  stroke: rgba(2, 211, 255, 0.15); 
+  stroke-width: 4;
 }
 
+.linha-scan-flow {
+  stroke-width: 4;
+  stroke-dasharray: 200 1200; 
+  stroke-dashoffset: 1200;
+  animation: runScanLine 4s ease-in-out infinite; 
+  filter: drop-shadow(0 0 10px rgba(30, 215, 96, 0.6)) 
+          drop-shadow(0 0 20px rgba(2, 211, 255, 0.4));
+}
+
+@keyframes runScanLine {
+  from { stroke-dashoffset: 1200; }
+  to { stroke-dashoffset: -200; } 
+}
+
+/*--- 🚨 3. OS MONITORES DE BPM (Glassmorphism e Pulso) ---*/
+.monitor-bpm {
+  position: absolute;
+  bottom: 0px; 
+  right: 0px; 
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.bpm-caos {
+  color: rgba(255, 95, 86, 0.7);
+  strong {
+    color: #ff5f56;
+    font-size: 1rem;
+    animation: pulseBpmCaos 0.5s ease-in-out infinite alternate; /* Pulso rápido/agressivo */
+  }
+}
+
+.bpm-flow {
+  color: rgba(2, 211, 255, 0.7);
+  strong {
+    color: var(--verde-spotify-dk);
+    font-size: 1.1rem;
+    animation: pulseBpmFlow 1.5s ease-in-out infinite alternate; /* Pulso suave/harmônico */
+  }
+}
+
+/* Animações dos Dados Sênior */
+@keyframes pulseBpmCaos {
+  0% { opacity: 0.3; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 8px rgba(255, 95, 86, 0.8); }
+}
+
+@keyframes pulseBpmFlow {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; text-shadow: 0 0 10px rgba(30, 215, 96, 0.6); }
+}
+
+.tema-claro {
+  .monitor-bpm {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+/*--- Textos e Legendas Finais ---*/
 .legenda-painel {
   font-family: var(--fonte-principal);
   font-size: 0.85rem;
@@ -1357,43 +1437,19 @@
 }
 .tema-claro .legenda-painel { color: var(--cinza-escuro-lt); }
 
-/*--- O Divisor (O Processamento) ---*/
 .divisor-processamento {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  height: 40px; /* Mobile */
-
-  @include tela-grande {
-    width: 60px; height: auto;
-    flex-direction: column;
-    margin-top: -10rem;
-  }
+  display: flex; justify-content: center; align-items: center; position: relative; height: 40px; 
+  @include tela-grande { width: 60px; height: auto; flex-direction: column; margin-top: 0; }
 }
 
 .linha-vertical {
-  position: absolute;
-  width: 100%; height: 1px; /* Mobile */
-  background-color: rgba(255, 255, 255, 0.05);
-
-  @include tela-grande {
-    width: 1px; height: 150px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent);
-  }
+  position: absolute; width: 100%; height: 1px; background-color: rgba(255, 255, 255, 0.05);
+  @include tela-grande { width: 1px; height: 150px; background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent); }
 }
 
 .circulo-processo {
-  width: 36px; height: 36px;
-  background-color: rgba(2, 133, 255, 0.1);
-  border: 1px solid rgba(2, 133, 255, 0.2);
-  border-radius: 50%;
-  color: var(--azul-dk);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 5;
-  backdrop-filter: blur(4px);
-  animation: girarProcesso 4s linear infinite;
-
+  width: 36px; height: 36px; background-color: rgba(2, 133, 255, 0.1); border: 1px solid rgba(2, 133, 255, 0.2); border-radius: 50%; color: var(--azul-dk);
+  display: flex; align-items: center; justify-content: center; z-index: 5; backdrop-filter: blur(4px); animation: girarProcesso 4s linear infinite;
   svg { width: 20px; height: 20px; }
 }
 
