@@ -1397,11 +1397,13 @@
   svg { width: 20px; height: 20px; }
 }
 
-/*--- 4. Cards de Vibe Imersivos ---*/
+/*=========================================================================
+   4. CARDS DE VIBE V5: GRID FIGMA 3X2 E ANIMAÇÃO VIVA TS <<< NOVO >>>
+=========================================================================*/
 .stack-vibes {
   width: 100%;
-  // 🚨 Habilita a perspectiva 3D para o Stack
-  perspective: 1200px; 
+  text-align: center;
+  /* Retiramos a perspectiva profunda para voltar ao estilo limpo e sólido */
 }
 
 /*--- Contêiner do Layout Híbrido ---*/
@@ -1413,7 +1415,7 @@
   box-sizing: border-box;
 
   @include tela-grande {
-    flex-direction: row-reverse; /* 🚨 MÁGICA: Texto Direita, Cards Esquerda */
+    flex-direction: row-reverse; /* MÁGICA: Texto Direita, Cards Esquerda */
     justify-content: space-between;
     align-items: center;
     gap: 4rem;
@@ -1423,12 +1425,12 @@
 /*--- Coluna de Texto (Direita no Desktop) ---*/
 .coluna-texto-vibes {
   width: 100%;
-  text-align: center; /* Mobile: Tudo centralizado */
+  text-align: center;
   box-sizing: border-box;
 
   @include tela-grande {
-    width: 45%; /* Limita a largura do bloco de texto no desktop */
-    text-align: left; /* Desktop: Alinhado à esquerda dentro da coluna */
+    width: 45%; 
+    text-align: left; 
   }
 }
 
@@ -1438,7 +1440,6 @@
   font-weight: 600;
   color: var(--branco-dk);
   margin: 0 0 1rem 0;
-
   @include tela-media { font-size: 2.2rem; }
   @include tela-grande { font-size: 2.5rem; }
 }
@@ -1451,8 +1452,8 @@
   color: var(--branco-azulado-dk);
   line-height: 1.6;
   margin: 0;
-  padding: 0 1rem; /* Margem extra no mobile */
-
+  padding: 0 1rem; 
+  text-align: justify;
   @include tela-grande { padding: 0; }
 }
 .tema-claro .texto-vibes-v3 { color: var(--cinza-escuro-lt); }
@@ -1463,160 +1464,118 @@
   box-sizing: border-box;
 
   @include tela-grande {
-    width: 50%; /* Limita a largura do bloco de cards no desktop */
+    width: 50%; /* Limita a largura para o grid respirar */
   }
 }
 
-.wrapper-cards-v3 {
-  display: flex;
-  flex-direction: column; /* Mobile first: Empilhado verticalmente */
-  gap: 1.5rem;
+/*--- O Mestre Grid 3x2 ---*/
+.grid-cards-figma {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Mobile: Grid 2x3 para caber melhor na tela */
+  gap: 1rem;
   width: 100%;
-  align-items: center; /* Centraliza os cards no mobile */
-  box-sizing: border-box;
+  max-width: 500px; /* Impede que fique gigante no mobile */
+  margin: 0 auto;
 
   @include tela-grande {
-    flex-direction: row; /* Horizontal para o efeito de leque */
-    justify-content: flex-start; /* 🚨 Alinha os cards à esquerda */
-    gap: 0; /* Remove o gap para sobrepor */
-    position: relative;
-    height: 300px; /* Altura da área do stack absolute */
+    grid-template-columns: repeat(3, 1fr); /* 🚨 DESKTOP: O grid 3x2 exato do Figma */
+    gap: 1.5rem;
+    max-width: 100%;
   }
 }
 
-/*--- Estilo Base do Card Imersivo V3 (QUADRADO) ---*/
-.card-vibe-3d {
+/*--- A Estrutura do Card Anki (O Flashcard Sólido) ---*/
+.card-anki-wrap {
   position: relative;
   width: 100%;
-  max-width: 280px; /* Garante que não estoure no mobile */
-  
-  // 🚨 A MÁGICA: Força o card a ser perfeitamente quadrado
-  aspect-ratio: 1 / 1; 
-  
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  aspect-ratio: 1 / 1; /* Quadrado Perfeito */
   cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  perspective: 1000px; /* Perspectiva individual apenas para o giro do card */
 
-  /*--- Imagem de Fundo (Mais Nítida - Menos Blur) ---*/
-  .card-bg-image {
+  /*--- Faces Front e Back ---*/
+  .anki-front, .anki-back {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background-size: cover;
-    background-position: center;
-    filter: blur(1px) brightness(0.4); /* 🚨 Diminuímos o desfoque de 2px para 1px */
-    z-index: 1;
-    transition: all 0.5s ease;
+    border-radius: 12px; /* Cantos arredondados, mas não tão circulares quanto antes */
+    overflow: hidden;
+    backface-visibility: hidden; 
+    
+    // A MÁGICA DA ANIMAÇÃO: Suave e controlada pelo TS
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
   }
 
-  /*--- Conteúdo (Fica acima da imagem) ---*/
-  .card-content-v2 {
-    position: relative;
-    z-index: 5;
-    width: 100%; height: 100%;
-    padding: 1.5rem; /* Padding mais clean */
+  /* Posição Inicial das Faces */
+  .anki-front { 
+    transform: rotateY(0deg); 
     display: flex;
-    align-items: flex-end; /* Conteúdo na base do card */
+    flex-direction: column;
+    align-items: flex-start; /* Texto no canto esquerdo */
+    justify-content: flex-end; /* Texto embaixo */
+    padding: 1rem;
     box-sizing: border-box;
-    gap: 1rem;
-    
-    // Gradiente de cor de base que se mistura com a imagem
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 
-  /* card-icon-v2 removido do SCSS pois foi removido do HTML */
-  
-  .card-meta-v2 { text-align: left; }
-  
-  .card-meta-v2 h4 {
-    font-family: var(--fonte-principal, sans-serif);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--branco-dk);
-    margin: 0 0 5px 0;
+  .anki-back  { 
+    transform: rotateY(180deg); 
+    background-color: var(--azul-medio-dk); /* 🚨 A cor tech que você pediu para o verso */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
-  .card-meta-v2 p {
+
+  h4 {
     font-family: var(--fonte-principal, sans-serif);
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--preto-lt); /* O texto precisa ser escuro pra ler nos fundos claros */
     margin: 0;
+    line-height: 1.2;
   }
-}
 
-/* GRADIENTES E CORES ESPECÍFICAS DE CADA VIBE (Mantidos) */
-.vibe-treino {
-  border-color: rgba(255, 95, 86, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(255, 95, 86, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
-  &:hover { box-shadow: 0 15px 40px rgba(255, 95, 86, 0.3); }
-}
-
-.vibe-foco {
-  border-color: rgba(2, 133, 255, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(2, 133, 255, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
-  &:hover { box-shadow: 0 15px 40px rgba(2, 133, 255, 0.3); }
-}
-
-.vibe-estrada {
-  border-color: rgba(183, 108, 237, 0.2);
-  .card-content-v2 { background: linear-gradient(to top, rgba(183, 108, 237, 0.2) 0%, transparent 70%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%); }
-  &:hover { box-shadow: 0 15px 40px rgba(183, 108, 237, 0.3); }
-}
-
-/*--- A LÓGICA DO STACK 3D NO DESKTOP (Alinhado à ESQUERDA) ---*/
-@include tela-grande {
-  .card-vibe-3d {
-    position: absolute;
-    width: 250px; /* Tamanho fixo para o leque */
-    // aspect-ratio já está definido acima
+  .vibe-tag {
+    font-family: var(--fonte-principal);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px; /* Mais quadrado que redondo */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
     
-    backface-visibility: hidden; /* Evita falhas no render 3D */
-    
-    // Efeito de reflexo de luz
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 40%);
-      z-index: 6;
-      pointer-events: none;
-    }
+    &.ruim { background: rgba(255, 95, 86, 0.15); color: #ff5f56; }
+    &.boa { background: rgba(30, 215, 96, 0.15); color: var(--verde-spotify-dk); }
+    &.especial { background: rgba(2, 133, 255, 0.15); color: var(--branco-dk); }
   }
 
-  // Card 1: Vibe Treino (Fica à esquerda, girado pra dentro)
-  .vibe-treino {
-    left: 0; 
-    transform: rotateY(25deg) translateZ(0) rotateX(5deg);
-    z-index: 10;
-  }
-
-  // Card 2: Vibe Foco (Pop forward e centralizado em relação ao stack da esquerda)
-  .vibe-foco {
-    left: 100px; // Offset para criar a sobreposição
-    transform: rotateY(15deg) translateZ(100px); // Pop forward
-    z-index: 20; // Fica acima dos outros
-  }
-
-  // Card 3: Vibe Estrada (Fica à direita do stack, girado pra dentro)
-  .vibe-estrada {
-    left: 200px; // Offset final
-    transform: rotateY(0) translateZ(0) rotateX(-5deg);
-    z-index: 10;
-  }
-}
-
-/*--- 5. CTA Final ---*/
-.cta-final-v2 {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem; /* Dei um respiro a mais aqui também */
+  /* 🚨 O GATILHO DA ANIMAÇÃO (Acionado pelo TypeScript com a classe .virado) 🚨 */
+  &.virado .anki-front { transform: rotateY(-180deg); }
   
-  /* 🚨 BLINDAGEM CONTRA O 3D: Garante que o botão fique na frente de tudo */
-  position: relative;
-  z-index: 50; 
+  &.virado .anki-back { 
+    transform: rotateY(0deg); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
+  }
+}
+
+/*--- A Paleta de Cores Sólidas da Frente (O Seu Design) ---*/
+.cor-frente-1 .anki-front { background-color: var(--branco-dk); }
+.cor-frente-2 .anki-front { background-color: var(--branco-azulado-dk); }
+.cor-frente-3 .anki-front { background-color: var(--cinza-claro-dk); }
+
+.tema-claro {
+  .card-anki-wrap h4 { color: var(--preto-dk); }
+  .cor-frente-1 .anki-front { background-color: var(--branco-lt); }
+  .cor-frente-2 .anki-front { background-color: var(--branco-azulado-lt); }
+  .cor-frente-3 .anki-front { background-color: var(--cinza-claro-lt); }
+  .anki-back { background-color: var(--preto-lt); }
+}
+
+/* 🚨 A MÁGICA CONTRA A INVISIBILIDADE 🚨 */
+.cta-final-v2 .btn-spotify {
+  opacity: 1; /* Força o botão a aparecer, anulando a regra da Seção 1 */
 }
 
 /* Animações e Status Gerais */

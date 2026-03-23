@@ -71,6 +71,12 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   private elementosAnimados: HTMLElement[] = [];
   private canvasY: number = 0;
 
+  // ========================================================================= //
+  // --- VARIÁVEIS DO NOVO GRID 3X2 (CARDS VIVOS) ---
+  // ========================================================================= //
+  cardAtivo: number = 1; // Qual card está virado no momento (1 a 6)
+  private timerCards: any; // Guarda o relógio (setInterval) da animação automática
+
   // ======> Construtor e Injeção de Dependências.
   // 1) cdr: O "despertador" manual, usado para forçar o Angular a atualizar a tela quando
   //    funções assíncronas (como setTimeout) alteram variáveis.
@@ -105,6 +111,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   // -------------------------------------------------------------------- //
   ngOnInit() {
     this.iniciarSimulacaoSkips();
+    this.iniciarCarrosselCards(); // <--- CHAMA A ANIMAÇÃO DOS CARDS AQUI
   }
 
   // ======> Ciclo de Vida: Pós-Renderização.
@@ -128,6 +135,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.simulacaoAtiva = false;
     cancelAnimationFrame(this.animationFrameId); 
+    this.pararCarrosselCards(); // <--- MATA O RELÓGIO DOS CARDS AO SAIR
   }
 
   // ======> O Contador de Passar Músicas.
@@ -358,4 +366,45 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
 
     this.elementosAnimados.forEach(elemento => observer.observe(elemento));
   }
+
+  // ========================================================================= //
+  // --- A MÁGICA VIVA DO GRID 3X2 (INTERAÇÃO DOS CARDS) ---
+  // ========================================================================= //
+
+  // 1) O Gatilho Automático (O Robô Sênior rodando em segundo plano)
+  iniciarCarrosselCards() {
+    // Garante que não tenha dois relógios malucos rodando juntos
+    this.pararCarrosselCards();
+
+    // A cada 3.5 segundos, a IA escolhe um card aleatório para virar
+    this.timerCards = setInterval(() => {
+      let proximoCard;
+      do {
+        proximoCard = Math.floor(Math.random() * 6) + 1; // Rola um "dado" de 6 lados (1 a 6)
+      } while (proximoCard === this.cardAtivo); // Evita bater duas vezes no mesmo número
+      
+      this.cardAtivo = proximoCard;
+      this.cdr.detectChanges(); // Acorda o Angular para injetar a classe no HTML
+    }, 3500); 
+  }
+
+  // 2) O Freio de Mão (Mata o relógio)
+  pararCarrosselCards() {
+    if (this.timerCards) {
+      clearInterval(this.timerCards);
+    }
+  }
+
+  // 3) A Interação Humana: O usuário apontou o mouse
+  pausarAnimacao(idCard: number) {
+    this.pararCarrosselCards(); // Manda o robô automático dormir
+    this.cardAtivo = idCard; // Vira instantaneamente o card que o usuário quer ver
+    this.cdr.detectChanges();
+  }
+
+  // 4) A Fuga: O usuário tirou o mouse
+  retomarAnimacao() {
+    this.iniciarCarrosselCards(); // Acorda o robô para voltar a sortear cards
+  }
+
 }

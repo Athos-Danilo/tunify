@@ -269,43 +269,94 @@
           </div>
 
           <div class="coluna-cards-vibes animacao-fade-in slide-left delay-2">
-            <div class="wrapper-cards-v3">
+            
+            <div class="grid-cards-figma">
               
-              <div class="card-vibe-3d vibe-treino">
-                <div class="card-bg-image" style="background-image: url('/cards/vibe-treino.webp');"></div>
-                <div class="card-content-v2">
-                  <div class="card-meta-v2">
-                    <h4>Treino Pesado</h4>
-                    <p>Energia cravada em 0.90+</p>
+              <div class="card-anki-wrap cor-frente-1" 
+                   [class.virado]="cardAtivo === 1"
+                   (mouseenter)="pausarAnimacao(1)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Foco</h4>
+                  </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag boa">ALTA ACÚSTICA</span>
                   </div>
                 </div>
               </div>
 
-              <div class="card-vibe-3d vibe-foco">
-                <div class="card-bg-image" style="background-image: url('/cards/vibe-foco.webp');"></div>
-                <div class="card-content-v2">
-                  <div class="card-meta-v2">
-                    <h4>Foco Absoluto</h4>
-                    <p>Acústica 0.85, sem distrações</p>
+              <div class="card-anki-wrap cor-frente-2" 
+                   [class.virado]="cardAtivo === 2"
+                   (mouseenter)="pausarAnimacao(2)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Treino</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag ruim">ALTA ENERGIA</span>
                   </div>
                 </div>
               </div>
 
-              <div class="card-vibe-3d vibe-estrada">
-                <div class="card-bg-image" style="background-image: url('/cards/vibe-estrada.webp');"></div>
-                <div class="card-content-v2">
-                  <div class="card-meta-v2">
-                    <h4>Estrada à Noite</h4>
-                    <p>Valência e progressão perfeitas</p>
+              <div class="card-anki-wrap cor-frente-3" 
+                   [class.virado]="cardAtivo === 3"
+                   (mouseenter)="pausarAnimacao(3)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Estrada</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag especial">OTIMIZADO</span>
                   </div>
                 </div>
               </div>
 
-            </div>
-          </div>
+              <div class="card-anki-wrap cor-frente-3" 
+                   [class.virado]="cardAtivo === 4"
+                   (mouseenter)="pausarAnimacao(4)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Relax Total</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag boa">AMBIENTE</span>
+                  </div>
+                </div>
+              </div>
 
-        </div>
-      </div>
+              <div class="card-anki-wrap cor-frente-1" 
+                   [class.virado]="cardAtivo === 5"
+                   (mouseenter)="pausarAnimacao(5)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Descoberta</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag especial">DINÂMICO</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-2" 
+                   [class.virado]="cardAtivo === 6"
+                   (mouseenter)="pausarAnimacao(6)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Festa em Casa</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag ruim">BEATS ALTO</span>
+                  </div>
+                </div>
+              </div>
+
+            </div> </div> </div> </div>
 
       <div class="cta-final-v2 animacao-fade-in slide-up delay-3">
         <button class="btn-spotify btn-pulsando-neon" (click)="fazerLogin()">
