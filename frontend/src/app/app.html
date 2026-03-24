@@ -1,14 +1,20 @@
 <main [ngClass]="{'tema-claro': !modoEscuro}">
 
   <div class="hero-container finisher-header" #headerContainer [ngClass]="{'play-animacoes' : animarTextos}">
-    
-    <button class="btn-toggle-tema" (click)="alternarTema()">
-      {{ modoEscuro ? '🌙 Escuro' : '☀️ Claro'}}
-    </button>
 
     <div class="pelicula-overlay"></div>
 
     <section class="primeira-secao">
+
+      <header class="header-tunify">
+        <app-logo></app-logo>
+        
+        <button class="btn-toggle-tema" (click)="alternarTema()">
+          <span *ngIf="modoEscuro">🌙 Escuro</span>
+          <span *ngIf="!modoEscuro">☀️ Claro</span>
+        </button>
+      </header>
+
       <div class="layout-duas-colunas">
 
         <div class="coluna-texto">
@@ -103,6 +109,24 @@
 
         </div>
       </div>
+
+      <div class="modulo-descubra-flow">
+        
+        <svg class="data-flow-double-chevron" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gradiente-chevrons" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color: currentColor; stop-opacity: 0.1" />
+              <stop offset="100%" style="stop-color: currentColor; stop-opacity: 1" />
+            </linearGradient>
+          </defs>
+          
+          <polyline class="chevron-top" points="4,10 16,22 28,10" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <polyline class="chevron-bottom" points="4,2 16,14 28,2" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+        <span class="texto-flow">DESCUBRA SEU FLOW</span>
+      </div>
+
     </section>
   </div> 
   

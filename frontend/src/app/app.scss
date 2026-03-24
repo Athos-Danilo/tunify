@@ -50,6 +50,23 @@
   }
 }
 
+.header-tunify {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem 5%; /* Espaçamento lateral seguro para celular */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50; /* Garante que fique acima de tudo, incluindo o canvas */
+
+  @include tela-grande {
+    padding: 2rem 8%; /* Respira mais no desktop */
+  }
+}
+
 /*---------- Título ----------*/
 .titulo-tunify {
   display: flex;
@@ -558,10 +575,6 @@
 
 /*---------- Botão do Tema ----------*/
 .btn-toggle-tema {
-  position: absolute;
-  top: 30px;
-  right: 40px;
-  z-index: 10;
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -585,6 +598,85 @@
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.2);
   color: #1a1a1a;
+}
+
+/* ==========================================================================
+   NOVO: MÓDULO DESCUBRA O FLOW (Scroll Down)
+========================================================================== */
+.modulo-descubra-flow {
+  position: absolute;
+  bottom: 2rem;
+  /* --- A Mágica de centralizar sem conflitar com animações --- */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content; 
+  /* ----------------------------------------------------------- */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 50;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  opacity: 0; /* Começa invisível para entrar junto com a Hero */
+
+  /* Efeito magnético ao passar o mouse */
+  &:hover {
+    transform: translateY(5px);
+  }
+}
+
+.texto-flow {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.tema-claro .texto-flow {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+/* O SVG do Duplo Chevron Sênior */
+.data-flow-double-chevron {
+  width: 28px;
+  height: 28px;
+  stroke: rgba(255, 255, 255, 0.3); /* Cor apagada base */
+
+  .chevron-top {
+    animation: pulsarChevron 2s infinite;
+  }
+  
+  .chevron-bottom {
+    animation: pulsarChevron 2s infinite;
+    animation-delay: 0.2s; /* O Atraso Mágico que cria a cascata de luz! */
+  }
+}
+
+.tema-claro .data-flow-double-chevron {
+  stroke: rgba(0, 0, 0, 0.3);
+}
+
+/* O Motor da Cascata Neon */
+@keyframes pulsarChevron {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+    stroke: var(--azul-dk, #0285ff); /* Pisca no Azul da marca no auge do pulso */
+    filter: drop-shadow(0 0 5px rgba(2, 133, 255, 0.6));
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 /*---------- Animações ----------*/
@@ -613,6 +705,10 @@
 
 .play-animacoes .btn-spotify {
   animation: puloDoBotao 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.7s forwards; 
+}
+
+.play-animacoes .modulo-descubra-flow {
+  animation: surgirDeBaixo 0.8s ease-out 1.2s forwards; 
 }
 
 .play-animacoes .btn-toggle-tema {

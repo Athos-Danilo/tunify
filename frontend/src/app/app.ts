@@ -2,6 +2,7 @@
 // --- ADICIONADO PARA ANIMAÇÕES ---: Renderer2 e HostListener
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, Renderer2, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { LogoComponent } from './components/logo.component'; 
 
 // Importa ferramentas comuns, essenciais para as diretivas do HTML (como ngClass e ngFor).
 import { CommonModule } from '@angular/common';
@@ -28,7 +29,7 @@ interface Musica {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, LogoComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
