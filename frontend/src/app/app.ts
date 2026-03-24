@@ -118,6 +118,16 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   // 1) Dispara a simulação de botões assim que a página é construída.
   // -------------------------------------------------------------------- //
   ngOnInit() {
+    // 1. Mata a memória de scroll do navegador (para ele não descer a tela sozinho no F5)
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    // 2. Força a tela para o topo absoluto (Seção 1)
+    window.scrollTo(0, 0);
+    // 3. Arranca a barra de rolagem (Trava o mouse)
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
+    // ------------------------------------
+
     this.iniciarSimulacaoSkips();
     this.iniciarCarrosselCards(); // <--- CHAMA A ANIMAÇÃO DOS CARDS AQUI
     this.iniciarMonitoresBPM();
@@ -136,6 +146,9 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
 
     setTimeout(() => {
       this.animarTextos = true;
+      // --- 🚨 A LIBERTAÇÃO ---
+      // 4. O tempo do Loader acabou! Devolvemos a barra de rolagem pro usuário.
+      this.renderer.removeStyle(document.body, 'overflow');
       this.cdr.detectChanges(); 
     }, 5000);
   }

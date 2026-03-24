@@ -1317,7 +1317,7 @@
 
 
 /*=========================================================================
-   A MÁGICA DOS GRÁFICOS (LINHAS + MONITORES BPM)
+   A MÁGICA DOS GRÁFICOS (LINHA BASE + LINHA SCAN + BOLINHA COMETA)
 =========================================================================*/
 .visual-caos, .visual-flow {
   width: 100%;
@@ -1348,9 +1348,20 @@
   stroke-width: 4;
   stroke-dasharray: 120 1200; 
   stroke-dashoffset: 1200;
-  /* 🚨 Velocidade reduzida pela metade (era 2.5s, virou 5s) */
+  /* 🚨 Velocidade reduzida (15s) */
   animation: runScanLine 15s linear infinite; 
   filter: drop-shadow(0 0 8px rgba(255, 95, 86, 0.8)); 
+}
+
+/* 🚨 NOVO: A Cabeça do Cometa (Caos) */
+.ponto-cometa-caos {
+  stroke: #ffffff; /* Fica branco no centro pra dar efeito de núcleo de luz */
+  stroke-width: 10; /* Mais grosso que a linha (4px) pra virar uma bolinha */
+  /* O truque Sênior: linha de 0.1px com borda redonda vira um ponto! */
+  stroke-dasharray: 0.1 1200; 
+  stroke-dashoffset: 1200;
+  animation: runScanLine 15s linear infinite; /* Sincronizado perfeitamente com a cauda */
+  filter: drop-shadow(0 0 8px #ff5f56) drop-shadow(0 0 15px #ff5f56);
 }
 
 /*--- 2. GRÁFICO DO FLOW (Azul/Verde, Suave) ---*/
@@ -1368,6 +1379,17 @@
           drop-shadow(0 0 20px rgba(2, 211, 255, 0.4));
 }
 
+/* 🚨 NOVO: A Cabeça do Cometa (Flow) */
+.ponto-cometa-flow {
+  stroke: #ffffff; 
+  stroke-width: 10; 
+  stroke-dasharray: 0.1 1200; 
+  stroke-dashoffset: 1200;
+  animation: runScanLine 4s ease-in-out infinite; 
+  filter: drop-shadow(0 0 10px #02d3ff) drop-shadow(0 0 20px var(--verde-spotify-dk));
+}
+
+/*--- O Motor de Renderização Neon ---*/
 @keyframes runScanLine {
   from { stroke-dashoffset: 1200; }
   to { stroke-dashoffset: -200; } 
@@ -1396,7 +1418,7 @@
   strong {
     color: #ff5f56;
     font-size: 1rem;
-    animation: pulseBpmCaos 0.5s ease-in-out infinite alternate; /* Pulso rápido/agressivo */
+    animation: pulseBpmCaos 0.5s ease-in-out infinite alternate; 
   }
 }
 
@@ -1405,7 +1427,7 @@
   strong {
     color: var(--verde-spotify-dk);
     font-size: 1.1rem;
-    animation: pulseBpmFlow 1.5s ease-in-out infinite alternate; /* Pulso suave/harmônico */
+    animation: pulseBpmFlow 1.5s ease-in-out infinite alternate; 
   }
 }
 
@@ -1452,6 +1474,8 @@
   display: flex; align-items: center; justify-content: center; z-index: 5; backdrop-filter: blur(4px); animation: girarProcesso 4s linear infinite;
   svg { width: 20px; height: 20px; }
 }
+
+
 
 /*=========================================================================
    4. CARDS DE VIBE V5: GRID FIGMA 3X2 E ANIMAÇÃO VIVA TS <<< NOVO >>>
