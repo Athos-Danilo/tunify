@@ -1,0 +1,429 @@
+<main [ngClass]="{'tema-claro': !modoEscuro}">
+
+  <div class="hero-container finisher-header" #headerContainer [ngClass]="{'play-animacoes' : animarTextos}">
+
+    <div class="pelicula-overlay"></div>
+
+    <section class="primeira-secao">
+
+      <header class="header-tunify">
+        <app-logo></app-logo>
+        
+        <button class="btn-toggle-tema" (click)="alternarTema()">
+          <span *ngIf="modoEscuro">🌙 Escuro</span>
+          <span *ngIf="!modoEscuro">☀️ Claro</span>
+        </button>
+      </header>
+
+      <div class="layout-duas-colunas">
+
+        <div class="coluna-texto">
+          <h1 class="titulo-tunify">
+            <span class="texto-menor alinhar-esq">Pare de <em>pular</em> suas</span>
+            
+            <span class="wrapper-musicas alinhar-esq">
+              <span class="texto-destaque azul">Músicas</span>
+              
+              <svg class="nota-musical nota-1" viewBox="-2 -2 20 30" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14.5.5 a1 1 0 0 0 -1 1 v18.3 a4.5 4.5 0 1 0 2 3.7 V3.5 l2.0 -1.0 a1 1 0 0 0 -1.0 -1.0 z"/>
+              </svg>
+
+              <svg class="nota-musical nota-2" viewBox="0 0 24 26" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.5 3.5 a1 1 0 0 0 -1 1 v18.3 a4.5 4.5 0 1 0 2 3.7 V3.5 M22.5 3.5 a1 1 0 0 0 -1 1 v18.3 a4.5 4.5 0 1 0 2 3.7 V3.5 M21.5.5 l2 1 V3.5 L21.5.5 z M9.5.5 l2 1 V3.5 L9.5.5 z M10.5 0.5 h12 v2.5 h-12 z"/>
+              </svg>
+
+              <svg class="nota-musical nota-3" viewBox="0 0 16 26" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14.5.5 a1 1 0 0 0 -1 1 v18.3 a4.5 4.5 0 1 0 2 3.7 V3.5 l2.0 -1.0 a1 1 0 0 0 -1.0 -1.0 z"/>
+              </svg>
+            </span>
+            
+            <span class="texto-menor espaco-extra alinhar-dir">Comece a <em>Dominar</em> suas</span>
+            <span class="texto-destaque branco alinhar-dir">Playlists</span>
+          </h1>
+        </div>
+
+        <div class="coluna-player">
+          
+          <div class="info-musica somente-desktop">
+            <h3 class="nome-musica">{{ musicaAtual.nome }}</h3>
+            <p class="nome-artista">{{ musicaAtual.artista }}</p>
+          </div>
+
+          <div class="timeline-container somente-desktop">
+            <span class="tempo">{{ tempoExibicao }}</span> 
+            <div class="barra-progresso">
+              <div class="progresso-preenchido" [ngClass]="{'animar-progresso': isTocando}"></div>
+            </div>
+            <span class="tempo">{{ musicaAtual.duracao }}</span>
+          </div>
+
+          <div class="player-frustracao">
+            
+            <svg class="icon-secundario somente-desktop" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="var(--verde-spotify-dk)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7 h3 c4 0, 5 8, 9 8 h4" /> 
+                <path d="M 17.5 12.5 L 20 15 L 17 17" /> 
+                <path d="M4 15 h3 c4 0, 5 -8, 9 -8 h4" />
+                <path d="M 17.5 9.5 L 20 7 L 17.5 4.5" /> 
+              </g>
+              <circle cx="12" cy="22" r="1.5" fill="var(--verde-spotify-dk)" stroke="none"/>
+            </svg>
+
+            <svg class="icon-prev" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="2" height="20" rx="1" fill="white"/>
+              <path d="M24 23.36V4.64C24 3.91185 23.1918 3.47352 22.5807 3.87034L8.18074 13.2303C7.62947 13.5882 7.62947 14.4118 8.18074 14.7697L22.5807 24.1297C23.1918 24.5265 24 24.0881 24 23.36Z" fill="white"/>
+            </svg>
+
+            <svg class="icon-pausa" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="30" r="30" fill="white"/>
+              <rect x="23" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+              <rect x="32" y="20" width="5" height="20" rx="1.5" fill="#121212"/>
+            </svg>
+
+            <div class="container-skip">
+              <svg class="icon-next" [ngClass]="{'btn-pulsando': btnSkipActive}" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="22" y="4" width="2" height="20" rx="1" fill="white" class="cor-next"/>
+                <path d="M4 23.36V4.64C4 3.91185 4.80816 3.47352 5.41926 3.87034L19.8193 13.2303C20.3705 13.5882 20.3705 14.4118 19.8193 14.7697L5.41926 24.1297C4.80816 24.5265 4 24.0881 4 23.36Z" fill="white" class="cor-next"/>
+              </svg>
+              <span *ngFor="let skip of skips" class="valor-contador">+1</span>
+            </div>
+
+            <svg class="icon-secundario somente-desktop" viewBox="0 0 16 16" fill="var(--branco-dk)" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/>
+            </svg>
+
+          </div>
+
+          <p class="subtitulo-tunify">
+            Assuma o controle total do <span class="txt-destaque verde">algoritmo</span>.<br>
+            Use a <span class="txt-destaque azul">ciência de dados</span> a seu favor e crie<br>
+            jornadas sonoras impecáveis, faixa por faixa.
+          </p>
+          
+          <button class="btn-spotify" (click)="fazerLogin()">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 0C5.373 0 0 5.373 0 12C0 18.627 5.373 24 12 24C18.627 24 24 18.627 24 12C24 5.373 18.627 0 12 0ZM17.518 17.306C17.306 17.652 16.852 17.765 16.505 17.553C13.682 15.83 10.16 15.434 5.968 16.388C5.58 16.476 5.19 16.236 5.098 15.845C5.006 15.454 5.247 15.064 5.638 14.972C10.217 13.93 14.12 14.374 17.272 16.305C17.619 16.518 17.731 16.973 17.518 17.306ZM18.988 14.053C18.724 14.482 18.163 14.613 17.733 14.349C14.488 12.35 9.53 11.758 5.72 12.913C5.233 13.061 4.721 12.784 4.573 12.296C4.425 11.808 4.702 11.296 5.19 11.148C9.553 9.824 15.013 10.493 18.75 12.788C19.18 13.051 19.311 13.612 18.988 14.053ZM19.136 10.64C15.228 8.317 8.84 8.106 5.152 9.225C4.558 9.405 3.924 9.07 3.743 8.476C3.563 7.882 3.897 7.248 4.492 7.067C8.718 5.786 15.753 6.027 20.3 8.725C20.825 9.037 20.998 9.715 20.686 10.24C20.375 10.765 19.697 10.938 19.136 10.64Z"/>
+            </svg>
+            Conectar com o Spotify
+          </button>
+
+        </div>
+      </div>
+
+      <div class="modulo-descubra-flow">
+        
+        <svg class="data-flow-double-chevron" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gradiente-chevrons" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color: currentColor; stop-opacity: 0.1" />
+              <stop offset="100%" style="stop-color: currentColor; stop-opacity: 1" />
+            </linearGradient>
+          </defs>
+          
+          <polyline class="chevron-top" points="4,10 16,22 28,10" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <polyline class="chevron-bottom" points="4,2 16,14 28,2" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+        <span class="texto-flow">DESCUBRA SEU FLOW</span>
+      </div>
+
+    </section>
+  </div> 
+  
+  <section class="secao-dados">
+    
+    <canvas #ondaCanvas class="divisor-canvas"></canvas>
+      
+    <div class="container-dados layout-duas-colunas">
+      
+      <div class="coluna-texto-dados animacao-fade-in slide-left">
+        <h2 class="titulo-dados">
+          Não é magia. <br> É <span class="txt-special-azul">Nivelamento</span> de <span class="txt-special-azul">Dados</span> em <span class="txt-special">tempo real.</span>
+        </h2>
+        
+        <p class="texto-dados">
+          Por trás de cada música que você ama, existe um esqueleto numérico fascinante. O Tunify analisa faixa por faixa, avaliando matematicamente os níveis exatos de <strong>Energia</strong>, <strong>Valência</strong> e <strong>Acústica</strong> de cada batida.
+        </p>
+        <p class="texto-dados">
+          Ao mapear as músicas que você mais escuta, nós construímos a sua verdadeira "Tabela Nutricional Sonora". Com esses dados em mãos, você deixa o modo aleatório para trás e assume o controle total das suas reproduções musicais.
+        </p>
+
+        <button class="btn-analisar" (click)="rolarParaLogin()">Analisar meu Histórico Agora</button>
+      </div>
+
+      <div class="coluna-codigo animacao-fade-in slide-right">
+            
+            <div class="mockup-vscode">
+              <div class="vscode-header">
+                <div class="mac-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+                <div class="vscode-title">tunify-scanner.json</div>
+              </div>
+
+              <div class="vscode-body">
+                
+                <div class="album-wrapper">
+                  <img [src]="musicaAtual.capa" alt="Capa do Álbum" class="capa-album" [ngClass]="{'piscar': btnSkipActive}">
+                </div>
+                
+                <div class="dados-musica-wrapper">
+                  <div class="dados-musica-wrapper">
+                  <div class="codigo-json" [ngClass]="{'piscar-codigo': btnSkipActive}">
+                    <div class="linha"><span class="chaves">{{ '{' }}</span></div>
+                    <div class="linha tab-1"><span class="chave">"track"</span>: <span class="string">"{{ musicaAtual.nome }}"</span>,</div>
+                    <div class="linha tab-1"><span class="chave">"artist"</span>: <span class="string">"{{ musicaAtual.artista }}"</span>,</div>
+                    <div class="linha tab-1"><span class="chave">"audio_features"</span>: <span class="chaves">{{ '{' }}</span></div>
+                    <div class="linha tab-2"><span class="chave">"energy"</span>: <span class="numero">{{ musicaAtual.energia }}</span>,</div>
+                    <div class="linha tab-2"><span class="chave">"valence"</span>: <span class="numero">{{ musicaAtual.valencia }}</span>,</div>
+                    <div class="linha tab-2"><span class="chave">"acousticness"</span>: <span class="numero">{{ musicaAtual.acustica }}</span></div>
+                    <div class="linha tab-1"><span class="chaves">{{ '}' }}</span></div>
+                    <div class="linha"><span class="chaves">{{ '}' }}</span></div>
+                  </div>
+                </div>
+                </div> 
+              </div>
+            </div>
+
+          </div>
+
+    </div>
+  </section>
+
+<section class="secao-playlists">
+    
+    <div class="grid-background"></div>
+
+    <div class="container-playlists">
+      
+      <div class="cabecalho-fluxo animacao-fade-in slide-up">
+        <h2 class="titulo-fluxo-figma">
+          <span class="linha-1">
+            Do <span class="txt-caos-figma">caos</span> do aleatório
+          </span>
+          <span class="linha-2">
+            para o <span class="txt-flow-figma">Flow Perfeito</span>
+          </span>
+        </h2>
+        
+        <div class="relatorio-analitico">
+            <p class="subtitulo-playlists-figma">
+                Enquanto o modo aleatório oscila agressivamente entre picos de energia e silêncios acústicos sem critério, o algoritmo Tunify alinha as faixas por proximidade harmônica, criando um fluxo progressivo e consistente que respeita a sua vibe.
+            </p>
+        </div>
+      </div>
+
+      <div class="cockpit-dados animacao-fade-in delay-1">
+        
+        <div class="painel-analise painel-caos slide-left">
+          <div class="status-header">
+            <span class="ponto-status status-ruim"></span>
+            <span class="label-status ruim">STATUS: Instável</span>
+          </div>
+          <h4 class="titulo-painel">Modo Aleatório</h4>
+          
+          <div class="visual-caos">
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2">
+              <path class="linha-base-caos" d="M0,50 Q20,10 50,50 T100,50 Q120,90 150,50 T200,50 Q220,5 250,50 T300,50 Q310,80 340,50 T400,50 Q430,20 460,50 T500,50" />
+              <path class="linha-scan-caos" d="M0,50 Q20,10 50,50 T100,50 Q120,90 150,50 T200,50 Q220,5 250,50 T300,50 Q310,80 340,50 T400,50 Q430,20 460,50 T500,50" />
+              <path class="ponto-cometa-caos" d="M0,50 Q20,10 50,50 T100,50 Q120,90 150,50 T200,50 Q220,5 250,50 T300,50 Q310,80 340,50 T400,50 Q430,20 460,50 T500,50" />
+            </svg>
+            
+            <div class="monitor-bpm bpm-caos">
+              <span>BPM:</span> <strong>{{ bpmCaos }}</strong>
+            </div>
+          </div>
+          <p class="legenda-painel">Quebras bruscas de energia e ritmo. Vibe inconsistente.</p>
+        </div>
+
+        <div class="divisor-processamento">
+          <div class="linha-vertical"></div>
+          <div class="circulo-processo">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/></svg>
+          </div>
+        </div>
+
+        <div class="painel-analise painel-flow slide-right delay-2">
+          <div class="status-header">
+            <span class="ponto-status status-boa pulsando"></span>
+            <span class="label-status boa">STATUS: Otimizado</span>
+          </div>
+          <h4 class="titulo-painel">O Flow do Tunify</h4>
+          
+          <div class="visual-flow">
+            <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="linha-svg-v2">
+              <defs>
+                <linearGradient id="gradiente-flow-scan" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#1db954;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#02d3ff;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path class="linha-base-flow" d="M0,80 C150,80 250,50 500,20" />
+              <path class="linha-scan-flow" d="M0,80 C150,80 250,50 500,20" stroke="url(#gradiente-flow-scan)" />
+              <path class="ponto-cometa-flow" d="M0,80 C150,80 250,50 500,20" />
+            </svg>
+
+            <div class="monitor-bpm bpm-flow">
+              <span>BPM:</span> <strong>{{ bpmFlow }}</strong>
+            </div>
+          </div>
+          <p class="legenda-painel">Progressão suave e inteligente. Vibe mantida em todas as faixas.</p>
+        </div>
+      </div>
+
+      <div class="stack-vibes animacao-fade-in slide-up delay-2">
+        <div class="container-vibes-layout">
+
+          <div class="coluna-texto-vibes animacao-fade-in slide-right delay-2">
+            <h3 class="titulo-stack-v3">Sua jornada sonora, <span class="txt-special">avaliada cientificamente.</span></h3>
+            <p class="texto-vibes-v3">
+              Mergulhe em playlists criadas especificamente para cada momento do seu dia. Seja para dar um gás no treino, focar no trabalho ou relaxar na estrada, o algoritmo Tunify garante a trilha sonora ideal, avaliando matematicamente a energia, o clima e a acústica de cada faixa.
+            </p>
+          </div>
+
+          <div class="coluna-cards-vibes animacao-fade-in slide-left delay-2">
+            <div class="grid-cards-figma">
+              
+              <div class="card-anki-wrap cor-frente-1" 
+                   [class.virado]="cardAtivo === 1"
+                   (mouseenter)="pausarAnimacao(1)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Foco</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag boa">ALTA ACÚSTICA</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-2" 
+                   [class.virado]="cardAtivo === 2"
+                   (mouseenter)="pausarAnimacao(2)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Treino</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag ruim">ALTA ENERGIA</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-3" 
+                   [class.virado]="cardAtivo === 3"
+                   (mouseenter)="pausarAnimacao(3)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Modo Estrada</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag especial">OTIMIZADO</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-3" 
+                   [class.virado]="cardAtivo === 4"
+                   (mouseenter)="pausarAnimacao(4)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Relax Total</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag boa">AMBIENTE</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-1" 
+                   [class.virado]="cardAtivo === 5"
+                   (mouseenter)="pausarAnimacao(5)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Descoberta</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag especial">DINÂMICO</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-anki-wrap cor-frente-2" 
+                   [class.virado]="cardAtivo === 6"
+                   (mouseenter)="pausarAnimacao(6)" 
+                   (mouseleave)="retomarAnimacao()">
+                <div class="anki-front">
+                  <h4>Festa em Casa</h4>
+                </div>
+                <div class="anki-back">
+                  <div class="anki-back-content">
+                    <span class="vibe-tag ruim">BEATS ALTO</span>
+                  </div>
+                </div>
+              </div>
+
+            </div> 
+          </div> 
+        </div> 
+      </div>
+
+      <div class="cta-final-v2 animacao-fade-in slide-up delay-3">
+        <button class="btn-spotify btn-pulsando-neon" (click)="fazerLogin()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.24 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.72 1.621.539.3.719 1.02.419 1.56-.239.54-.959.72-1.559.3z"/>
+          </svg>
+          Criar minha Jornada Sonora
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer-tunify">
+    
+    <div class="footer-divisor"></div>
+
+    <div class="footer-container">
+      
+      <div class="footer-coluna brand-coluna">
+        <h2 class="footer-logo">Tunify<span class="ponto-azul">.</span></h2>
+        <p class="footer-descricao">
+          A matemática exata por trás da sua vibe. Pare de pular músicas e comece a sentir o flow.
+        </p>
+      </div>
+
+      <div class="footer-coluna">
+        <h4 class="footer-titulo-coluna">Plataforma</h4>
+        <ul class="footer-links">
+          <li><a href="#">Início</a></li>
+          <li><a href="#">A Ciência</a></li>
+          <li><a href="#">Como Funciona</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-coluna">
+        <h4 class="footer-titulo-coluna">Legal</h4>
+        <ul class="footer-links">
+          <li><a href="/termos">Termos de Uso</a></li>
+          <li><a href="/privacidade">Política de Privacidade</a></li>
+          <li><a href="mailto:suporte@tunify.com">Contato</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Tunify. Projetado e desenvolvido por <strong>Athos Inácio</strong>.</p>
+    </div>
+
+  </footer>
+
+</main> 

@@ -68,28 +68,30 @@ import { RouterModule } from '@angular/router'; // Necessário para o botão de 
     .legal-page-container {
       min-height: 100vh;
       width: 100%;
-      background-color: var(--azul-bg-escuro, #0b1120); /* Cor de fundo da Hero */
+      box-sizing: border-box; /* 🚨 Segura a largura máxima na tela! */
+      background-color: var(--azul-bg-escuro, #0b1120);
       display: flex;
       justify-content: center;
-      padding: 4rem 1.5rem;
+      padding: 2rem 1rem; /* Respiro externo menor no celular */
     }
 
     .legal-content {
       width: 100%;
       max-width: 800px;
+      box-sizing: border-box; /* 🚨 Impede o padding de estourar o card pra fora */
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 20px;
-      padding: 2.5rem;
+      padding: 1.5rem; /* Padding interno menor no celular */
       backdrop-filter: blur(10px);
       color: var(--branco-dk, #ffffff);
       font-family: var(--fonte-principal, sans-serif);
     }
 
     .legal-header {
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 2rem;
+      padding-bottom: 1.5rem;
     }
 
     .btn-voltar {
@@ -99,7 +101,7 @@ import { RouterModule } from '@angular/router'; // Necessário para o botão de 
       color: var(--azul-dk, #0285ff);
       text-decoration: none;
       font-weight: 600;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       transition: transform 0.2s ease;
       cursor: pointer;
     }
@@ -114,35 +116,36 @@ import { RouterModule } from '@angular/router'; // Necessário para o botão de 
     }
 
     .legal-title {
-      font-size: 2.5rem;
+      font-size: 2rem; /* Fonte um pouco menor no mobile */
       font-weight: 800;
       margin: 0 0 0.5rem 0;
       letter-spacing: -0.5px;
+      line-height: 1.1;
     }
 
     .legal-date {
       color: var(--cinza-claro-dk, #a0aabf);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin: 0;
     }
 
     .legal-body p, .legal-body li {
-      font-size: 1.05rem;
-      line-height: 1.7;
+      font-size: 1rem;
+      line-height: 1.6;
       color: var(--branco-azulado-dk, #c4d2eb);
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .legal-body h2 {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--branco-dk, #ffffff);
-      margin: 2.5rem 0 1rem 0;
+      margin: 2rem 0 1rem 0;
     }
 
     .legal-body ul, .legal-body ol {
-      margin-bottom: 1.5rem;
-      padding-left: 1.5rem;
+      margin-bottom: 1.2rem;
+      padding-left: 1.2rem;
     }
 
     .legal-body strong {
@@ -156,6 +159,25 @@ import { RouterModule } from '@angular/router'; // Necessário para o botão de 
     @keyframes surgirDeBaixo {
       0% { opacity: 0; transform: translateY(20px); }
       100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- RESPONSIVIDADE SÊNIOR (Tablet e Desktop) --- */
+    @media (min-width: 768px) {
+      .legal-page-container {
+        padding: 4rem 2rem;
+      }
+      .legal-content {
+        padding: 3rem; /* Fica luxuoso no PC */
+      }
+      .legal-title {
+        font-size: 2.8rem;
+      }
+      .legal-body p, .legal-body li {
+        font-size: 1.05rem;
+      }
+      .legal-body h2 {
+        font-size: 1.5rem;
+      }
     }
   `]
 })
