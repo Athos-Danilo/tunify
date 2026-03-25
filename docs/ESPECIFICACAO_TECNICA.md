@@ -2,11 +2,11 @@
 
 **Slogan:** "A matemática da sua vibe."
 
-**Versão:** 1.0.3
+**Versão:** 1.0.4
 
 **Status:** Desenvolvimento
 
-**Data da Atualização:** 19/03/2026
+**Data da Atualização:** 25/03/2026
 
 ---
 
@@ -101,6 +101,13 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RF29 - Métrica "Super Fã" (Loyalty Score):** O Dashboard deve exibir uma métrica de lealdade para os artistas mais ouvidos, indicando a concentração de faixas daquele artista na biblioteca pessoal do usuário.
 * **RF30 - Análise Demográfica de Artistas (Gender Breakdown):** O sistema deve analisar as faixas mais ouvidas/curtidas do usuário e apresentar a distribuição demográfica dos artistas (Masculino, Feminino, Banda/Grupo, Não-Binário/Outros) através de um gráfico de rosca (Donut Chart) no Dashboard. A interface deve gerar um *insight* dinâmico em texto baseado na predominância (ex: "Seu fone de ouvido é dominado por vozes femininas!").
 
+### **Módulo 7: Transmissão Direta (Comunicação e Feedback)**
+
+* **RF31 - Formulário de Transmissão Direta:** O sistema deve fornecer uma interface dedicada ("Contato") para comunicação entre o usuário e a equipe de engenharia. O formulário deve obrigar a categorização da mensagem através de "chips" predefinidos: *Anomalia na Matrix* (Bug), *Ideia Brilhante* (Feature Request), *Frequência Positiva* (Elogio) e *Ajuste de Rota* (Crítica).
+* **RF32 - Captura Condicional de Contato:** Respeitando o princípio da privacidade, o campo de entrada de e-mail deve ser renderizado condicionalmente. Só será exibido e exigido se o usuário marcar explicitamente a opção de solicitação de retorno ("Gostaria de receber um retorno da equipe").
+* **RF33 - Feedback Visual Transacional:** Após a submissão bem-sucedida do formulário à API, o frontend deve interceptar a resposta e exibir um modal/pop-up de confirmação (sem recarregar a página), limpando o estado do formulário em seguida.
+
+---
 ---
 
 ## **4. Regras de Negócio (RN)**
@@ -166,6 +173,7 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RN17 - Geração Dinâmica do Dicionário:** O Spotify possui milhares de micro-gêneros dinâmicos. O Backend não deve ser pré-populado com textos fixos. 
   * *Lógica:* Quando um usuário requisitar informações de um gênero específico, o Backend fará uma busca assíncrona em uma fonte externa (ex: Wikipedia API ou um prompt estruturado via LLM API) solicitando um resumo padronizado.
   * *Estratégia de Cache:* O resumo gerado será salvo na tabela `genres_dictionary`. Consultas subsequentes de qualquer usuário para aquele mesmo gênero consumirão apenas o banco de dados local (Cache Hit), garantindo alta velocidade e custo zero de API externa.
+* **RN18 - Validação Dinâmica de Feedback (Schema-less Input):** Como os feedbacks dos usuários possuem natureza variável (tamanhos de texto distintos, presença ou ausência de e-mail), a validação estrutural (Pydantic) ocorrerá exclusivamente na camada da API (FastAPI) para sanitização. No nível de banco de dados, o registro será tratado como um documento JSON livre, garantindo flexibilidade para adição de novos campos no frontend no futuro sem necessidade de migrações complexas.
 ---
 
 ## **5. Requisitos Não-Funcionais (RNF)**
@@ -176,20 +184,21 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 
 * **RNF01 - Latência de Resposta:** Endpoints de leitura local (Dashboard) devem responder em < 150ms. Endpoints de Geração de Playlist (que dependem da API externa) devem responder o *status* do Job em < 200ms, delegando o processamento para *Background Tasks*.  
 * **RNF02 - Cache Strategy (Redis):** Dados imutáveis de músicas (*Audio Features*) devem ter TTL (Time-To-Live) de 30 dias no Redis. Perfis de usuário devem ter TTL de 1 hora.
+* **RNF03 - Arquitetura de Persistência Poliglota (Polyglot Persistence):** O ecossistema de banco de dados será expandido para suportar o paradigma poliglota. Enquanto o PostgreSQL garante a integridade relacional do core (Usuários, Históricos, Caches de Áudio), o módulo de "Transmissão Direta" será gravado exclusivamente em um banco de dados orientado a documentos (**MongoDB**). 
+* **RNF04 - Escrita Assíncrona Não-Bloqueante:** A injeção de documentos no MongoDB deve ser realizada pela API FastAPI de forma estritamente assíncrona (utilizando o driver `Motor` do Python). A thread principal não deve ser bloqueada aguardando o commit no banco, garantindo que o tempo de resposta da rota de contato seja inferior a 100ms.
 
 ### **Segurança**
 
-* **RNF03 - Criptografia em Repouso:** Tokens sensíveis (*Refresh Token*) devem ser criptografados no banco de dados usando algoritmos robustos (ex: Fernet/AES-256) via biblioteca de criptografia do Python.  
-* **RNF04 - Tratamento de Rate Limit (Circuit Breaker):** Se o Spotify retornar erro 429 (Too Many Requests), o sistema deve interromper chamadas externas para aquele usuário por X segundos (Exponential Backoff) e notificar o Frontend, em vez de falhar silenciosamente.
+* **RNF05 - Criptografia em Repouso:** Tokens sensíveis (*Refresh Token*) devem ser criptografados no banco de dados usando algoritmos robustos (ex: Fernet/AES-256) via biblioteca de criptografia do Python.  
+* **RNF06 - Tratamento de Rate Limit (Circuit Breaker):** Se o Spotify retornar erro 429 (Too Many Requests), o sistema deve interromper chamadas externas para aquele usuário por X segundos (Exponential Backoff) e notificar o Frontend, em vez de falhar silenciosamente.
 
 ### **Acessibilidade e Experiência do Usuário (UI/UX)**
 
-* **RNF05 - Arquitetura de Theming:** A alternância de temas deve ser desenvolvida utilizando variáveis CSS nativas (Custom Properties) e as capacidades de Theming do Angular Material. A arquitetura deve garantir que não haja recarregamento da página ao trocar o tema e que ambas as paletas respeitem as regras de contraste visual para leitura confortável.
+* **RNF07 - Arquitetura de Theming:** A alternância de temas deve ser desenvolvida utilizando variáveis CSS nativas (Custom Properties) e as capacidades de Theming do Angular Material. A arquitetura deve garantir que não haja recarregamento da página ao trocar o tema e que ambas as paletas respeitem as regras de contraste visual para leitura confortável.
 
 ### **Segurança**
 
-* **RNF06 - Estratégia de Keep-Alive (Prevenção de Cold Start):** Para garantir a execução ininterrupta das rotas de automação e Playlists Vivas (RF15) em ambientes de hospedagem com planos gratuitos (como o Render), o Backend deve expor um endpoint de Health Check (ex: GET /health). Um serviço externo de monitoramento (ex: UptimeRobot ou cron-job.org) será configurado para realizar pings HTTP periódicos (ex: a cada 14 minutos) neste endpoint, impedindo a hibernação por inatividade do contêiner da aplicação.
-
+* **RNF08 - Estratégia de Keep-Alive (Prevenção de Cold Start):** Para garantir a execução ininterrupta das rotas de automação e Playlists Vivas (RF15) em ambientes de hospedagem com planos gratuitos (como o Render), o Backend deve expor um endpoint de Health Check (ex: GET /health). Um serviço externo de monitoramento (ex: UptimeRobot ou cron-job.org) será configurado para realizar pings HTTP periódicos (ex: a cada 14 minutos) neste endpoint, impedindo a hibernação por inatividade do contêiner da aplicação.
 ---
 
 ## **6. Qualidade de Software e Testes Automatizados**
@@ -327,5 +336,23 @@ Esquema relacional otimizado para performance e integridade.
 * `description` (Text): Resumo curto e direto (máximo de 2 parágrafos).
 * `trivia` (String): Fato curioso ou trivia rápida sobre o gênero para engajamento.
 * `updated_at` (Timestamp): Data da última atualização do registro.
+
+---
+
+### **8.1. Modelagem de Dados (MongoDB Collections)**
+
+Esquema orientado a documentos (*Schema-less*), projetado para flexibilidade estrutural, evolução rápida do formulário e altíssima velocidade de gravação assíncrona.
+
+**Coleção: transmissoes_diretas** (Feedbacks e Comunicações)
+
+* `_id` (ObjectId, PK): Identificador único gerado automaticamente de forma nativa pelo MongoDB.
+* `user_id` (UUID, Referência Externa -> postgres.users.id, Opcional): Referência cruzada lógica com o banco relacional. Preenchido apenas se o usuário estiver autenticado no momento do envio.
+* `tipo_mensagem` (String/Enum): A classificação da transmissão (`bug`, `ideia`, `elogio`, `critica`).
+* `assunto` (String): Título descritivo fornecido pelo usuário.
+* `mensagem` (Text): Corpo detalhado do feedback (JSON string).
+* `solicita_retorno` (Boolean): Flag indicando a preferência de contato.
+* `email_contato` (String, Opcional): E-mail para resposta. Apenas armazenado se `solicita_retorno` for `true`.
+* `status_interno` (String/Enum): Campo de controle para o futuro painel de administração da equipe (`PENDENTE`, `EM_ANALISE`, `RESOLVIDO`). Padrão de inserção: `PENDENTE`.
+* `created_at` (ISODate): Timestamp padrão ISO-8601 marcando o recebimento exato do payload.
 
 **Data de Criação do Projeto:** 18/02/2026
