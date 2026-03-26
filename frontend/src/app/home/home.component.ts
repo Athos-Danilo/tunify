@@ -132,7 +132,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.iniciarSimulacaoSkips();
     this.iniciarCarrosselCards(); // <--- CHAMA A ANIMAÇÃO DOS CARDS AQUI
-    this.iniciarMonitoresBPM();
   }
 
   // ======> Ciclo de Vida: Pós-Renderização.
@@ -160,9 +159,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.simulacaoAtiva = false;
     cancelAnimationFrame(this.animationFrameId); 
     this.pararCarrosselCards(); // <--- MATA O RELÓGIO DOS CARDS AO SAIR
-    // 🚨 DESLIGA OS MONITORES
-    if (this.timerBpmCaos) clearInterval(this.timerBpmCaos);
-    if (this.timerBpmFlow) clearInterval(this.timerBpmFlow);
   }
 
   // ======> O Contador de Passar Músicas.
@@ -434,31 +430,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.iniciarCarrosselCards(); // Acorda o robô para voltar a sortear cards
   }
 
- // ========================================================================= //
-  // --- MOTOR DOS MONITORES DE BPM ---
-  // ========================================================================= //
-  iniciarMonitoresBPM() {
-    // 1. O CAOS (Pulsa entre 60 e 170 a cada 1.5s, mais cadenciado agora)
-    this.timerBpmCaos = setInterval(() => {
-      if (!this.simulacaoAtiva) return;
-      this.bpmCaos = Math.floor(Math.random() * (170 - 60 + 1)) + 60;
-      this.cdr.detectChanges();
-    }, 1500); 
 
-    // 2. O FLOW (Começa em 72, sobe de 1 em 1 até 120 e reseta)
-    this.bpmFlow = 72; // Valor inicial garantido
-    
-    this.timerBpmFlow = setInterval(() => {
-      if (!this.simulacaoAtiva) return;
-      
-      this.bpmFlow += 1; // Sobe o batimento suavemente
-      
-      if (this.bpmFlow > 120) {
-        this.bpmFlow = 72; // Reseta ao chegar no pico
-      }
-      
-      this.cdr.detectChanges();
-    }, 80); // A cada 80ms ele sobe 1 número (vai levar quase os mesmos 4s do CSS)
-  }
 
 }
