@@ -56,14 +56,18 @@
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 1.5rem 5%; /* Espaçamento lateral seguro para celular */
+  padding: 2rem 7%; /* Espaçamento lateral seguro para celular */
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 50; /* Garante que fique acima de tudo, incluindo o canvas */
 
+  @include tela-media {
+    padding: 3rem 7%;
+  }
+
   @include tela-grande {
-    padding: 2rem 8%; /* Respira mais no desktop */
+    padding: 4rem 8%; /* Respira mais no desktop */
   }
 }
 
@@ -127,43 +131,40 @@
   font-weight: 400;
 }
 
-/*=========================================================================
-   TEXTO DESTAQUE DA HERO (Efeito Subwoofer / Batida Rápida)
-=========================================================================*/
+
+/*--- Palavra "Música" ---*/
 .texto-destaque {
   font-family: var(--fonte-especial, sans-serif);
   font-size: 3.9rem; 
   font-weight: 800;
-  
-  /* O SEGREDO: Permite que o transform funcione no span */
   display: inline-block; 
   will-change: transform; 
 
-  @include tela-media { font-size: 5rem; }
-  @include tela-grande { font-size: 6.5rem; }
+  @include tela-media { 
+    font-size: 5rem; 
+  }
+
+  @include tela-grande { 
+    font-size: 6.5rem; 
+  }
 }
 
 .texto-destaque.azul {
   color: var(--azul-dk); 
-  /* Animação dura 3 segundos totais no loop */
   animation: pulsoBatida 3s infinite;
 }
 
-/* A Matemática da Batida Seca */
 @keyframes pulsoBatida {
   0% { 
     transform: scale(1); 
   }
   4% { 
-    /* Cresce bem rápido (em aprox. 0.12 segundos) */
     transform: scale(1.06); 
   }
   8% { 
-    /* Volta pro normal tão rápido quanto cresceu */
     transform: scale(1); 
   }
   100% { 
-    /* Passa os outros 2.7 segundos imóvel, esperando o próximo loop */
     transform: scale(1); 
   }
 }
@@ -393,7 +394,7 @@
 
 // Ícones (Aleatório / Repetir) <<< Modo Claro >>>
 .tema-claro .icon-secundario {
-  fill: var(--cinza-escuro-lt);
+  fill: #2a2a2e;
 }
 
 .icon-prev {
@@ -465,7 +466,7 @@
 .tema-claro .icon-prev path,
 .tema-claro .icon-next .cor-next,
 .tema-claro .icon-pausa circle {
-  fill: var(--cinza-escuro-lt);
+  fill: #2a2a2e;
 }
 
 // Icone de Pausa (Duas Barras) <<< Modo Claro >>>
@@ -601,15 +602,15 @@
   animation: puloDoBotao 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards !important;
 }
 
-/* O molde invisível que segura o layout quando o botão reencarna */
+/* O molde invisível que segura o layout quando o botão some para fazer a animação do botão da segunda seção */
 .molde-botao-spotify {
-  min-height: 65px; /* Ajuste esse valor se o seu botão for mais alto ou mais baixo */
+  min-height: 65px; 
   display: flex;
-  justify-content: center; /* Mantém o botão centralizado */
+  justify-content: center; 
   align-items: center;
 }
 
-/*---------- Botão do Tema V2 (Neon Toggle) ----------*/
+/*---------- Botão do Tema ----------*/
 .btn-tema-neon {
   background: transparent;
   border: none;
@@ -620,30 +621,35 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* O fundo do botão (a cápsula) */
+/* Fundo do botão */
 .btn-tema-neon .track {
   width: 68px;
   height: 34px;
-  background-color: #464646; /* 🚨 Ajuste do Modo Claro */
+  background-color: var(--branco-azulado-lt);
   border-radius: 34px;
   position: relative;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
   transition: all 0.4s ease;
 
-  /* 🚨 Crescimento Responsivo da Cápsula */
-  @include tela-media { width: 80px; height: 40px; }
-  @include tela-grande { width: 96px; height: 48px; }
+  @include tela-media { 
+    width: 80px; 
+    height: 40px; 
+  }
+
+  @include tela-grande { 
+    width: 96px; 
+    height: 48px; 
+  }
 }
 
-/* A Bolinha que desliza */
+/* Bolinha */
 .btn-tema-neon .knob {
   position: absolute;
-  /* 🚨 Ajuste de Centralização: Compensando a borda exata de 1px */
   top: 2px; 
   left: 2px; 
   width: 28px;
   height: 28px;
-  background-color: var(--cinza-escuro-lt); /* Bolinha mais clara no modo dia */
+  background-color: var(--cinza-escuro-lt); 
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -654,12 +660,18 @@
               border 0.4s ease,
               background-color 0.4s ease;
   
-  box-shadow: 0 0 10px rgba(252, 251, 247, 0.623), inset 0 0 4px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(249, 237, 208, 0.4);
+  box-shadow: 0 0 10px rgba(85, 85, 85, 0.899), inset 0 0 4px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(209, 207, 207, 0.464);
 
-  /* 🚨 Crescimento Responsivo da Bolinha */
-  @include tela-media { width: 34px; height: 34px; }
-  @include tela-grande { width: 42px; height: 42px; }
+  @include tela-media { 
+    width: 34px; 
+    height: 34px; 
+  }
+
+  @include tela-grande { 
+    width: 42px; 
+    height: 42px; 
+  }
 }
 
 /* --- Ícones SVG --- */
@@ -668,9 +680,15 @@
   height: 14px;
   transition: all 0.3s ease;
 
-  /* Crescem junto com o botão */
-  @include tela-media { width: 18px; height: 18px; }
-  @include tela-grande { width: 22px; height: 22px; }
+  @include tela-media { 
+    width: 18px; 
+    height: 18px; 
+  }
+
+  @include tela-grande { 
+    width: 22px; 
+    height: 22px; 
+  }
 }
 
 .icone-sol {
@@ -679,22 +697,20 @@
 }
 
 .icone-lua {
-  stroke: #02d3ff; /* O Azul do seu print */
+  stroke: #02d3ff; 
   filter: drop-shadow(0 0 3px #02d3ff);
 }
 
-/*=========================================================================
-   O GATILHO: QUANDO O MODO ESCURO ATIVA (A cópia do seu Print!)
-=========================================================================*/
+// Botão do Tema <<< Modo Escuro >>>
+.tema-claro .btn-tema-neon
 .btn-tema-neon.is-escuro .track {
-  background-color: var(--azul-escuro-dk); /* Fica fundo escuro profundo */
+  background-color: var(--azul-escuro-dk); 
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .btn-tema-neon.is-escuro .knob {
-  background-color: #1a1e29; /* Bolinha escura */
+  background-color: #1a1e29; 
   
-  /* Celular: Distância de rolagem = track(68) - knob(30 total) - margem(2) = 36px. Pra ficar simétrico na direita: 34px */
   transform: translateX(34px); 
   
   box-shadow: 
@@ -703,16 +719,15 @@
     inset 0 0 4px rgba(255, 255, 255, 0.3); 
   border: 1px solid rgba(2, 211, 255, 0.6);
 
-  /* 🚨 Matemática do Deslizamento para Telas Maiores */
   @include tela-media {
-    transform: translateX(42px); /* 80 - 36 - 2 */
+    transform: translateX(42px); 
   }
+
   @include tela-grande {
-    transform: translateX(50px); /* 96 - 44 - 2 */
+    transform: translateX(50px); 
   }
 }
 
-/* O detalhe absurdo: O "Lens Flare" (Aquele pontinho branco de luz forte no topo) */
 .btn-tema-neon.is-escuro .knob::after {
   content: '';
   position: absolute;
@@ -725,36 +740,34 @@
   filter: blur(1.5px);
   transform: rotate(-30deg);
 
-  /* Flare acompanha o tamanho nas telas */
-  @include tela-media { width: 10px; height: 4px; left: 7px; }
-  @include tela-grande { width: 12px; height: 5px; left: 9px; }
+  @include tela-media { 
+    width: 10px; 
+    height: 4px; 
+    left: 7px; 
+  }
+
+  @include tela-grande { 
+    width: 12px; 
+    height: 5px; 
+    left: 9px; 
+  }
 }
 
-/* ==========================================================================
-   NOVO: MÓDULO DESCUBRA O FLOW (Scroll Down)
-========================================================================== */
+/*---------- Deslize a tela ----------*/
 .modulo-descubra-flow {
   position: absolute;
   bottom: 2rem;
-  /* --- A Mágica de centralizar sem conflitar com animações --- */
   left: 0;
   right: 0;
   margin: 0 auto;
   width: fit-content; 
-  /* ----------------------------------------------------------- */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   z-index: 50;
-  cursor: pointer;
   transition: transform 0.3s ease;
-  opacity: 0; /* Começa invisível para entrar junto com a Hero */
-
-  /* Efeito magnético ao passar o mouse */
-  &:hover {
-    transform: translateY(5px);
-  }
+  opacity: 0; 
 }
 
 .texto-flow {
@@ -768,14 +781,14 @@
 }
 
 .tema-claro .texto-flow {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--cinza-escuro-lt);
 }
 
-/* O SVG do Duplo Chevron Sênior */
+/*--- SVG ---*/
 .data-flow-double-chevron {
   width: 28px;
   height: 28px;
-  stroke: rgba(255, 255, 255, 0.3); /* Cor apagada base */
+  stroke: rgba(255, 255, 255, 0.3); 
 
   .chevron-top {
     animation: pulsarChevron 2s infinite;
@@ -783,7 +796,7 @@
   
   .chevron-bottom {
     animation: pulsarChevron 2s infinite;
-    animation-delay: 0.2s; /* O Atraso Mágico que cria a cascata de luz! */
+    animation-delay: 0.2s; 
   }
 }
 
@@ -791,7 +804,6 @@
   stroke: rgba(0, 0, 0, 0.3);
 }
 
-/* O Motor da Cascata Neon */
 @keyframes pulsarChevron {
   0% {
     opacity: 0;
@@ -800,7 +812,7 @@
   50% {
     opacity: 1;
     transform: translateY(0);
-    stroke: var(--azul-dk, #0285ff); /* Pisca no Azul da marca no auge do pulso */
+    stroke: var(--azul-dk, #0285ff); 
     filter: drop-shadow(0 0 5px rgba(2, 133, 255, 0.6));
   }
   100% {
@@ -841,7 +853,6 @@
   animation: surgirDeBaixo 0.8s ease-out 1.2s forwards; 
 }
 
-/* Integração com a sua animação de entrada que já existia na página */
 .play-animacoes .btn-tema-neon {
   animation: zoomInSuave 0.5s ease-out 1.4s forwards; 
 }
@@ -1069,9 +1080,13 @@
   line-height: 1.6;
   margin-bottom: 1.5rem;
   
-  @include tela-media { font-size: 1.15rem; }
-  @include tela-grande { font-size: 1.25rem; }
+  @include tela-media { 
+    font-size: 1.15rem; 
+  }
 
+  @include tela-grande { 
+    font-size: 1.25rem; 
+  }
 
   strong {
     color: var(--verde-spotify-dk);
@@ -1079,8 +1094,13 @@
     font-weight: 500;
     font-style: italic;
 
-    @include tela-media { font-size: 1.2rem; }
-    @include tela-grande { font-size: 1.3rem; }
+    @include tela-media { 
+      font-size: 1.2rem; 
+    }
+
+    @include tela-grande { 
+      font-size: 1.3rem; 
+    }
   }
 }
 
@@ -1111,7 +1131,6 @@
 }
 
 /*---------- Coluna Código ----------*/
-
 /*--- Terminal do VS Code---*/
 .mockup-vscode {
   width: 100%;
@@ -1278,25 +1297,24 @@
 .animacao-fade-in {
   opacity: 0; /* Começa invisível */
   transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1); 
-  will-change: transform, opacity; /* Ajuda o navegador a otimizar */
+  will-change: transform, opacity; 
   
-  // Direções do Slide
-  &.slide-up { transform: translateY(40px); } // Vem de baixo
-  &.slide-left { transform: translateX(-40px); } // Vem da esquerda
-  &.slide-right { transform: translateX(40px); } // Vem da direita
+  /* Direções do Slide */
+  &.slide-up { transform: translateY(40px); } 
+  &.slide-left { transform: translateX(-40px); } 
+  &.slide-right { transform: translateX(40px); } 
 }
 
 .animacao-fade-in.visivel {
   opacity: 1; 
-  transform: translate(0, 0) !important; /* Volta pra posição original */
+  transform: translate(0, 0) !important; 
 }
 
-/*--- DELAYS (Efeito Cascata no mobile) ---*/
+/*--- DELAYS  ---*/
 .delay-1 { transition-delay: 0.2s; }
 .delay-2 { transition-delay: 0.4s; }
-.delay-3 { transition-delay: 0.6s; } 
 
-// No desktop, o terminal pode vir logo depois do texto
+/* No desktop, o terminal pode vir logo depois do texto */
 @include tela-grande {
   .coluna-codigo { transition-delay: 0.3s; }
 }
@@ -1307,41 +1325,43 @@
 .secao-playlists {
   position: relative;
   width: 100%;
-  padding: 6rem 1rem; /* Mobile first: Respiro nas laterais */
+  padding: 2rem 1rem; 
   background-color: var(--azul-muito-escuro-dk);
-  overflow: hidden; /* Garante que nada corte pro lado no celular */
+  overflow: hidden; 
   box-sizing: border-box;
 
-  @include tela-media { padding: 7rem 2rem; }
-  @include tela-grande { padding: 4rem 2rem; }
+  @include tela-media { 
+    padding: 2.5rem 8rem; 
+  }
+
+  @include tela-grande { 
+    padding: 4rem 2rem; 
+  }
 }
 
+// Fundo <<< Modo Claro >>>
 .tema-claro .secao-playlists { background-color: var(--branco-lt); }
 
-/*--- 1. Grid Técnico de Fundo (A vibe laboratório) ---*/
+/*--- Backgrond de Grid ---*/
 .grid-background {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   
-  // Cria um grid sutil de linhas finas
   background-image: 
     linear-gradient(var(--azul-escuro-dk) 1px, transparent 1px),
     linear-gradient(90deg, var(--azul-escuro-dk) 1px, transparent 1px);
-  background-size: 50px 50px; /* Tamanho dos quadrados do grid */
+  background-size: 50px 50px; 
   background-position: center;
   opacity: 0.5;
   pointer-events: none;
   z-index: 1;
 }
 
+// Grid <<< Modo Claro >>>
 .tema-claro .grid-background {
-  // Grudamos o parêntese no nome da função (sintaxe correta)
   background-image: 
     linear-gradient(var(--cinza-claro-lt) 1px, transparent 1px),
     linear-gradient(90deg, var(--cinza-claro-lt) 1px, transparent 1px);
-  
-  // Como o fundo é branco e as linhas são verdes, 
-  // pode deixar o opacity em 1 pra elas ficarem bem visíveis.
   opacity: 0.3; 
 }
 
@@ -1349,22 +1369,22 @@
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
-  z-index: 5; /* Fica acima do grid */
+  z-index: 5; 
   display: flex;
   flex-direction: column;
-  gap: 4rem; /* Espaço entre os blocos no mobile */
+  gap: 2rem; 
 
   @include tela-grande { gap: 6rem; }
 }
 
-/*--- 2. Cabeçalho Cascata (Estilo Seção 1) ---*/
+/*---------- Textos de Apresentação ----------*/
 .cabecalho-fluxo {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  margin-bottom: 3rem; /* Espaço entre o texto e os gráficos */
+  margin-bottom: 3rem; 
 }
 
 /*--- O Título Principal ---*/
@@ -1376,13 +1396,13 @@
   line-height: 1.2;
   display: flex;
   flex-direction: column; 
-  align-items: center; /* Mobile: Tudo centralizado */
+  align-items: center; 
+  text-align: center;
   width: 100%;
   margin: 0 auto 1.5rem auto;
 
   span { display: block; }
 
-  /* A palavra "caos" riscada e branca */
   .txt-caos-figma {
     font-family: var(--fonte-especial, sans-serif);
     font-weight: 800;
@@ -1391,7 +1411,6 @@
     display: inline-block;
   }
 
-  /* O "Flow Perfeito" Neon */
   .txt-flow-figma {
     font-family: var(--fonte-especial, sans-serif);
     color: var(--azul-dk);
@@ -1405,29 +1424,29 @@
     .txt-flow-figma { font-size: 3.2rem; }
   }
 
-  /* 🚨 A MÁGICA DO DESKTOP (Efeito Degrau) 🚨 */
   @include tela-grande {
     font-size: 3.5rem;
-    max-width: 800px; /* Controla a largura do bloco degrau */
-    align-items: stretch; /* Permite que as linhas se movam para os lados */
+    max-width: 800px; 
+    align-items: stretch;
     
     .linha-1 { 
-      align-self: flex-start; /* Joga a primeira linha pra esquerda */
+      align-self: flex-start; 
     }
     
     .linha-2 { 
-      align-self: flex-end; /* Joga a segunda linha pra direita */
-      margin-top: -10px; /* Gruda um pouco mais as linhas */
+      align-self: flex-end; 
+      margin-top: -10px; 
     }
 
     .txt-flow-figma { font-size: 4rem; }
   }
 }
 
+// Título <<< Modo Claro >>>
 .tema-claro .titulo-fluxo-figma { color: var(--preto-lt); }
 .tema-claro .txt-caos-figma { color: var(--preto-lt); }
 
-/*--- O Parágrafo Analítico ---*/
+/*--- Parágrafo ---*/
 .relatorio-analitico {
   display: flex;
   flex-direction: column;
@@ -1443,20 +1462,27 @@
   font-weight: 300;
   color: var(--branco-azulado-dk);
   line-height: 1.6;
-  text-align: center; 
+  text-align: justify; 
   margin: 0;
   padding: 0 1rem; 
 
-  @include tela-media { font-size: 1.15rem; }
-  @include tela-grande { font-size: 1.25rem; }
+  @include tela-media { 
+    font-size: 1.15rem; 
+  }
+  
+  @include tela-grande { 
+    font-size: 1.25rem; 
+  }
 }
 
+// Subtítulo <<< Modo Claro >>>
 .tema-claro .subtitulo-playlists-figma { color: var(--cinza-escuro-lt); }
 
 
 /*=========================================================================
    3. COCKPIT ANALÍTICOS V3 (DUAL-LINE SCAN + RADIAL GLOW + BPM)
 =========================================================================*/
+/*--- Grádificos ---*/
 .cockpit-dados {
   width: 100%;
   display: flex;
