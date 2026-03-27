@@ -353,19 +353,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     desenharFrame();
   }
 
-  // ======> Navegação Suave (Smooth Scroll)
-  // Faz a tela deslizar de volta para o botão oficial do Spotify
-  rolarParaLogin() {
-    // Procura o botão verde lá da primeira seção
-    const btnSpotify = document.querySelector('.btn-spotify');
+  // 1. O botão sempre começa visível
+  mostrarBotaoSpotify: boolean = true;
+  // 2. Controla se ele usa a animação lenta (padrão) ou a rápida
+  fazerPuloRapido: boolean = false;
+
+  voltarParaHeroEAnimar() {
+    // Rola a tela
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 3. A REENCARNAÇÃO: Destrói o botão no HTML
+    this.mostrarBotaoSpotify = false;
     
-    if (btnSpotify) {
-      // Desliza a tela até ele e centraliza no meio da visão do usuário
-      btnSpotify.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      // Fallback de segurança: se não achar o botão, rola pro topo da página
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // 4. Avisa que quando ele voltar, tem que ser com a classe rápida
+    this.fazerPuloRapido = true;
+
+    // 5. Recria o botão quase instantaneamente (10 milissegundos).
+    // O usuário nem vai ver ele sumindo porque a tela ainda vai estar rolando lá pra cima!
+    setTimeout(() => {
+      this.mostrarBotaoSpotify = true;
+    }, 10); 
   }
   
   // ========================================================================= //
