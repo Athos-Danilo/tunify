@@ -1,0 +1,8 @@
+# Dependências do Node (Caixa de ferramentas do robô)
+node_modules/
+
+# Relatórios e Evidências gerados automaticamente a cada teste
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/

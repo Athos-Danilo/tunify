@@ -1,0 +1,25 @@
+{
+  "name": "tunify",
+  "version": "1.0.0",
+  "description": "> **\"A matemática da sua vibe.\"**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Athos-Danilo/tunify.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Athos-Danilo/tunify/issues"
+  },
+  "homepage": "https://github.com/Athos-Danilo/tunify#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}
