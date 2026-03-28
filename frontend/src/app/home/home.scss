@@ -625,7 +625,7 @@
 .btn-tema-neon .track {
   width: 68px;
   height: 34px;
-  background-color: var(--branco-azulado-lt);
+  background-color: var(--azul-muito-escuro-dk);
   border-radius: 34px;
   position: relative;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -640,6 +640,11 @@
     width: 96px; 
     height: 48px; 
   }
+}
+
+// Fundo do botão do Tema <<< Modo Claro >>>
+.tema-claro .btn-tema-neon .track {
+  background-color: var(--branco-azulado-lt);
 }
 
 /* Bolinha */
@@ -1478,11 +1483,7 @@
 // Subtítulo <<< Modo Claro >>>
 .tema-claro .subtitulo-playlists-figma { color: var(--cinza-escuro-lt); }
 
-
-/*=========================================================================
-   3. COCKPIT ANALÍTICOS V3 (DUAL-LINE SCAN + RADIAL GLOW + BPM)
-=========================================================================*/
-/*--- Grádificos ---*/
+/*---------- Seção dos Gráficos ---------- */
 .cockpit-dados {
   width: 100%;
   display: flex;
@@ -1497,10 +1498,10 @@
   }
 }
 
-/*--- Painel Base (Com Overflow Hidden para segurar os brilhos) ---*/
+/*--- Retângulo Base ---*/
 .painel-analise {
   flex: 1;
-  background-color: rgba(0, 0, 0, 0.4); 
+  background-color: rgba(0, 0, 0, 0.5); 
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   padding: 1.5rem;
@@ -1509,12 +1510,13 @@
   overflow: hidden; 
 }
 
+// Retângulo <<< Modo Claro >>>
 .tema-claro .painel-analise {
   background-color: var(--branco-azulado-lt);
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/*--- OS BRILHOS RADIAIS DE FUNDO ---*/
+/*--- Brilhos radiais de fundo (Modo Aleatório) ---*/
 .painel-caos::before {
   content: '';
   position: absolute;
@@ -1526,6 +1528,7 @@
   z-index: 0;
 }
 
+/*--- Brilhos radiais de fundo (Modo Flow) ---*/
 .painel-flow::before {
   content: '';
   position: absolute;
@@ -1544,10 +1547,36 @@
 }
 
 /*--- Status Header ---*/
-.status-header { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
-.ponto-status { width: 10px; height: 10px; border-radius: 50%; }
-.status-ruim { background-color: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.5); }
-.status-boa { background-color: var(--verde-spotify-dk); box-shadow: 0 0 8px rgba(30, 215, 96, 0.5); }
+.status-header { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  margin-bottom: 1rem; 
+}
+
+.ponto-status { 
+  width: 10px; 
+  height: 10px; 
+  border-radius: 50%; 
+}
+
+.pulsando { animation: pulsoStatus 1.5s infinite; }
+
+@keyframes pulsoStatus { 
+  0% { opacity: 1; } 
+  50% { opacity: 0.5; } 
+  100% { opacity: 1; } 
+}
+
+.status-ruim { 
+  background-color: #ff5f56; 
+  box-shadow: 0 0 8px rgba(255, 95, 86, 0.5); 
+}
+
+.status-boa { 
+  background-color: var(--verde-spotify-dk); 
+  box-shadow: 0 0 8px rgba(30, 215, 96, 0.5); 
+}
 
 .label-status {
   font-family: var(--fonte-principal);
@@ -1556,7 +1585,9 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
 .label-status.ruim { color: #ff5f56; }
+
 .label-status.boa { color: var(--verde-spotify-dk); }
 
 .titulo-painel {
@@ -1566,12 +1597,11 @@
   color: var(--branco-dk);
   margin: 0 0 1.5rem 0;
 }
+
+// Título <<< Modo Claro >>>
 .tema-claro .titulo-painel { color: var(--preto-lt); }
 
-
-/*=========================================================================
-   A MÁGICA DOS GRÁFICOS (LINHA BASE + LINHA SCAN + BOLINHA COMETA)
-=========================================================================*/
+/*---------- Gráficos ---------- */
 .visual-caos, .visual-flow {
   width: 100%;
   height: 120px; 
@@ -1590,7 +1620,7 @@
   }
 }
 
-/*--- 1. GRÁFICO DO CAOS (Vermelho, Instável) ---*/
+/*--- Caos ---*/
 .linha-base-caos {
   stroke: rgba(255, 95, 86, 0.15); 
   stroke-width: 4;
@@ -1599,15 +1629,13 @@
 .linha-scan-caos {
   stroke: url(#gradiente-caos-scan);
   stroke-width: 5;
-  /* Diminuímos o espaço vazio (o segundo número) para 1000 */
   stroke-dasharray: 150 1000; 
-  stroke-dashoffset: 1150; /* Começa exatamente no limite (1000 + 150) */
+  stroke-dashoffset: 1150; 
   animation: runScanCaosFinal 4s linear infinite;
   filter: drop-shadow(0 0 8px #ff5f56);
 }
 
-
-/*--- 2. GRÁFICO DO FLOW (Azul/Verde, Suave) ---*/
+/*--- Flow---*/
 .linha-base-flow {
   stroke: rgba(2, 211, 255, 0.15); 
   stroke-width: 4;
@@ -1617,153 +1645,122 @@
   stroke: url(#gradiente-flow-scan);
   stroke-width: 5;
   stroke-dasharray: 200 1000; 
-  stroke-dashoffset: 1200; /* Começa no limite (1000 + 200) */
+  stroke-dashoffset: 1200; 
   animation: runScanFlowFinal 4.7s linear infinite;
   filter: drop-shadow(0 0 10px #02d3ff);
 }
 
 @keyframes runScanCaosFinal {
   from { stroke-dashoffset: 1150; }
-  to { stroke-dashoffset: 0; } /* Para exatamente onde a linha acaba */
+  to { stroke-dashoffset: 0; }
 }
 
 @keyframes runScanFlowFinal {
   from { stroke-dashoffset: 1200; }
-  to { stroke-dashoffset: 0; } /* Para exatamente onde a linha acaba */
+  to { stroke-dashoffset: 0; } 
 }
-
 
 .ponto-cometa-flow {
   stroke: #ffffff; 
   stroke-width: 10; 
   stroke-dasharray: 0.1 1500; 
   stroke-dashoffset: 1500;
-  /* 🚨 MUDANÇA: Mesmo tempo e curva linear */
   animation: runFlowHead 3.5s linear infinite; 
   filter: drop-shadow(0 0 10px #02d3ff) drop-shadow(0 0 20px var(--verde-spotify-dk));
 }
 
-
-
-
-/*--- 🚨 3. OS MONITORES DE BPM (Glassmorphism e Pulso) ---*/
-.monitor-bpm {
-  position: absolute;
-  bottom: 0px; 
-  right: 0px; 
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-family: var(--fonte-principal, sans-serif);
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(4px);
-  z-index: 10;
-}
-
-.bpm-caos {
-  color: rgba(255, 95, 86, 0.7);
-  strong {
-    color: #ff5f56;
-    font-size: 1rem;
-    animation: pulseBpmCaos 0.5s ease-in-out infinite alternate; 
-  }
-}
-
-.bpm-flow {
-  color: rgba(2, 211, 255, 0.7);
-  strong {
-    color: var(--verde-spotify-dk);
-    font-size: 1.1rem;
-    animation: pulseBpmFlow 1.5s ease-in-out infinite alternate; 
-  }
-}
-
-/* Animações dos Dados Sênior */
-@keyframes pulseBpmCaos {
-  0% { opacity: 0.3; transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 8px rgba(255, 95, 86, 0.8); }
-}
-
-@keyframes pulseBpmFlow {
-  0% { opacity: 0.8; }
-  100% { opacity: 1; text-shadow: 0 0 10px rgba(30, 215, 96, 0.6); }
-}
-
-.tema-claro {
-  .monitor-bpm {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-  }
-}
-
-/*--- Textos e Legendas Finais ---*/
+/*--- Legendas ---*/
 .legenda-painel {
   font-family: var(--fonte-principal);
   font-size: 0.85rem;
   color: var(--cinza-claro-dk);
   line-height: 1.5;
   margin: 0;
+  text-align: center;
 }
+
+// Legenda <<< Modo Claro >>>
 .tema-claro .legenda-painel { color: var(--cinza-escuro-lt); }
 
+/*--- Circulo de Processamento ---*/
 .divisor-processamento {
-  display: flex; justify-content: center; align-items: center; position: relative; height: 40px; 
-  @include tela-grande { width: 60px; height: auto; flex-direction: column; margin-top: 0; }
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  position: relative; 
+  height: 40px; 
+
+  @include tela-grande { 
+    width: 60px; 
+    height: auto; 
+    flex-direction: column; 
+    margin-top: 0; 
+  }
 }
 
 .linha-vertical {
-  position: absolute; width: 100%; height: 1px; background-color: rgba(255, 255, 255, 0.05);
-  @include tela-grande { width: 1px; height: 150px; background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent); }
+  position: absolute; 
+  width: 100%; 
+  height: 1px; 
+  background-color: rgba(255, 255, 255, 0.05);
+
+  @include tela-grande { 
+    width: 1px; 
+    height: 150px; 
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent); 
+  }
 }
 
 .circulo-processo {
-  width: 36px; height: 36px; background-color: rgba(2, 133, 255, 0.1); border: 1px solid rgba(2, 133, 255, 0.2); border-radius: 50%; color: var(--azul-dk);
-  display: flex; align-items: center; justify-content: center; z-index: 5; backdrop-filter: blur(4px); animation: girarProcesso 4s linear infinite;
+  width: 36px; 
+  height: 36px; 
+  background-color: rgba(2, 133, 255, 0.1); 
+  border: 1px solid rgba(2, 133, 255, 0.2); 
+  border-radius: 50%; 
+  color: var(--azul-dk);
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 5; 
+  backdrop-filter: blur(4px); 
+  animation: girarProcesso 4s linear infinite;
   svg { width: 20px; height: 20px; }
 }
 
+@keyframes girarProcesso { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
 
-
-/*=========================================================================
-   4. CARDS DE VIBE V5: GRID FIGMA 3X2 E ANIMAÇÃO VIVA TS <<< NOVO >>>
-=========================================================================*/
+/*---------- Seção dos Cards de Vibe ----------*/
 .stack-vibes {
   width: 100%;
   text-align: center;
-  /* Retiramos a perspectiva profunda para voltar ao estilo limpo e sólido */
 }
 
 /*--- Contêiner do Layout Híbrido ---*/
 .container-vibes-layout {
   display: flex;
-  flex-direction: column; /* Mobile first: Texto em cima, Cards embaixo */
+  flex-direction: column; 
   gap: 3rem;
   align-items: center;
   box-sizing: border-box;
 
   @include tela-grande {
-    flex-direction: row-reverse; /* Texto Direita, Cards Esquerda */
-    /* 🚨 MUDANÇA: Alinhamos tudo com space-between e aumentamos o gap 
-       para empurrar o texto mais para a borda direita */
+    flex-direction: row-reverse; 
     justify-content: space-between;
     align-items: center;
-    gap: 6rem; /* Era 4rem, agora tem um abismo chique entre eles */
+    gap: 6rem; 
   }
 }
 
-/*--- Coluna de Texto (Direita no Desktop) ---*/
+/*--- Coluna de Texto ---*/
 .coluna-texto-vibes {
   width: 100%;
   text-align: center;
   box-sizing: border-box;
 
   @include tela-grande {
-    /* 🚨 MUDANÇA: Reduzimos de 45% para 35%. 
-       Isso deixa o bloco de texto mais compacto e elegante, encostado na direita. */
     width: 35%; 
     text-align: left; 
   }
@@ -1771,21 +1768,31 @@
 
 .titulo-stack-v3 {
   font-family: var(--fonte-principal, sans-serif);
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 600;
   color: var(--branco-dk);
   margin: 0 0 1rem 0;
-  @include tela-media { font-size: 2.2rem; }
-  @include tela-grande { font-size: 2.5rem; }
+  text-align: center;
+  line-height: 1.2;
+
+  @include tela-media { font-size: 2.8rem; }
+
+  @include tela-grande { font-size: 3rem; }
 }
 
 .titulo-stack-v3 .txt-special {
   font-family: var(--fonte-especial), sans-serif;
   font-weight: 700;
-  font-size: 2.8rem;
+  font-size: 2.4rem;
   color: var(--azul-dk);
+  font-style: italic;
+
+  @include tela-media { font-size: 3rem; }
+
+  @include tela-grande { font-size: 3.5rem; }
 }
 
+// Título <<< Modo Claro >>>
 .tema-claro .titulo-stack-v3 { color: var(--preto-lt); }
 
 .texto-vibes-v3 {
@@ -1797,57 +1804,60 @@
   margin: 0;
   padding: 0 1rem; 
   text-align: justify;
-  @include tela-grande { padding: 0; }
+
+  @include tela-media { 
+    font-size: 1.15rem; 
+  }
+
+  @include tela-grande {
+    font-size: 1.25rem;;
+    padding: 0; 
+  }
 }
+
+// Texto <<< Modo Claro >>>
 .tema-claro .texto-vibes-v3 { color: var(--cinza-escuro-lt); }
 
-/*--- Coluna de Cards (Esquerda no Desktop) ---*/
+/*--- Coluna de Cards ---*/
 .coluna-cards-vibes {
   width: 100%;
   box-sizing: border-box;
 
   @include tela-grande {
-    /* 🚨 MUDANÇA: Aumentamos de 50% para 55% (ou até 60% se quiser gigante).
-       Como a grid tem max-width: 100%, os cards vão esticar automaticamente! */
     width: 55%; 
   }
 }
 
-/*--- O Mestre Grid 3x2 ---*/
+/*--- Grid 3x2 ---*/
 .grid-cards-figma {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Mobile: Grid 2x3 para caber melhor na tela */
+  grid-template-columns: repeat(2, 1fr); 
   gap: 1rem;
   width: 100%;
-  max-width: 500px; /* Impede que fique gigante no mobile */
+  max-width: 500px; 
   margin: 0 auto;
 
   @include tela-grande {
     grid-template-columns: repeat(3, 1fr); 
-    /* 🚨 MUDANÇA Opcional: Aumentei o gap entre os cards de 1.5rem para 2rem 
-       para eles respirarem melhor já que agora estão maiores */
     gap: 2rem; 
     max-width: 100%; 
   }
 }
 
-/*--- A Estrutura do Card Anki (O Flashcard Sólido) ---*/
+/*--- Estrutura do Card Anki ---*/
 .card-anki-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1; /* Quadrado Perfeito */
-  cursor: pointer;
-  perspective: 1000px; /* Perspectiva individual apenas para o giro do card */
+  aspect-ratio: 1 / 1; 
+  perspective: 1000px; 
 
   /*--- Faces Front e Back ---*/
   .anki-front, .anki-back {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    border-radius: 12px; /* Cantos arredondados, mas não tão circulares quanto antes */
+    border-radius: 12px; 
     overflow: hidden;
     backface-visibility: hidden; 
-    
-    // A MÁGICA DA ANIMAÇÃO: Suave e controlada pelo TS
     transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
   }
 
@@ -1856,8 +1866,8 @@
     transform: rotateY(0deg); 
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Texto no canto esquerdo */
-    justify-content: flex-end; /* Texto embaixo */
+    align-items: flex-start; 
+    justify-content: flex-end; 
     padding: 1rem;
     box-sizing: border-box;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -1865,7 +1875,7 @@
 
   .anki-back  { 
     transform: rotateY(180deg); 
-    background-color: var(--azul-medio-dk); /* 🚨 A cor tech que você pediu para o verso */
+    background-color: var(--azul-medio-dk); 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1878,7 +1888,7 @@
     font-family: var(--fonte-principal, sans-serif);
     font-size: 1rem;
     font-weight: 600;
-    color: var(--preto-lt); /* O texto precisa ser escuro pra ler nos fundos claros */
+    color: var(--preto-lt); 
     margin: 0;
     line-height: 1.2;
   }
@@ -1888,7 +1898,7 @@
     font-size: 0.75rem;
     font-weight: 700;
     padding: 6px 12px;
-    border-radius: 8px; /* Mais quadrado que redondo */
+    border-radius: 8px; 
     text-transform: uppercase;
     letter-spacing: 1px;
     text-align: center;
@@ -1898,7 +1908,6 @@
     &.especial { background: rgba(2, 133, 255, 0.15); color: var(--branco-dk); }
   }
 
-  /* 🚨 O GATILHO DA ANIMAÇÃO (Acionado pelo TypeScript com a classe .virado) 🚨 */
   &.virado .anki-front { transform: rotateY(-180deg); }
   
   &.virado .anki-back { 
@@ -1907,34 +1916,25 @@
   }
 }
 
-/*=========================================================================
-   A MÁGICA DAS AURAS SONORAS (Mesh Gradients V4 - SOLUÇÃO INFAÍVEL)
-=========================================================================*/
-/* Base para a animação "respirando" dos gradientes */
-
-/* 1. O PAI (anki-front): Tem apenas a borda prateada e nenhuma cor de fundo */
+/*---------- Mesh Gradients ----------*/
 .card-anki-wrap .anki-front {
-  background-color: transparent !important; /* Força a transparência */
-  /* Borda uniforme cinza prateado fosco para todos */
+  background-color: transparent !important; 
   border: 1px solid rgba(192, 192, 192, 0.3) !important; 
   box-sizing: border-box;
-  position: relative; /* Base para o posicionamento do filho */
+  position: relative; 
 }
 
-/* 2. O FILHO (anki-front-aura): O contêiner sanduíche que leva o gradiente */
+.tema-claro .card-anki-wrap .anki-front {
+  border: 1px solid rgba(192, 192, 192, 0.9) !important; 
+}
+
 .anki-front-aura {
   position: absolute;
-  /* 🚨 A BLINDAGEM: O gradiente começa 1px pra dentro da borda, tornando o vazamento impossível */
   top: 1px; left: 1px; right: 1px; bottom: 1px; 
-  
-  border-radius: inherit; /* Herda o arredondamento do pai (12px) */
+  border-radius: inherit; 
   background-size: 200% 200%;
   animation: auraBreathe 8s ease infinite;
-  z-index: 1; /* Garante que fique atrás do texto h4 */
-
-  /* 🚨 A MÁGICA DA BORDA INTERNA AQUI 🚨 */
-  /* Isso cria uma linha branca bem suave de 1px colada na borda de dentro */
-  //box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.15);
+  z-index: 1; 
   box-shadow: inset 0 0 0 3px var(--azul-muito-escuro-dk);
 }
 
@@ -1948,10 +1948,9 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Os textos na frente agora precisam estar acima do gradiente */
 .card-anki-wrap h4 {
   position: relative;
-  z-index: 2; /* Fica acima da .anki-front-aura */
+  z-index: 2; 
   color: #ffffff !important; 
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   font-size: 1.1rem;
@@ -1959,7 +1958,6 @@
 }
 
 /* --- Gradientes aplicados exclusivamente na div FILHA (.anki-front-aura) --- */
-
 /* 1. Foco */
 .vibe-foco .anki-front-aura {
   background: radial-gradient(circle at 10% 20%, #001f3f 0%, transparent 50%),
@@ -2002,9 +2000,7 @@
               radial-gradient(circle at 50% 0%, #ffea00 0%, transparent 50%), #1f0033;
 }
 
-/*=========================================================================
-   FICHA TÉCNICA (O Dashboard do Verso - Sem Alterações)
-=========================================================================*/
+/*--- Dashboard do Verso ---*/
 .card-anki-wrap .anki-back {
   background-color: var(--preto-lt); 
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2091,28 +2087,26 @@
   background-color: #1a1e29; 
 }
 
-
-
-/*=========================================================================
-   BOSS FINAL: RESGATE DO BOTÃO CTA (Correção de Visibilidade)
-=========================================================================*/
+/*--- 2ª Botão do Spotify ---*/
 .cta-final-v2 {
-  margin-top: 3rem; /* Dá um respiro entre a grid de cards e o botão */
+  margin-top: 2rem; 
+  margin-bottom: 2rem;
   text-align: center;
   width: 100%;
   display: flex;
   justify-content: center;
+
+  @include tela-grande {
+    margin-bottom: 0;
+  }
 }
 
-/* 🚨 A MÁGICA CONTRA A INVISIBILIDADE 🚨 */
 .cta-final-v2 .btn-spotify {
-  /* Anula a opacidade 0 que vem herdada de outras seções */
   opacity: 1 !important; 
   visibility: visible !important; 
-  transform: none; /* Garante que ele não fique preso em alguma escala 0 */
+  transform: none; 
 }
 
-/* Mantendo o seu efeito neon pulsante que já estava na classe */
 .btn-pulsando-neon {
   animation: pulsoNeon 2.5s infinite;
 }
@@ -2123,25 +2117,20 @@
   100% { box-shadow: 0 0 0 0 rgba(30, 215, 96, 0); }
 }
 
-
-
-
-/*=========================================
-   FOOTER: O GRAND FINALE
-=========================================*/
+/*---------- Footer ----------*/
 .footer-tunify {
-  /* Um tom absurdamente escuro, quase preto, pra fechar a página com peso */
   background-color: #050810; 
   position: relative;
   width: 100%;
   overflow: hidden;
 }
 
+// Footer <<< Modo Claro >>>
 .tema-claro .footer-tunify {
-  background-color: var(--branco-escuro-lt, #f0f2f5);
+  background-color: var(--branco-escuro-lt);
 }
 
-/*--- Linha Divisória Neon (Separa a Seção 3 do Footer) ---*/
+/*--- Linha Divisória Neon ---*/
 .footer-divisor {
   width: 100%;
   height: 2px;
@@ -2154,37 +2143,32 @@
   margin: 0 auto;
   padding: 4rem 2rem;
   display: grid;
-  grid-template-columns: 1fr; /* Mobile: As 3 colunas ficam empilhadas */
+  grid-template-columns: 1fr; 
   gap: 3rem;
 
   @include tela-media {
-    /* Desktop: A primeira coluna (Marca) ocupa o dobro do espaço das outras */
     grid-template-columns: 2fr 1fr 1fr; 
     gap: 2rem;
   }
 }
 
 /*--- Coluna 1: A Marca ---*/
-.footer-logo {
-  font-family: var(--fonte-especial, sans-serif); /* A fonte do Milhão de Dólares */
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--branco-dk);
-  margin: 0 0 1rem 0;
-  letter-spacing: -1px;
-
-  .ponto-azul { color: var(--azul-dk); }
-}
-.tema-claro .footer-logo { color: var(--preto-lt); }
-
 .footer-descricao {
   font-family: var(--fonte-principal, sans-serif);
   font-size: 0.95rem;
   color: var(--cinza-claro-dk);
+  margin-top: 1rem;
   line-height: 1.6;
-  max-width: 300px; /* Impede que o texto fique comprido demais */
+  max-width: 300px; 
   margin: 0;
+
+  @include tela-grande {
+    text-align: center;
+    margin-top: 1.1rem;
+  }
 }
+
+// Descrição <<< Modo Claro >>>
 .tema-claro .footer-descricao { color: var(--cinza-escuro-lt); }
 
 /*--- Colunas 2 e 3: Links ---*/
@@ -2197,10 +2181,12 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+// Título da Coluna <<< Modo Claro >>>
 .tema-claro .footer-titulo-coluna { color: var(--preto-lt); }
 
 .footer-links {
-  list-style: none; /* Remove as bolinhas da lista */
+  list-style: none; 
   padding: 0;
   margin: 0;
   display: flex;
@@ -2211,34 +2197,41 @@
     font-family: var(--fonte-principal, sans-serif);
     font-size: 0.95rem;
     color: var(--cinza-claro-dk);
-    text-decoration: none; /* Remove o sublinhado padrão dos links */
+    text-decoration: none; 
     transition: color 0.3s ease, transform 0.3s ease;
     display: inline-block;
 
-    /* O Efeito Gringo no Hover */
     &:hover {
       color: var(--verde-spotify-dk);
-      transform: translateX(5px); /* Dá um tapinha pro lado */
+      transform: translateX(5px); 
     }
   }
 }
 
 .tema-claro .footer-links li a {
   color: var(--cinza-escuro-lt);
-  &:hover { color: var(--azul-lt); } /* No claro, hover azul fica melhor */
+  &:hover { color: var(--azul-lt); } 
 }
 
-/*--- A Assinatura do Arquiteto ---*/
+/*--- Assinatura do Desenvolvedor ---*/
 .footer-bottom {
   text-align: center;
   padding: 1.5rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Linha sutil separando os créditos */
+  border-top: 1px solid rgba(255, 255, 255, 0.05); 
   
   p {
     font-family: var(--fonte-principal, sans-serif);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--cinza-claro-dk);
     margin: 0;
+
+    @include tela-grande {
+      font-size: 0.85rem;
+    }
+
+    @include tela-grande {
+      font-size: 0.9rem;
+    }
     
     strong {
       color: var(--branco-dk);
@@ -2247,6 +2240,7 @@
   }
 }
 
+// Assinatura <<< Modo Claro >>>
 .tema-claro .footer-bottom {
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   p { color: var(--cinza-escuro-lt); }
