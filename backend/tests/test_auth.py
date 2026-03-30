@@ -67,7 +67,6 @@ def test_login_spotify_redireciona_corretamente():
 # ========================================================================= #
 # --- TESTE 2: O CALLBACK E A CRIAÇÃO DO USUÁRIO (A Mágica do Mock)
 # ========================================================================= #
-# Usamos o @patch para "sequestrar" o requests.get e requests.post lá dentro do seu auth.py
 @patch("app.api.v1.endpoints.auth.requests.post")
 @patch("app.api.v1.endpoints.auth.requests.get")
 def test_callback_spotify_cria_usuario_novo(mock_get, mock_post):
@@ -86,13 +85,15 @@ def test_callback_spotify_cria_usuario_novo(mock_get, mock_post):
         "email": "athos@tunify.com"
     }
 
-    # 3. Ação: O robô bate na sua rota de callback fingindo que é o Spotify devolvendo o código
-    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno")
+    # 3. Ação: O robô bate na rota. 
+    # 🚨 ADICIONADO: follow_redirects=False para o robô não tentar abrir o Angular de verdade
+    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno", follow_redirects=False)
 
     # 4. Verificação da Resposta da API
-    assert response.status_code == 200
-    assert response.json()["usuario"] == "Athos Sênior"
-    assert response.json()["status"] == "Novo usuário registrado com sucesso no banco de dados!"
+    # 🚨 MUDOU: Agora esperamos um 302 (Redirecionamento) em vez de 200
+    assert response.status_code == 302
+    # 🚨 MUDOU: Verificamos se o Python mandou a gente pra URL do Angular com os dados!
+    assert "localhost:4200/callback" in response.headers["location"]
 
     # 5. A PROVA DE FOGO: O usuário REALMENTE foi salvo no banco de dados falso?
     db = TestingSessionLocal()
@@ -101,6 +102,7 @@ def test_callback_spotify_cria_usuario_novo(mock_get, mock_post):
     assert user_no_banco is not None
     assert user_no_banco.spotify_id == "spotify_id_do_athos"
     assert user_no_banco.access_token == "token_super_secreto_123"
+    db.close()
     
 # ========================================================================= #
 # --- TESTE 3: O CALLBACK ATUALIZANDO UM USUÁRIO EXISTENTE
@@ -136,13 +138,15 @@ def test_callback_spotify_atualiza_usuario_existente(mock_get, mock_post):
         "email": "athosdanilo@tunify.com"
     }
 
-    # 4. Ação: O robô bate na rota de callback simulando o retorno do login
-    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno")
+    # 4. Ação: O robô bate na rota simulando o retorno do login
+    # 🚨 ADICIONADO: follow_redirects=False
+    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno", follow_redirects=False)
 
     # 5. Verificações da Resposta da API
-    assert response.status_code == 200
-    # Garante que caiu no "Caminho B" do seu if/else!
-    assert response.json()["status"] == "Bem-vindo de volta! Seus tokens foram atualizados no banco."
+    # 🚨 MUDOU: Agora esperamos um 302
+    assert response.status_code == 302
+    # 🚨 MUDOU: O Python tem que jogar pra essa URL
+    assert "localhost:4200/callback" in response.headers["location"]
 
     # 6. A PROVA DE FOGO: O banco atualizou mesmo e NÃO duplicou o usuário?
     db = TestingSessionLocal()
