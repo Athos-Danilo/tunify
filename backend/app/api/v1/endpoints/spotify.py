@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 # Gerenciador de sessão do SQLAlchemy para realizar operações no PostgreSQL.
 from sqlalchemy.orm import Session
 
-# Biblioteca para fazer requisições HTTP.
-import requests
+# Biblioteca para fazer requisições HTTP assíncronas.
+import httpx
 
 # Importa a função que abre e fecha a porta do banco de dados.
 from app.core.database import get_db
@@ -15,7 +15,6 @@ from app.models.user import User
 
 router = APIRouter()
 
-
 # ======> Buscar as Playlists do Usuário.
 # 1) Recebe o e-mail na URL e procura o dono no banco de dados;
 # 2) Recupera a chave mestra (Access Token) salva no banco;
@@ -23,75 +22,81 @@ router = APIRouter()
 # 4) Limpa e formata os dados brutos;
 # 5) Retorna a lista pronta para o Front-end.
 # --------------------------------------------------------------------------- #
+
+# 🚨 OLHA A CORREÇÃO AQUI: Adicionamos o db nos parâmetros da função!
 @router.get("/playlists/{email}")
-def get_my_playlists(email: str, db: Session = Depends(get_db)):
-    print(f"[INFO] Requisição recebida para buscar playlists. E-mail: {email}")
+async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
+    print(f"[INFO] Requisição recebida para o resumo do perfil. E-mail: {email}")
     
-    try:
-        # --- VERIFICA SE O USUÁRIO EXISTE NO BANCO ---
-        
-        user = db.query(User).filter(User.email == email).first()
-        
-        if not user:
-            print(f"[ERRO] Usuário '{email}' não encontrado no PostgreSQL.")
-            raise HTTPException(status_code=404, detail="Usuário não encontrado no banco de dados.")
-            
-        print("[INFO] Usuário encontrado. Recuperando chave de acesso...")
+    # ==========================================
+    # 🕵️‍♂️ BUSCANDO O USUÁRIO NO BANCO DE DADOS
+    # ==========================================
+    usuario = db.query(User).filter(User.email == email).first()
+    
+    # Se algum hacker tentar mandar um e-mail que não existe, a gente barra!
+    if not usuario:
+        print("[ALERTA] Usuário não encontrado no banco!")
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-        
-        # --- PREPARAR A URL E VAI NO SPOTIFY ---
-        
-        # Quebrando a URL verdadeira do Spotify para evitar que filtros de rede a bloqueiem.
-        dominio = "https://api" + ".spotify.com"
-        endpoint = "/v1/me/playlists"
-        spotify_url = dominio + endpoint
-        
-        # Coloca a chave do usuário no cabeçalho da requisição (como se fosse um crachá).
-        headers = {
-            "Authorization": f"Bearer {user.access_token}"
-        }
-        
-        print(f"[INFO] Bateu na porta do Spotify ({endpoint})...")
-        response = requests.get(spotify_url, headers=headers)
-        
-        # Trava de Segurança: Verifica se o Spotify barrou a gente (token expirado ou falta de permissão).
-        if response.status_code != 200:
-            print(f"[ERRO] O Spotify recusou o acesso. Status: {response.status_code} | Detalhes: {response.text}")
-            raise HTTPException(
-                status_code=response.status_code, 
-                detail=f"Erro no Spotify: {response.text}"
-            )
+    # Pegamos o token que você salvou no banco
+    token = usuario.access_token 
+    
+    print("[SUCESSO] Usuário achado no banco e Token resgatado!")
+
+    # ==========================================
+    # 🎧 FAZENDO AS CHAMADAS PARA O SPOTIFY
+    # ==========================================
+    headers = {"Authorization": f"Bearer {token}"}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # 🚪 PORTA 1: Dados do Perfil (URL REAL)
+            print("[INFO] Bateu na porta do Spotify (/v1/me)...")
+            resp_me = await client.get("https://api.spotify.com/v1/me", headers=headers)
+            resp_me.raise_for_status()
+            dados_me = resp_me.json()
+
+            # 🚪 PORTA 2: Artistas Seguidos (URL REAL)
+            print("[INFO] Bateu na porta do Spotify (/v1/me/following)...")
+            resp_seguindo = await client.get("https://api.spotify.com/v1/me/following?type=artist", headers=headers)
+            resp_seguindo.raise_for_status()
+            dados_seguindo = resp_seguindo.json()
+
+            # 🚪 PORTA 3: Total de Playlists (URL REAL)
+            print("[INFO] Bateu na porta do Spotify (/v1/me/playlists)...")
+            resp_playlists = await client.get("https://api.spotify.com/v1/me/playlists", headers=headers)
+            resp_playlists.raise_for_status()
+            dados_playlists = resp_playlists.json()
+
+            # ==========================================
+            # 🧠 TRATAMENTO DOS DADOS (O filtro do Python)
+            # ==========================================
             
-        print("[SUCESSO] O Spotify liberou o acesso! Processando os dados...")
-        data = response.json()
-        
-        
-        # --- FORMATA OS DADOS E DEVOLVE PRO FRONTEND ---
-        
-        playlists = []
-        
-        # Verifica se o Spotify mandou a lista de "items" dentro do JSON.
-        if "items" in data:
-            for item in data["items"]:
-                # Pega só o que importa e guarda na listinha.
-                playlists.append({
-                    "nome": item.get("name"),
-                    "total_musicas": item.get("tracks", {}).get("total"),
-                    "link_spotify": item.get("external_urls", {}).get("spotify")
-                })
+            # Foto: O Spotify retorna uma lista de imagens. Pegamos a URL da primeira.
+            foto_url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            if dados_me.get("images") and len(dados_me["images"]) > 0:
+                foto_url = dados_me["images"][0]["url"]
+
+            # Tipo de Conta: A API retorna "premium" ou "free"
+            tipo_conta = "PREMIUM 👑" if dados_me.get("product") == "premium" else "FREE 🎧"
+
+            # O Pacotão que vai pro Front-end Angular!
+            pacote_resumo = {
+                "dono_da_conta": dados_me.get("display_name"),
+                "foto_perfil": foto_url,
+                "tipo_conta": tipo_conta,
+                "seguidores": dados_me.get("followers", {}).get("total", 0),
+                "seguindo": dados_seguindo.get("artists", {}).get("total", 0),
+                "total_playlists": dados_playlists.get("total", 0)
+            }
+            
+            print("[SUCESSO] Pacote de Resumo montado! Enviando para o Angular...")
+            return pacote_resumo
+
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 401:
+                print("[ALERTA] Token do Spotify expirado! (Erro 401)")
+                raise HTTPException(status_code=401, detail="Token expirado. Faça login novamente.")
                 
-        print(f"[SUCESSO] Tudo certo! Devolvendo {len(playlists)} playlists para o Front-end.")
-        
-        return {
-            "dono_da_conta": user.display_name,
-            "mensagem": "Busca feita usando os dados salvos no PostgreSQL!",
-            "total_encontrado": len(playlists),
-            "suas_playlists": playlists
-        }
-
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as error:
-        # Se algo muito bizarro acontecer...
-        print(f"[ERRO CRÍTICO - get_my_playlists]: {error}")
-        raise HTTPException(status_code=500, detail="Erro interno ao tentar buscar as playlists.")
+            print(f"[ERRO] O Spotify recusou a conexão: {e}")
+            raise HTTPException(status_code=e.response.status_code, detail="Erro ao buscar dados no Spotify")

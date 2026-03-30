@@ -44,7 +44,8 @@ def login_spotify():
             "playlist-read-collaborative",
             "user-top-read",
             "user-library-read",
-            "streaming"
+            "streaming",
+            "user-follow-read"
         ]
         
         # Parâmetros obrigatórios exigidos pela documentação do Spotify.

@@ -18,13 +18,7 @@ export class SpotifyService {
    */
   buscarResumoPerfil(email: string): Observable<any> {
     console.log(`[SERVIÇO] Indo no Python buscar resumo de: ${email}...`);
-    return this.http.get(`${this.backendUrl}/playlists/${email}`).pipe(
-      map((resposta: any) => {
-        // Nós isolamos o total de playlists que o Python já envia!
-        return {
-          totalPlaylists: resposta.total_encontrado
-        };
-      })
-    );
+    // Retorna a bandeja inteira do jeito que vier do Python!
+    return this.http.get(`${this.backendUrl}/playlists/${email}`);
   }
 }
