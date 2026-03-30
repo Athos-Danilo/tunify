@@ -7,7 +7,7 @@ import { ContatoComponent } from './pages/contato/contato.component';
 
 // O Porteiro e a Área VIP
 import { CallbackComponent } from './pages/callback/callback';
-import { DashboardComponent } from './pages/dashboard/dashboard';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 
 export const routes: Routes = [
 

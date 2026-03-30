@@ -1,0 +1,158 @@
+// ----------------------------------------------------------------
+// 📐 LAYOUT MESTRE (O Grid 30/70)
+// ----------------------------------------------------------------
+.tunify-dashboard-layout {
+  display: flex;
+  flex-direction: column; // No celular, fica um em cima do outro
+  min-height: 100vh;
+  padding: 2rem;
+  gap: 3rem;
+  background-color: var(--azul-muito-escuro-dk);
+  font-family: var(--fonte-principal);
+
+  // A Mágica do Layout pra Telas Grandes (Tablet e PC)
+  @media (min-width: 900px) {
+    flex-direction: row; // Fica lado a lado
+    padding: 3rem;
+  }
+}
+
+// ----------------------------------------------------------------
+// 🪪 SIDEBAR (Esquerda - 30%)
+// ----------------------------------------------------------------
+.profile-sidebar {
+  width: 100%;
+  
+  @media (min-width: 900px) {
+    width: 30%; // Exatos 30% que você pediu!
+    max-width: 380px; // Não deixa o card ficar gigante em monitores ultrawide
+  }
+}
+
+// O CARD IDÊNTICO AO SEU PRINT (image_11.png)
+.user-card {
+  background-color: var(--azul-escuro-dk); // Fundo da caixinha
+  border-radius: 28px; // Cantos bem arredondados
+  padding: 16px; // Respiro interno antes de chegar na imagem
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  
+  // 1. A Foto dentro do Card
+  .card-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1.05; // Deixa a foto levemente retangular na vertical (estilo retrato)
+    border-radius: 20px; // Arredonda a foto por dentro do card
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: var(--azul-medio-dk); // Fundo caso a foto não carregue
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // Preenche sem distorcer
+    }
+  }
+
+  // 2. Os Dados
+  .card-info {
+    padding: 0 8px 8px 8px; // Um espacinho extra nas laterais
+  }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .user-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--branco-dk);
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .verified-badge {
+      color: var(--verde-spotify-dk); // O verde do Spotify!
+      font-size: 1.4rem;
+    }
+  }
+
+  .user-bio {
+    font-size: 0.95rem;
+    color: var(--cinza-claro-dk);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+    font-weight: 400;
+  }
+
+  // 3. A Linha Base (Status e Botão)
+  .card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .stats {
+      display: flex;
+      gap: 16px;
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--cinza-claro-dk);
+
+        .icon {
+          font-size: 1.1rem;
+        }
+        .number {
+          font-weight: 700;
+          color: var(--branco-dk);
+          font-size: 1rem;
+        }
+      }
+    }
+
+    // O Botão gordinho idêntico ao "Follow +"
+    .btn-action {
+      display: flex;
+      align-items: center;
+      background-color: var(--cinza-escuro-dk); // Cinza do seu tema
+      color: var(--branco-dk);
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--fonte-principal);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--verde-spotify-dk);
+        color: #000;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------
+// 📊 MAIN CONTENT (Direita - 70%)
+// ----------------------------------------------------------------
+.dashboard-main {
+  flex: 1; // Pega todo o resto do espaço (os 70%)
+  
+  .welcome-header {
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--branco-dk);
+      margin: 0 0 8px 0;
+      font-family: var(--fonte-especial); // Dá um destaque no título!
+    }
+    p {
+      font-size: 1.1rem;
+      color: var(--cinza-claro-dk);
+      margin: 0;
+    }
+  }
+}

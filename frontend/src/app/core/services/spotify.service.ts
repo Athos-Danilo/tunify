@@ -1,21 +1,30 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // Necessário para filtrar o total de playlists
 
 @Injectable({
-  providedIn: 'root' // Isso significa que o serviço é Global. Qualquer tela pode chamar ele!
+  providedIn: 'root'
 })
 export class SpotifyService {
 
-  // A ferramenta que faz as chamadas de rede (o garçom)
   private http = inject(HttpClient);
-  
-  // O endereço da nossa cozinha (O Back-end em Python)
   private backendUrl = 'http://localhost:8000/api/v1/spotify';
 
-  // A função que vai lá buscar as playlists usando o e-mail
-  buscarPlaylists(email: string): Observable<any> {
-    console.log(`[SERVIÇO] Indo no Python buscar as playlists de: ${email}...`);
-    return this.http.get(`${this.backendUrl}/playlists/${email}`);
+  /**
+   * 🚨 NOVA FUNÇÃO: Busca o Perfil Completo do Usuário
+   * Por enquanto ela busca as playlists, mas já isola o total para o Card.
+   * Quando RN16 for implementada no Python, mudamos a rota aqui.
+   */
+  buscarResumoPerfil(email: string): Observable<any> {
+    console.log(`[SERVIÇO] Indo no Python buscar resumo de: ${email}...`);
+    return this.http.get(`${this.backendUrl}/playlists/${email}`).pipe(
+      map((resposta: any) => {
+        // Nós isolamos o total de playlists que o Python já envia!
+        return {
+          totalPlaylists: resposta.total_encontrado
+        };
+      })
+    );
   }
 }
