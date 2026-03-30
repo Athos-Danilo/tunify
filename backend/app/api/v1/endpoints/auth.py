@@ -161,12 +161,22 @@ def callback_spotify(code: str, db: Session = Depends(get_db)):
             mensagem = "Novo usuário registrado com sucesso no banco de dados!"
             print(f"[SUCESSO] Novo usuário '{display_name}' criado no banco de dados.")
 
-        # Retorna o resultado final para o Front-end.
-        return {
-            "status": mensagem,
-            "usuario": display_name,
-            "email": email
+        # Retorna o resultado final para o Angular.
+        frontend_url = "http://localhost:4200/callback"
+        
+        # Empacotamos o token e o nome para o Angular salvar na memória (LocalStorage).
+        params = {
+            "token": access_token,
+            "nome": display_name
         }
+        
+        # Juntamos tudo e mandamos o usuário de volta pro Front-end.
+        url_redirecionamento = f"{frontend_url}?{urllib.parse.urlencode(params)}"
+        
+        print(f"[SUCESSO] Redirecionando usuário para o Angular...")
+        
+        # Usamos o status_code=302 (Found) que é o padrão da web para redirecionamentos temporários.
+        return RedirectResponse(url=url_redirecionamento, status_code=302)
 
     except HTTPException as http_exc:
         # Se for um erro que nós mesmos lançamos (como o HTTPException acima), apenas repassamos ele.
