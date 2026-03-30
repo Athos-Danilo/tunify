@@ -39,11 +39,16 @@ def override_get_db():
     finally:
         db.close()
 
-# Avisamos o FastAPI: "Quando pedirem o get_db, entregue o nosso override_get_db"
-app.dependency_overrides[get_db] = override_get_db
-
-# Criamos o nosso robô que vai navegar na API
 client = TestClient(app)
+
+# 🚨 A MÁGICA DO ISOLAMENTO
+@pytest.fixture(autouse=True)
+def isolamento_de_banco():
+    # Antes do teste começar: Força o app a usar o banco deste arquivo
+    app.dependency_overrides[get_db] = override_get_db
+    yield
+    # Depois que o teste termina: Limpa a conexão para não vazar pro próximo arquivo!
+    app.dependency_overrides.clear()
 
 # ========================================================================= #
 # --- TESTE 1: O REDIRECIONAMENTO DE LOGIN
