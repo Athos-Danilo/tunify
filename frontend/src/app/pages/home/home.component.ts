@@ -5,7 +5,7 @@
 // ------------------------------------------------------------------------------ //
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef, Renderer2, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LogoComponent } from '../components/logo.component';
+import { LogoComponent } from '../../components/logo.component';
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common';
 
