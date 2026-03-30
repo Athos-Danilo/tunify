@@ -24,6 +24,7 @@ export class CallbackComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const token = params['token'];
       const nome = params['nome'];
+      const email = params['email'];
 
       if (token && nome) {
         console.log('[SUCESSO] O Porteiro pegou os dados da URL!');
@@ -31,6 +32,7 @@ export class CallbackComponent implements OnInit {
         // 1. Tranca os dados no cofre do navegador
         localStorage.setItem('spotify_token', token);
         localStorage.setItem('usuario_nome', nome);
+        localStorage.setItem('usuario_email', email);
 
         // 2. Libera a catraca e manda o usuário direto para a Área VIP
         this.router.navigate(['/dashboard']);

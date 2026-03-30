@@ -167,7 +167,8 @@ def callback_spotify(code: str, db: Session = Depends(get_db)):
         # Empacotamos o token e o nome para o Angular salvar na memória (LocalStorage).
         params = {
             "token": access_token,
-            "nome": display_name
+            "nome": display_name,
+            "email": email
         }
         
         # Juntamos tudo e mandamos o usuário de volta pro Front-end.
