@@ -78,7 +78,7 @@ async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
                 foto_url = dados_me["images"][0]["url"]
 
             # Tipo de Conta: A API retorna "premium" ou "free"
-            tipo_conta = "PREMIUM 👑" if dados_me.get("product") == "premium" else "FREE 🎧"
+            tipo_conta = "PREMIUM" if dados_me.get("product") == "premium" else "FREE"
 
             # O Pacotão que vai pro Front-end Angular!
             pacote_resumo = {

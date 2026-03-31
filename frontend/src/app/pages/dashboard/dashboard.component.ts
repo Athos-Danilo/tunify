@@ -23,7 +23,7 @@ export class DashboardComponent implements OnInit {
     carregando: true,
     // Foto do perfil padrão (pode ser uma silhueta se não tiver foto)
     foto_perfil: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', 
-    tipo_conta: 'PREMIUM 👑', // ou 'FREE 🎧' (RN16)
+    tipo_conta: 'PREMIUM', // ou 'FREE'
     total_playlists: 0,
     seguidores: 128, // Mock (image_5.png)
     seguindo: 350    // Mock (image_5.png)
@@ -33,26 +33,35 @@ export class DashboardComponent implements OnInit {
   private spotifyService = inject(SpotifyService);
   private cdr = inject(ChangeDetectorRef); 
 
-  ngOnInit() {
+ngOnInit() {
     this.nomeUsuario = localStorage.getItem('usuario_nome');
     this.emailUsuario = localStorage.getItem('usuario_email');
     
-    // Verificação de segurança (mantida!)
+    // 🚨 O LEÃO DE CHÁCARA: Se não tiver logado, chuta pra Home e para a função aqui!
     if (!localStorage.getItem('spotify_token') || !this.emailUsuario) {
       this.router.navigate(['/']);
       return; 
     }
 
-    // A MÁGICA: Fazendo o pedido de Perfil!
+    // A MÁGICA: Fazendo o pedido de Perfil usando o emailUsuario (agora o Angular tem certeza que não é nulo!)
     this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
-      next: (resumoPerfil) => {
-        console.log('[Angular] Resumo do Perfil recebido:', resumoPerfil);
+      next: (resumoReal) => {
+        console.log('📦 [Angular] Dados Reais recebidos:', resumoReal);
         
-        // Atualizamos a quantidade de playlists real!
-        this.dadosDemograficos.total_playlists = resumoPerfil.totalPlaylists;
-        this.dadosDemograficos.carregando = false; 
+        // Substituímos o nome do cofre pelo nome oficial do Spotify
+        this.nomeUsuario = resumoReal.dono_da_conta; 
+        
+        // Atualizamos o objeto da tela com os dados do JSON que chegou do Python!
+        this.dadosDemograficos = {
+          carregando: false,
+          foto_perfil: resumoReal.foto_perfil,
+          tipo_conta: resumoReal.tipo_conta,
+          total_playlists: resumoReal.total_playlists,
+          seguidores: resumoReal.seguidores,
+          seguindo: resumoReal.seguindo
+        };
 
-        // Forçamos o Angular a redesenhar a tela imediatamente!
+        // Acorda o Angular para pintar a tela!
         this.cdr.detectChanges(); 
       },
       error: (erro) => {

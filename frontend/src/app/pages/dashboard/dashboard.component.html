@@ -1,59 +1,46 @@
-<div class="tunify-dashboard-layout">
+<main class="dashboard">
 
-  <aside class="profile-sidebar">
+  <div class="card-perfil">
     
-    <div class="user-card">
+    <div class="card-image-container">
+      <img [src]="dadosDemograficos.foto_perfil" alt="Foto de perfil de {{ nomeUsuario }}" class="profile-photo">
+    </div>
+
+    <div class="card-info-container">
+      <h2 class="profile-name">{{ nomeUsuario }}</h2>
       
-      <div class="card-image-wrapper">
-        <img [src]="dadosDemograficos.foto_perfil" alt="Foto de {{ nomeUsuario }}">
-      </div>
-
-      <div class="card-info">
-        
-        <div class="name-row">
-          <h2 class="user-name">{{ nomeUsuario }}</h2>
-          @if (dadosDemograficos.tipo_conta === 'PREMIUM 👑') {
-            <span class="material-icons verified-badge" title="Conta Premium">verified</span>
-          }
-        </div>
-
-        <p class="user-bio">
-          Arquiteto de vibes focado em precisão matemática e curadoria de playlists.
-        </p>
-
-        <div class="card-actions">
-          
-          <div class="stats">
-            <div class="stat-item" title="Playlists Salvas">
-              <span class="material-icons icon">queue_music</span>
-              <span class="number">{{ dadosDemograficos.total_playlists }}</span>
-            </div>
-            <div class="stat-item" title="Seguidores">
-              <span class="material-icons icon">person</span>
-              <span class="number">{{ dadosDemograficos.seguidores }}</span>
-            </div>
-            <div class="stat-item" title="Seguindo">
-              <span class="material-icons icon">person_add</span>
-              <span class="number">{{ dadosDemograficos.seguindo }}</span>
-            </div>
-          </div>
-
-          <button class="btn-action">
-            Sair
-            <span class="material-icons" style="font-size: 1rem; margin-left: 4px;">logout</span>
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </aside>
-
-  <main class="dashboard-main">
-    <div class="welcome-header">
-      <h1>Área VIP</h1>
-      <p>Seja bem-vindo à matemática da sua vibe.</p>
+      <span class="account-badge" [ngClass]="{'premium-badge': dadosDemograficos.tipo_conta.includes('PREMIUM')}">
+        {{ dadosDemograficos.tipo_conta }}
+      </span>
     </div>
 
-    </main>
+    <div class="card-separador"></div>
 
-</div>
+    <div class="card-stats-container">
+      
+      <div class="stat-row">
+        <div class="stat-icon">
+          <img src="/icones/playlist-branco.webp" alt="Ícone Playlist"> 
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-icon">
+          <img src="/icones/seguidores-branco.webp" alt="Ícone Seguidor">
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-icon">
+          <img src="/icones/seguindo-branco.webp" alt="Ícone Seguindo">
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
