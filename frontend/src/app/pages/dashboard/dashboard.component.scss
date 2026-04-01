@@ -1,22 +1,16 @@
-// Importação ou declaração dos Mixins (caso não sejam globais)
-@mixin tela-media {
-  @media (min-width: 900px) { @content; }
-}
+// Importação dos Mixins.
+@use '../../../assets/mixins' as *;
 
-@mixin tela-grande {
-  @media (min-width: 1400px) { @content; }
-}
-
-
+/*-------------------- TODA A PÁGINA --------------------*/
 .dashboard {
   display: flex;
-  flex-direction: column; // No celular, fica um em cima do outro
-  align-items: center; // Centralizado no mobile
-  padding: 2rem;
+  flex-direction: column; 
+  align-items: center; 
+  padding: 1.5rem; 
 
   @include tela-media {
-    flex-direction: row; // Lado a lado
-    justify-content: flex-start; // 🚨 A MÁGICA: Empurra todo o conteúdo pra direita da tela!
+    flex-direction: row; 
+    justify-content: flex-start;
     padding: 3rem;
   }
 
@@ -25,28 +19,43 @@
   }
 }
 
-
-
 /*---------- Card de Perfil ----------*/
 .card-perfil {
   background-color: var(--azul-escuro-muito-dk);
   border: 1px solid rgba(255, 255, 255, 0.07); 
-  border-radius: 30px; 
-  padding: 8px; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
   transition: all 0.3s ease;
-  width: 60%; 
-  max-width: 280px; 
-  margin: 0; 
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
+  display: grid;
+  grid-template-columns: auto 1fr; 
+  grid-template-rows: auto auto; 
+  grid-template-areas: 
+    "photo info" 
+    "photo stats"; 
+  align-items: center; 
+  column-gap: 20px; 
+  row-gap: 10px; 
+  width: fit-content; 
+  margin: 0 auto; 
+  padding: 7px 12px 7px 7px; 
+  border-radius: 30px; 
 
   @include tela-media {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    grid-template-areas: none;
+    grid-template-columns: none;
+    grid-template-rows: none;
     max-width: 255px; 
-    padding: 8px;
-    border-radius: 40px;
+    padding: 8px; 
+    border-radius: 40px; 
     margin: 0; 
+    gap: 0; 
+
+    &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
   }
 
   @include tela-grande {
@@ -55,22 +64,25 @@
     padding: 7px;
   }
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  }
-
   /*--- Imagem de Perfil ---*/
   .card-image-container {
+    grid-area: photo; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
     width: 100%;
+    margin-bottom: 0; 
     
+    @include tela-media { grid-area: none; }
+
     .profile-photo {
-      width: 100%;
+      width: 140px; 
       aspect-ratio: 1 / 1;
       object-fit: cover; 
-      border-radius: 30px; 
+      border-radius: 22px; 
       
       @include tela-media {
+        width: 100%; 
         border-radius: 35px; 
       }
       
@@ -82,32 +94,41 @@
 
   /*--- Nome e Tipo de Conta ---*/
   .card-info-container {
+    grid-area: info; 
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: 10px;
+    align-items: center; 
+    text-align: left;
     width: 100%;
+    margin-top: 0; 
 
     @include tela-media {
-      margin-top: 15px;
+      grid-area: none;
+      align-items: center; 
+      text-align: center;
+      margin-top: 15px; 
     }
 
     @include tela-grande {
       margin-top: 20px;
     }
 
+    /*--- Nome do Usuário ---*/
     .profile-name {
-      font-size: 1.6rem; 
-      font-weight: 400;
+      font-size: 1.3rem; 
+      font-weight: 500;
       color: var(--branco-dk);
-      margin: 0 0 8px 0;
-      text-align: center;
+      margin: 0 0 3px 0;
+      text-align: left;
       font-family: var(--fonte-especial);
-      letter-spacing: -0.5px;
+      letter-spacing: -0.2px;
 
       @include tela-media { 
         font-size: 1.8rem; 
+        font-weight: 400;
         margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+        text-align: center;
       }
 
       @include tela-grande { 
@@ -118,17 +139,18 @@
       }
     }
 
+    /*--- Tipo de Conta ---*/
     .account-badge {
       display: inline-block;
-      padding: 6px 10px;
       border-radius: 50px;
       font-family: var(--fonte-principal); 
-      font-size: 0.8rem;
-      font-style: italic;
       font-weight: 600;
       letter-spacing: 1px;
-      margin-bottom: 12px;
-      
+      font-size: 0.6rem; 
+      padding: 3px 6px; 
+      font-style: italic; 
+      margin-bottom: 0; 
+
       &.premium-badge {
         background-color: var(--verde-spotify-dk);
         color: var(--branco-dk); 
@@ -151,22 +173,31 @@
 
   /*--- Linha Separadora ---*/
   .card-separador {
+    display: none; 
     width: 80%;
     height: 1px;
     background-color: rgba(255, 255, 255, 0.03);
+
+    @include tela-media { display: block; }
   }
 
   /*--- Lista de Estatísticas ---*/
   .card-stats-container {
-    margin: 12px auto;
+    grid-area: stats; 
     display: flex;
     flex-direction: column;
+    align-items: flex-start; 
+    margin: 0; 
+    padding: 0;
+    width: 100%; 
     gap: 5px; 
-    width: fit-content; 
-     
+
     @include tela-media {
-      margin: 14px auto;
+      grid-area: none;
+      width: fit-content; 
+      margin: 14px auto; 
       gap: 6px; 
+      align-items: center; 
     }
 
     @include tela-grande {
@@ -178,7 +209,8 @@
       display: flex;
       align-items: center;
       justify-content: flex-start; 
-      gap: 7px; 
+      width: 100%; 
+      gap: 5px; 
 
       @include tela-media {
         gap: 9px; 
@@ -188,12 +220,12 @@
         gap: 12px; 
       }
       
-      /*--- Ícone ---*/
+      /*--- Ícones ---*/
       .stat-icon {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 16px; 
+        width: 14px; 
 
         @include tela-media {
           width: 18px; 
@@ -212,11 +244,11 @@
 
       /*--- Informações ---*/
       .stat-text {
-        font-size: 0.9rem;
         color: var(--cinza-claro-dk);
         font-weight: 400;
         font-family: var(--fonte-principal);
         white-space: nowrap; 
+        font-size: 0.75rem; 
 
         @include tela-media { font-size: 0.95rem; }
 

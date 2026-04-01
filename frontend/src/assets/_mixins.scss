@@ -1,0 +1,14 @@
+// Media Queries Globais ===>
+/*----------Tablet e Notebooks Menores ----------*/
+@mixin tela-media {
+  @media (min-width: 900px) {
+    @content;
+  }
+}
+
+/*---------- Telas Grandes ----------*/
+@mixin tela-grande {
+  @media (min-width: 1400px) {
+    @content;
+  }
+}
