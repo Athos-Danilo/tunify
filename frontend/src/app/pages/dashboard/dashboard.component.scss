@@ -19,6 +19,23 @@
   }
 }
 
+/*---------- Botão de Tema ----------*/
+.btn-tema-flutuante {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: var(--cinza-claro-dk);
+  cursor: pointer;
+  z-index: 1; 
+  transition: color 0.3s;
+
+  &:hover {
+    color: var(--branco-dk);
+  }
+}
+
 /*---------- Card de Perfil ----------*/
 .card-perfil {
   background-color: var(--azul-escuro-muito-dk);
@@ -38,6 +55,8 @@
   margin: 0 auto; 
   padding: 7px 12px 7px 7px; 
   border-radius: 30px; 
+  position: relative;
+  z-index: 2;
 
   @include tela-media {
     display: flex; 

@@ -1,57 +1,46 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; 
 import { SpotifyService } from '../../core/services/spotify.service';
+
+declare var FinisherHeader: any;
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  // 🚨 A MUDANÇA: Agora apontamos para os arquivos externos!
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
-  
-  // Dados Básicos que já temos
+export class DashboardComponent implements OnInit, AfterViewInit {
   nomeUsuario: string | null = '';
   emailUsuario: string | null = '';
-  
-  // 🚨 Dados Demográficos (Mockados até a implementação de RN16 no Python)
-  // Mas a estrutura já está pronta!
+  modoEscuro = true;
+
   dadosDemograficos: any = {
     carregando: true,
-    // Foto do perfil padrão (pode ser uma silhueta se não tiver foto)
     foto_perfil: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', 
-    tipo_conta: 'PREMIUM', // ou 'FREE'
+    tipo_conta: 'PREMIUM',
     total_playlists: 0,
-    seguidores: 128, // Mock (image_5.png)
-    seguindo: 350    // Mock (image_5.png)
+    seguidores: 128,
+    seguindo: 350
   };
-  
+
+  @ViewChild('headerContainer') headerContainer!: ElementRef;
   private router = inject(Router);
   private spotifyService = inject(SpotifyService);
   private cdr = inject(ChangeDetectorRef); 
 
-ngOnInit() {
+  ngOnInit() {
     this.nomeUsuario = localStorage.getItem('usuario_nome');
     this.emailUsuario = localStorage.getItem('usuario_email');
-    
-    // 🚨 O LEÃO DE CHÁCARA: Se não tiver logado, chuta pra Home e para a função aqui!
     if (!localStorage.getItem('spotify_token') || !this.emailUsuario) {
       this.router.navigate(['/']);
       return; 
     }
-
-    // A MÁGICA: Fazendo o pedido de Perfil usando o emailUsuario (agora o Angular tem certeza que não é nulo!)
     this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
       next: (resumoReal) => {
-        console.log('📦 [Angular] Dados Reais recebidos:', resumoReal);
-        
-        // Substituímos o nome do cofre pelo nome oficial do Spotify
         this.nomeUsuario = resumoReal.dono_da_conta; 
-        
-        // Atualizamos o objeto da tela com os dados do JSON que chegou do Python!
         this.dadosDemograficos = {
           carregando: false,
           foto_perfil: resumoReal.foto_perfil,
@@ -60,21 +49,65 @@ ngOnInit() {
           seguidores: resumoReal.seguidores,
           seguindo: resumoReal.seguindo
         };
-
-        // Acorda o Angular para pintar a tela!
         this.cdr.detectChanges(); 
       },
       error: (erro) => {
         console.error('[ERRO] Falha ao buscar perfil:', erro);
         this.dadosDemograficos.carregando = false;
         this.cdr.detectChanges();
-        alert("Ops! O Back-end não conseguiu buscar o resumo do seu perfil.");
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.renderizarFundo();
+  }
+
+  alternarTema() {
+    this.modoEscuro = !this.modoEscuro; 
+    this.renderizarFundo();
+  }
+
+  renderizarFundo() {
+    document.querySelectorAll('canvas#finisher-canvas').forEach(c => c.remove());
+    const config = this.modoEscuro ? this.getConfigDark() : this.getConfigLight();
+    new FinisherHeader(config);
   }
 
   fazerLogout() {
     localStorage.clear();
     this.router.navigate(['/']);
+  }
+
+  getConfigDark() {
+    return {
+      "count": 12,
+      "size": { "min": 1000, "max": 1500, "pulse": 1 },
+      "speed": { "x": { "min": 0.6, "max": 3 }, "y": { "min": 0.6, "max": 3 } },
+      "colors": {
+        "background": "#0b1120",
+        "particles": ["#0b1120", "#151e32", "#1e2e48", "#263c5e", "#22406e"]
+      },
+      "blending": "lighten",
+      "opacity": { "center": 0.6, "edge": 0 },
+      "skew": 0,
+      "shapes": ["c"]
+    };
+  }
+
+  getConfigLight() {
+    return {
+      "count": 12,
+      "size": { "min": 1000, "max": 1500, "pulse": 0 },
+      "speed": { "x": { "min": 0.3, "max": 2 }, "y": { "min": 0.6, "max": 3 } },
+      "colors": {
+        "background": "#FFFFFF",
+        "particles": ["#FFFFFF", "#EEEEEE", "#CFCFCF", "#7e7d7d", "#656464"]
+      },
+      "blending": "lighten",
+      "opacity": { "center": 0.6, "edge": 0 },
+      "skew": 0,
+      "shapes": ["c"]
+    };
   }
 }
