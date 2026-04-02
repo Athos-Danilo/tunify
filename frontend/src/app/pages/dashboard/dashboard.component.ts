@@ -3,10 +3,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; 
 import { SpotifyService } from '../../core/services/spotify.service';
 
+import { HeaderComponent } from '../../components/header/header.component';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HeaderComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

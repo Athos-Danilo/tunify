@@ -1,8 +1,12 @@
 <main class="dashboard" [ngClass]="{'tema-claro': !modoEscuro}">
 
-  <button class="btn-tema-flutuante" (click)="alternarTema()" title="Alternar Tema">
-    <span class="material-icons">{{ modoEscuro ? 'light_mode' : 'dark_mode' }}</span>
-  </button>
+  <app-header 
+    [nomeUsuario]="nomeUsuario" 
+    [fotoPerfil]="dadosDemograficos.foto_perfil"
+    [modoEscuro]="modoEscuro"
+    (onAlternarTema)="alternarTema()"
+    (onLogout)="fazerLogout()">
+  </app-header>
 
   <div class="card-perfil">
     

@@ -29,23 +29,6 @@
   }
 }
 
-/*---------- Botão de Tema ----------*/
-.btn-tema-flutuante {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: transparent;
-  border: none;
-  color: var(--cinza-claro-dk);
-  cursor: pointer;
-  z-index: 1; 
-  transition: color 0.3s;
-
-  &:hover {
-    color: var(--branco-dk);
-  }
-}
-
 /*---------- Card de Perfil ----------*/
 .card-perfil {
   background-color: var(--azul-muito-escuro-dk);
