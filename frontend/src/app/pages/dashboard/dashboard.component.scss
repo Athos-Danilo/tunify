@@ -1,8 +1,14 @@
 // Importação dos Mixins.
 @use '../../../assets/mixins' as *;
 
+/*--- Importa as variáveis e mixins globais ---*/
+@import '../../../styles.scss';
+
 /*-------------------- TODA A PÁGINA --------------------*/
 .dashboard {
+  background-color: var(--azul-escuro-dk);
+  transition: background-color 0.3s ease;
+  min-height: 100vh; 
   display: flex;
   flex-direction: column; 
   align-items: center; 
@@ -16,6 +22,10 @@
 
   @include tela-grande {
     padding: 4rem;
+  }
+
+  &.tema-claro {
+    background-color: var(--branco-lt); 
   }
 }
 
@@ -38,7 +48,7 @@
 
 /*---------- Card de Perfil ----------*/
 .card-perfil {
-  background-color: var(--azul-escuro-muito-dk);
+  background-color: var(--azul-muito-escuro-dk);
   border: 1px solid rgba(255, 255, 255, 0.07); 
   transition: all 0.3s ease;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
@@ -274,5 +284,26 @@
         @include tela-grande{ font-size: 1rem; }
       }
     }
+  }
+}
+
+// Card do Perfil <<< Modo Claro >>>
+.tema-claro .card-perfil {
+  background-color: var(--branco-lt);
+  border: 1px solid rgb(191, 190, 190);
+
+  // Nome do Usuário <<< Modo Claro >>>
+  .profile-name {
+    color: var(--preto-lt);
+  }
+
+  // Separador <<< Modo Claro >>>
+  .card-separador {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  // Lista de Estatísticas <<< Modo Claro >>>
+  .stat-row .stat-text {
+    color: var(--preto-lt);
   }
 }

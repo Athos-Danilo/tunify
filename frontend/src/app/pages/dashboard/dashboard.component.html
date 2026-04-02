@@ -1,4 +1,4 @@
-<main class="dashboard">
+<main class="dashboard" [ngClass]="{'tema-claro': !modoEscuro}">
 
   <button class="btn-tema-flutuante" (click)="alternarTema()" title="Alternar Tema">
     <span class="material-icons">{{ modoEscuro ? 'light_mode' : 'dark_mode' }}</span>
@@ -24,21 +24,21 @@
       
       <div class="stat-row">
         <div class="stat-icon">
-          <img src="/icones/playlist-branco.webp" alt="Ícone Playlist"> 
+          <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt="Ícone Playlist"> 
         </div>
         <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-icon">
-          <img src="/icones/seguidores-branco.webp" alt="Ícone Seguidor">
+          <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="Ícone Seguidor">
         </div>
         <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-icon">
-          <img src="/icones/seguindo-branco.webp" alt="Ícone Seguindo">
+          <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="Ícone Seguindo">
         </div>
         <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
       </div>
