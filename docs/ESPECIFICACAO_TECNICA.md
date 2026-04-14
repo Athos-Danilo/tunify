@@ -2,11 +2,11 @@
 
 **Slogan:** "A matemática da sua vibe."
 
-**Versão:** 1.0.4
+**Versão:** 1.0.5
 
 **Status:** Desenvolvimento
 
-**Data da Atualização:** 25/03/2026
+**Data da Atualização:** 14/04/2026
 
 ---
 
@@ -106,8 +106,21 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RF31 - Formulário de Transmissão Direta:** O sistema deve fornecer uma interface dedicada ("Contato") para comunicação entre o usuário e a equipe de engenharia. O formulário deve obrigar a categorização da mensagem através de "chips" predefinidos: *Anomalia na Matrix* (Bug), *Ideia Brilhante* (Feature Request), *Frequência Positiva* (Elogio) e *Ajuste de Rota* (Crítica).
 * **RF32 - Captura Condicional de Contato:** Respeitando o princípio da privacidade, o campo de entrada de e-mail deve ser renderizado condicionalmente. Só será exibido e exigido se o usuário marcar explicitamente a opção de solicitação de retorno ("Gostaria de receber um retorno da equipe").
 * **RF33 - Feedback Visual Transacional:** Após a submissão bem-sucedida do formulário à API, o frontend deve interceptar a resposta e exibir um modal/pop-up de confirmação (sem recarregar a página), limpando o estado do formulário em seguida.
+* **RF34 - Top 10 Mensal (Precisão Absoluta):** O Dashboard exibirá um componente listando as 10 faixas mais ouvidas pelo usuário no mês corrente. Diferente do Spotify (que trabalha com rolling-windows de 28 dias), o Tunify deve calcular esse ranking com base em um rastreamento diário próprio, exibindo o número exato de reproduções (Plays) e a variação de tendência (subiu, desceu, nova) em relação ao mês anterior.
 
----
+### **Módulo 8: Tunify Sync (Conexão Social e Match de Vibe)**
+
+* **RF35 - Sistema de Convite P2P:** O usuário deve poder gerar um link de convite único (Deep Link) para compartilhar via WhatsApp/redes sociais. Quando outro usuário acessa via link e se autentica, o sistema estabelece uma conexão bidirecional entre as contas.
+* **RF36 - Painel de Compatibilidade (Vibe Match):** Uma interface visual que compara os dados dos dois usuários conectados. Deve exibir: 
+  1) Uma porcentagem total de similaridade matemática (Match Score).
+  2) Um gráfico de radar sobreposto (os dois pentágonos de vibe na mesma imagem para comparar Energia, Valência, etc.).
+  3) Artistas em comum identificados na biblioteca de Músicas Curtidas.
+* **RF37 - Playlist "Ponto de Encontro" (Cross-Vibe Generator):** Geração de uma playlist conjunta. O usuário pode escolher gerar uma jornada que tenta agradar aos dois (focando na interseção e similaridade matemática das bibliotecas) ou uma playlist de "Colisão" (intercalando uma faixa de alta afinidade do Usuário A seguida por uma do Usuário B).
+
+### **Módulo 9: Library Cleaner (Faxina Musical)**
+
+* **RF38 - Scanner de Duplicatas Fantasmas:** Uma ferramenta de utilidade que permite ao usuário escanear uma playlist específica ou sua biblioteca inteira de "Músicas Curtidas" em busca de faixas repetidas. O sistema deve exibir uma interface visual com uma barra de progresso durante a varredura (paginação) e apresentar os "Clones" encontrados agrupados lado a lado.
+* **RF39 - Gestão de Resolução de Conflitos:** A interface de resultado do scanner deve permitir que o usuário escute uma prévia (30s) de cada versão clonada e ofereça um botão de ação rápida para remover a faixa indesejada diretamente da conta do Spotify, mantendo apenas a versão preferida.
 ---
 
 ## **4. Regras de Negócio (RN)**
@@ -164,7 +177,10 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
     1. **Dataset Local (Preciso):** Se a música consta no "Spotify 1M Dataset" importado, usa-se o gênero específico da faixa (ex: "Classic Rock").  
     2. **Inferência de Artista (Aproximado):** Se a música não está no Dataset (é um lançamento novo), o sistema consulta a API do Spotify para pegar os gêneros do Artista e atribui à música (ex: Artista "Metallica" -> Música recebe "Metal").  
     3. **Tag "Unclassified":** Se nenhuma fonte tiver dados, marca como "Desconhecido" para não quebrar os gráficos.
-* **RN13 - Janelas de Tempo de Estatísticas (Time Ranges):** A geração do "Festival Pass" (RF27) e dos gráficos do Dashboard não devem armazenar dados contínuos de playback no banco local para economizar processamento. O sistema deve consumir os endpoints /me/top/tracks e /me/top/artists do Spotify, utilizando estritamente os parâmetros nativos de time_range: short_term (Último mês), medium_term (Últimos 6 meses) e long_term (Histórico total).
+* **RN13 - Rastreio Contínuo e Resiliência (Hourly Tracker):** Para garantir a precisão absoluta do Dashboard (RF34), o sistema implementará um *Background Task* (Cron Job) que rodará a cada 1 hora.
+  * *Lógica:* O robô utilizará o `refresh_token` descriptografado de cada usuário ativo para consumir o endpoint `/me/player/recently-played` do Spotify. 
+  * *Cursor de Tempo:* O sistema deve registrar o timestamp da última checagem (`after_timestamp`) para garantir que apenas reproduções inéditas sejam capturadas na próxima hora, evitando duplicação de dados.
+  * *Persistência:* Os dados brutos capturados (Apenas ID do usuário, ID da música e Data/Hora) serão injetados na tabela quente `monthly_history`.
 * **RN14 - Cálculo Seguro de Lealdade (Anti-Rate Limit):** Para calcular a métrica "Super Fã" (RF28) sem estourar o limite de requisições da API buscando a discografia completa de um artista, o cálculo será estritamente interno. Fórmula: (Quantidade de músicas do Artista X salvas pelo usuário) / (Total de músicas na biblioteca do usuário) * 100.
 * **RN15 - Agrupamento do Ingresso (Line-up Logic):** Para a renderização do RF27 (Festival Pass), o sistema utilizará a inferência de gêneros (RN10) para agrupar os Top Artistas sob o título do gênero musical que os representa, simulando os "Palcos" de um festival (ex: Palco Pop, Palco Sertanejo).
 * **RN16 - Enriquecimento de Dados Demográficos (Artist Identity):** Como a API do Spotify não fornece o gênero ou pronome dos artistas, o Backend deve implementar um sistema de enriquecimento de dados. 
@@ -174,6 +190,14 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
   * *Lógica:* Quando um usuário requisitar informações de um gênero específico, o Backend fará uma busca assíncrona em uma fonte externa (ex: Wikipedia API ou um prompt estruturado via LLM API) solicitando um resumo padronizado.
   * *Estratégia de Cache:* O resumo gerado será salvo na tabela `genres_dictionary`. Consultas subsequentes de qualquer usuário para aquele mesmo gênero consumirão apenas o banco de dados local (Cache Hit), garantindo alta velocidade e custo zero de API externa.
 * **RN18 - Validação Dinâmica de Feedback (Schema-less Input):** Como os feedbacks dos usuários possuem natureza variável (tamanhos de texto distintos, presença ou ausência de e-mail), a validação estrutural (Pydantic) ocorrerá exclusivamente na camada da API (FastAPI) para sanitização. No nível de banco de dados, o registro será tratado como um documento JSON livre, garantindo flexibilidade para adição de novos campos no frontend no futuro sem necessidade de migrações complexas.
+* **RN19 - Estratégia de Data Rollup (Agregação Mensal):** Para evitar o crescimento exponencial e insustentável do banco de dados relacional, o Tunify adotará um padrão de *Downsampling*.
+  * *O Gatilho:* No dia 1º de cada mês, às 03:00 da manhã (horário de menor tráfego), um Cron Job de faxina será acionado.
+  * *A Agregação:* O script fará um `GROUP BY` na tabela `monthly_history` referente ao mês que acabou de fechar, contando os plays de cada música por usuário. O sistema selecionará estritamente as **200 músicas mais ouvidas** de cada usuário e salvará esse resumo consolidado na tabela de arquivo frio `top_two_hundred`.
+  * *A Purga (Garbage Collection):* Imediatamente após a consolidação com sucesso, todos os registros individuais do mês passado na tabela `monthly_history` serão fisicamente deletados (`DELETE`) para liberar espaço em disco.
+* **RN20 - Hidratação de Metadados via JOIN:** Tabelas de histórico (`monthly_history` e `top_two_hundred`) **nunca** devem armazenar strings redundantes (Nome da música, Artista, Capa, Gênero). Elas armazenarão apenas o `spotify_track_id`. No momento de servir a API para o frontend, o Backend fará uma junção (JOIN) com a tabela `tracks_cache` para "hidratar" a resposta com a capa, o artista e a inferência de gêneros definida na RN10 e RN12.
+* **RN21 - Amostragem de Curtidas (Sync Limit):** Para o cálculo do "Tunify Sync" (Módulo 8), o sistema não fará a extração integral da biblioteca "Músicas Curtidas" (Saved Tracks) para evitar estourar o Rate Limit. O algoritmo limitará a extração e análise às **500 faixas mais recentemente salvas** de cada usuário conectado para calcular a interseção e a distância vetorial.
+* **RN22 - Algoritmo de Identificação de Clones (String Normalization):** A verificação de duplicatas (RF38) não deve confiar no `spotify_track_id`, pois versões diferentes da mesma música (ex: Álbum vs. Single) possuem IDs distintos. O Backend deve processar as faixas aplicando normalização de strings (Regex): remover sufixos padrão (como " - Remastered", " (Live)", " - Radio Edit"), converter para *lowercase* e fazer o match combinando `titulo_normalizado + id_artista`.
+* **RN23 - Paginação com Delay (Rate Limit Protection):** Para escanear bibliotecas imensas (ex: 3000+ faixas), a rotina do Backend deve utilizar paginação de 50 em 50 itens (limite da API). Para evitar bloqueio preventivo do Spotify (HTTP 429), a iteração deve possuir um backoff (delay de processamento assíncrono) entre os lotes, alimentando o progresso do frontend via WebSocket ou Polling.
 ---
 
 ## **5. Requisitos Não-Funcionais (RNF)**
@@ -328,6 +352,23 @@ Esquema relacional otimizado para performance e integridade.
 * `artist_type` (Enum): Classificação da entidade (PERSON, GROUP, OTHER). 
 * `gender` (Enum): Gênero do artista (MALE, FEMALE, NON_BINARY, UNKNOWN). Aplica-se apenas se `artist_type` for PERSON.
 * `updated_at` (Timestamp): Última vez que o dado foi sincronizado.
+
+**Tabela: monthly_history** (Tabela Quente / Dia a Dia)
+*Descrição: Armazena os plays em tempo real do mês corrente. Sofre purga (DELETE) no dia 1º do mês subsequente.*
+* `id` (UUID, PK): Identificador único do play.
+* `user_id` (UUID, FK -> users.id, Index): Usuário que ouviu.
+* `spotify_track_id` (String, Index): ID da música.
+* `played_at` (Timestamp, Index): Data e hora exata em que a música foi ouvida (extraído do Spotify).
+
+**Tabela: top_two_hundred** (Arquivo Frio / Rollup Mensal)
+*Descrição: Armazena o ranking consolidado das 200 músicas mais ouvidas por mês para uso no Dashboard e no futuro "Wrapped" do final de ano.*
+* `id` (UUID, PK): Identificador único do registro de ranking.
+* `user_id` (UUID, FK -> users.id, Index): Usuário dono do histórico.
+* `mes_referencia` (String, Index): Formato "YYYY-MM" (ex: "2026-04"). Vital para particionamento temporal.
+* `spotify_track_id` (String): ID da música.
+* `play_count` (Integer): Somatório de vezes que a música foi ouvida naquele mês.
+* `rank_position` (Integer): A posição da música no ranking (1 a 200) naquele mês específico.
+* `created_at` (Timestamp): Data em que o robô executou o rollup.
 
 **Tabela: genres_dictionary** (Wiki Interna do Tunify)
 
