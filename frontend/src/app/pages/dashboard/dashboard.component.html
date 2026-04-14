@@ -8,49 +8,53 @@
     (onLogout)="fazerLogout()">
   </app-header>
 
-  <div class="card-perfil">
-    
-    <div class="card-image-container">
-      <img [src]="dadosDemograficos.foto_perfil" alt="Foto de perfil de {{ nomeUsuario }}" class="profile-photo">
-    </div>
+  <div class="dashboard-grid">
 
-    <div class="card-info-container">
-      <h2 class="profile-name">{{ nomeUsuario }}</h2>
+    <div class="card-perfil">
       
-      <span class="account-badge" [ngClass]="{'premium-badge': dadosDemograficos.tipo_conta.includes('PREMIUM')}">
-        {{ dadosDemograficos.tipo_conta }}
-      </span>
+      <div class="card-image-container">
+        <img [src]="dadosDemograficos.foto_perfil" alt="Foto de perfil de {{ nomeUsuario }}" class="profile-photo">
+      </div>
+
+      <div class="card-info-container">
+        <h2 class="profile-name">{{ nomeUsuario }}</h2>
+        
+        <span class="account-badge" [ngClass]="{'premium-badge': dadosDemograficos.tipo_conta.includes('PREMIUM')}">
+          {{ dadosDemograficos.tipo_conta }}
+        </span>
+      </div>
+
+      <div class="card-separador"></div>
+
+      <div class="card-stats-container">
+        
+        <div class="stat-row">
+          <div class="stat-icon">
+            <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt="Ícone Playlist"> 
+          </div>
+          <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-icon">
+            <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="Ícone Seguidor">
+          </div>
+          <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-icon">
+            <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="Ícone Seguindo">
+          </div>
+          <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
+        </div>
+
+      </div>
+
     </div>
 
-    <div class="card-separador"></div>
-
-    <div class="card-stats-container">
-      
-      <div class="stat-row">
-        <div class="stat-icon">
-          <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt="Ícone Playlist"> 
-        </div>
-        <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat-icon">
-          <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="Ícone Seguidor">
-        </div>
-        <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat-icon">
-          <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="Ícone Seguindo">
-        </div>
-        <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
-      </div>
-
-    </div>
+    <app-top-musicas></app-top-musicas>
 
   </div>
-
-  <app-top-musicas></app-top-musicas>
 
 </main>
