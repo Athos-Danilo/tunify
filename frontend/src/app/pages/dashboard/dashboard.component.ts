@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { SpotifyService } from '../../core/services/spotify.service';
 
 import { HeaderComponent } from '../../components/header/header.component';
+import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.component'; 
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, TopMusicasComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

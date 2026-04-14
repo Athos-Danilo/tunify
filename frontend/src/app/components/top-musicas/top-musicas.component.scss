@@ -1,0 +1,217 @@
+@use '../../../assets/mixins' as *;
+
+.card-top-musicas {
+  background-color: var(--azul-muito-escuro-dk);
+  border-radius: 40px;
+  padding: 1.5rem 2rem;
+  width: 100%;
+  max-width: 780px; 
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+  .header-ranking {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+    position: relative;
+    .subtitulo {
+      color: var(--cinza-claro-dk);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .mes-letreiro {
+      font-size: 3rem;
+      font-family: var(--fonte-especial);
+      margin-top: -10px;
+      // 🚨 Deixando o gradiente um pouco mais brilhante
+      background: linear-gradient(to bottom, var(--cor-azul, #347CD4), rgba(52, 124, 212, 0.1));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+    .data-atualizacao {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: -10px; // Puxa para perto do mês
+      font-style: italic;
+    }
+  }
+}
+
+.lista-musicas {
+  display: grid;
+  gap: 6px; // Espaço entre as linhas
+  
+  // No celular/telas pequenas, mantém 1 coluna
+  grid-template-columns: 1fr; 
+
+  // No PC (tela-media em diante), divide em 2 colunas perfeitamente iguais!
+  @include tela-media {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 30px; // Espaço extra de respiro no meio das duas colunas
+  }
+}
+
+.musica-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: entrada-cascata 0.5s ease forwards;
+  animation-delay: calc(var(--delay) * 0.1s);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    .titulo-musica { color: var(--verde-spotify-dk); text-decoration: underline; }
+    .overlay-play { opacity: 1; }
+    .numero { opacity: 0; }
+  }
+}
+
+.rank-info {
+  width: 45px; // 🚨 Mais espaço para não espremer os ícones!
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  
+  .numero { 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    opacity: 0.3; // 🚨 Aumentei um pouco a opacidade para ficar visível
+  }
+  
+  .tendencia { 
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.7rem; 
+    font-weight: 800;
+    margin-top: 2px;
+
+    &.sobe { color: #2ecc71; .material-icons { font-size: 0.9rem; } }
+    &.desce { color: #e74c3c; .material-icons { font-size: 0.9rem; } }
+    
+    .tag-nova { 
+      background: var(--cor-azul); 
+      padding: 3px 5px; 
+      border-radius: 4px; 
+      color: white;
+      font-size: 0.5rem;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+.capa-container {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  img { width: 100%; border-radius: 8px; }
+  .overlay-play {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s;
+    span { color: white; font-size: 2rem; }
+  }
+}
+
+.meta-info {
+  flex: 1;
+  .titulo-musica { font-size: 1rem; color: var(--branco-dk); margin: 0; transition: color 0.3s; }
+  .artista-nome { font-size: 0.8rem; color: var(--cinza-claro-dk); margin: 0; }
+  .regua-vicio {
+    height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 6px;
+    .progresso { height: 100%; background: var(--verde-spotify-dk); box-shadow: 0 0 10px var(--verde-spotify-dk); border-radius: 2px; transition: width 1s ease-out; }
+  }
+}
+
+.plays-badge {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 20px;
+  span { font-size: 0.7rem; font-weight: 600; color: var(--cinza-claro-dk); white-space: nowrap; }
+}
+
+/* ========================================================= */
+/* 🚨 RODAPÉ E BOTÃO PREMIUM SPOTIFY */
+/* ========================================================= */
+.footer-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center; // 🚨 É AQUI QUE ELE CENTRALIZA!
+  width: 100%;
+}
+
+.btn-spotify-premium {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px; // Tamanho cirúrgico e elegante
+  background: rgba(29, 185, 84, 0.05); // Fundo verde ultra transparente
+  border: 1px solid rgba(29, 185, 84, 0.3); // Borda neon sutil
+  border-radius: 50px; // Formato de pílula perfeita
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+  
+  // Transição super elástica
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  .icone-animado {
+    color: var(--verde-spotify-dk, #1DB954);
+    font-size: 1.2rem;
+    transition: transform 0.4s ease, color 0.3s ease;
+  }
+
+  .texto-btn {
+    color: var(--verde-spotify-dk, #1DB954);
+    font-family: var(--fonte-principal);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+  }
+
+  // 🚨 A MÁGICA DO HOVER (Passar o mouse)
+  &:hover {
+    background: var(--verde-spotify-dk, #1DB954);
+    transform: translateY(-3px); // Dá um "pulinho"
+    // Brilho Neon Absurdo
+    box-shadow: 
+      0 10px 20px rgba(29, 185, 84, 0.3), 
+      0 0 15px rgba(29, 185, 84, 0.5), 
+      inset 0 0 5px rgba(255, 255, 255, 0.4);
+    border-color: transparent;
+
+    .icone-animado {
+      color: #000; // Fica preto para dar contraste
+      transform: scale(1.1); // Dá um leve zoom
+    }
+
+    .texto-btn {
+      color: #000; // Fica preto para dar contraste
+      font-weight: 700;
+    }
+  }
+  
+  // Efeito de clique (afundar)
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 5px 10px rgba(29, 185, 84, 0.3);
+  }
+}
+
+@keyframes entrada-cascata {
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,54 @@
+<section class="card-bento card-top-musicas">
+  
+  <header class="header-ranking">
+    <span class="subtitulo">AS TUAS FAIXAS MAIS OUVIDAS</span>
+    <h1 class="mes-letreiro">{{ mesAtual | uppercase }}</h1>
+    <span class="data-atualizacao">{{ ultimaAtualizacao }}</span>
+  </header>
+
+  <div class="lista-musicas">
+    @for (musica of musicas; track musica.posicao) {
+      <div class="musica-row" [style.--delay]="$index">
+        
+        <div class="rank-info">
+          <span class="numero">{{ musica.posicao }}</span>
+          <div class="tendencia" [ngClass]="musica.tendencia">
+            @if (musica.tendencia === 'sobe') { <span class="material-icons">north</span> {{ musica.valorTendencia }} }
+            @if (musica.tendencia === 'desce') { <span class="material-icons">south</span> {{ musica.valorTendencia }} }
+            @if (musica.tendencia === 'nova') { <span class="tag-nova">NOVA</span> }
+          </div>
+        </div>
+
+        <div class="capa-container">
+          <img [src]="musica.capa" [alt]="musica.titulo">
+          <div class="overlay-play">
+            <span class="material-icons">play_arrow</span>
+          </div>
+        </div>
+
+        <div class="meta-info">
+          <div class="texto">
+            <h3 class="titulo-musica">{{ musica.titulo }}</h3>
+            <p class="artista-nome">{{ musica.artista }}</p>
+          </div>
+          <div class="regua-vicio">
+            <div class="progresso" [style.width]="getLarguraRegua(musica.reproducoes)"></div>
+          </div>
+        </div>
+
+        <div class="plays-badge">
+          <span>{{ musica.reproducoes }} plays</span>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <footer class="footer-actions">
+    <button class="btn-spotify-premium">
+      <span class="material-icons icone-animado">playlist_add</span>
+      <span class="texto-btn">Criar Playlist</span>
+    </button>
+  </footer>
+
+</section>
