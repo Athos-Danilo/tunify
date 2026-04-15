@@ -45,7 +45,8 @@ def login_spotify():
             "user-top-read",
             "user-library-read",
             "streaming",
-            "user-follow-read"
+            "user-follow-read",
+            "user-read-recently-played"
         ]
         
         # Parâmetros obrigatórios exigidos pela documentação do Spotify.

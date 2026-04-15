@@ -14,6 +14,8 @@ from app.core.database import engine, Base
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
 from app.models import User, MonthlyHistory, TopTwoHundred
 
+# Robôs de Busca.
+from app.services.tasks import iniciar_robos
 
 # ======> Sincronização.
 # 1) O SQLAlchemy olha para todos os modelos;
@@ -58,6 +60,16 @@ async def startup_event():
     print(f"> Tunify rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
     print("> Banco de Dados conectado e tabelas verificadas!")
 
+# ======> Eventos de Inicialização.
+# 1) Executa comandos assim que o servidor é ligado no terminal.
+# --------------------------------------------------------------------------- #
+@app.on_event("startup")
+async def startup_event():
+    print(f"> Tunify rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
+    print("> Banco de Dados conectado e tabelas verificadas!")
+    
+    # Liga a nossa central de robôs!
+    iniciar_robos()
 
 # ======> Rota Raiz.
 # 1) Rota simples apenas para checar se o servidor está online pelo navegador.

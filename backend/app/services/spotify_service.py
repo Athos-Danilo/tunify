@@ -1,6 +1,7 @@
 import httpx
 from typing import List, Dict, Any
 
+import base64
 # ======> O Motor de Busca.
 # 1) Classe isolada responsável apenas por falar com a API do Spotify;
 # 2) Usa o 'httpx' para fazer requisições de forma assíncrona (não bloqueia o servidor);
@@ -50,3 +51,34 @@ class SpotifyService:
             # Pegamos a resposta em JSON e extraímos apenas a lista "items"
             data = response.json()
             return data.get("items", [])
+    
+    # ======> Rota: Renovar o Crachá (Refresh Token)
+    # 1) O Token do Spotify morre em 1 hora.
+    # 2) Essa função usa o refresh_token (que não morre) para pegar um novo access_token.
+    # -------------------------------------------------------------------------------------- #
+    async def atualizar_token(self, refresh_token: str, client_id: str, client_secret: str) -> dict:
+        url = "https://accounts.spotify.com/api/token"
+        
+        # O Spotify exige que a gente mande os dados como "formulário" e não como JSON
+        payload = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": client_id,
+        }
+
+        # A autenticação secreta do nosso App
+        auth_str = f"{client_id}:{client_secret}"
+        import base64
+        b64_auth = base64.b64encode(auth_str.encode()).decode()
+
+        headers = {
+            "Authorization": f"Basic {b64_auth}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, data=payload)
+            response.raise_for_status()
+            
+            # Devolve o novo Access Token (e às vezes um novo Refresh Token)
+            return response.json()
