@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 # Gerenciador de sessão do SQLAlchemy para realizar operações no PostgreSQL.
 from sqlalchemy.orm import Session
+from sqlalchemy import func, desc
 
 # Biblioteca para fazer requisições HTTP assíncronas.
 import httpx
@@ -12,6 +13,10 @@ from app.core.database import get_db
 
 # Importa o schema do Usuário no banco.
 from app.models.user import User
+
+# Importa o Histórico Mensal e o Cache de Músicas.
+from app.models.history import MonthlyHistory
+from app.models.track import TrackCache
 
 router = APIRouter()
 
@@ -100,3 +105,55 @@ async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
                 
             print(f"[ERRO] O Spotify recusou a conexão: {e}")
             raise HTTPException(status_code=e.response.status_code, detail="Erro ao buscar dados no Spotify")
+
+
+# ======> Rota: Top 10 Mês Atual 
+# 1) O Angular chama essa rota.
+# 2) O banco conta os plays da Tabela Quente e junta com o Nome/Capa do Cache.
+# -------------------------------------------------------------------------------------- #
+@router.get("/top-mensal")
+async def obter_top_mensal(
+    db: Session = Depends(get_db),
+    # user = Depends(get_current_user) # Descomente e ajuste de acordo com o seu sistema de Login
+):
+    # Para testarmos agora sem o sistema de login travar a gente, 
+    # vamos forçar o ID do seu usuário temporariamente (troque pelo ID do seu banco, provavelmente 1)
+    meu_user_id = 1 
+
+    # A Mágica do SQL (JOIN + COUNT + GROUP BY)
+    top_tracks = db.query(
+        MonthlyHistory.spotify_track_id,
+        func.count(MonthlyHistory.id).label('play_count'), # Conta quantas vezes repetiu
+        TrackCache.name,
+        TrackCache.artist_name,
+        TrackCache.album_cover_url
+    ).join(
+        TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+    ).filter(
+        MonthlyHistory.user_id == meu_user_id # Filtra só as SUAS músicas
+    ).group_by(
+        MonthlyHistory.spotify_track_id,
+        TrackCache.name,
+        TrackCache.artist_name,
+        TrackCache.album_cover_url
+    ).order_by(
+        desc('play_count') # Ordena da mais ouvida para a menos ouvida
+    ).limit(10).all() # Pega apenas o Top 10!
+
+    # Se o usuário for novo e o robô ainda não pegou nada (Cold Start)
+    if not top_tracks:
+        return {"mensagem": "O robô ainda está mapeando sua vibe!", "dados": []}
+
+    # Formata a resposta para o Angular ler facilmente
+    resultado_formatado = []
+    for posicao, track in enumerate(top_tracks, start=1):
+        resultado_formatado.append({
+            "rank": posicao,
+            "id": track.spotify_track_id,
+            "nome": track.name,
+            "artista": track.artist_name,
+            "capa_url": track.album_cover_url,
+            "total_plays": track.play_count
+        })
+
+    return {"dados": resultado_formatado}
