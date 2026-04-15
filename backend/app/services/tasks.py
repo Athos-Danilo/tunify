@@ -10,6 +10,8 @@ logger = logging.getLogger("Tunify-Robots")
 # Instância do nosso Agendador Assíncrono (Ele não trava o FastAPI!)
 scheduler = AsyncIOScheduler()
 
+from app.models.track import TrackCache
+
 import datetime
 from app.core.database import SessionLocal # Usado para abrir a conexão com o banco
 from app.models.user import User
@@ -47,8 +49,31 @@ async def robo_rastreador_hourly():
                 
                 # 5. Salva cada faixa na nossa Tabela Quente
                 for item in faixas_recentes:
-                    track_id = item['track']['id']
-                    # Converte a data gringa ISO para o padrão do nosso banco Python
+                    track_data = item['track']
+                    track_id = track_data['id']
+                    
+                    # ======> LÓGICA DE CACHE (Dicionário Permanente)
+                    # 1) Verifica se a música já existe no nosso cofre
+                    musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
+                    
+                    # 2) Se NÃO existir, nós cadastramos ela agora!
+                    if not musica_no_cache:
+                        # Extraímos os nomes dos artistas e juntamos com vírgula (ex: "The Weeknd, Daft Punk")
+                        nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
+                        
+                        # Pegamos a URL da imagem da capa (geralmente a primeira da lista é a de alta resolução)
+                        capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
+                        
+                        novo_cache = TrackCache(
+                            spotify_id=track_id,
+                            name=track_data['name'],
+                            artist_name=nomes_artistas,
+                            album_cover_url=capa_url
+                        )
+                        db.add(novo_cache)
+                        logger.info(f"📦 [CACHE] Nova música catalogada: {track_data['name']}")
+                    
+                    # 3) Agora salvamos o play normalmente no histórico
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
                     
                     novo_historico = MonthlyHistory(
@@ -109,7 +134,7 @@ def iniciar_robos():
     # Adiciona o Robô 1 (Intervalo de 1 hora)
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(hours=1),
+        trigger=IntervalTrigger(minutes=30),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True
