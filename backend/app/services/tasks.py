@@ -40,17 +40,14 @@ async def robo_rastreador_hourly():
                 ultima_musica = db.query(MonthlyHistory).filter(MonthlyHistory.user_id == user.id)\
                                   .order_by(MonthlyHistory.played_at.desc()).first()
                 
-                # Se ele já tem histórico, pegamos o Timestamp (em milissegundos pro Spotify)
-                # Se for um usuário novo (Cold Start), deixamos None para puxar as últimas 50 logo de cara.
                 after_ts = int(ultima_musica.played_at.timestamp() * 1000) if ultima_musica else None
                 
-                # 4. Pede as músicas pro Spotify
-                faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
+                faixas_recentes = [] # Inicia a gaveta vazia aqui fora
 
                 # 🚨 A NOVA MÁGICA: Sistema de Tentativas (Retry)
                 for tentativa in range(2):
                     try:
-                        # Pede as músicas pro Spotify
+                        # Pede as músicas pro Spotify (Agora APENAS dentro do loop seguro)
                         faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
                         
                         # Se passou dessa linha sem dar erro, deu tudo certo! Quebramos o loop.
@@ -74,12 +71,11 @@ async def robo_rastreador_hourly():
                             db.commit()
                             
                             logger.info("🔑 [RASTREADOR] Token renovado! Buscando as músicas IMEDIATAMENTE (Tentativa 2).")
-                            # O loop NÃO quebra aqui. Ele volta lá pra cima e tenta o get_recently_played de novo com o token atualizado!
                         else:
-                            # Se der erro na 2ª tentativa, ou for outro erro bizarro, desiste pra não ficar num loop infinito.
+                            # Se der erro na 2ª tentativa, levanta a bandeira vermelha
                             raise e
 
-                # 🚨 CRIAMOS A PRANCHETA AQUI (Memória de curto prazo)
+                # 🚨 A PRANCHETA (Memória de curto prazo)
                 musicas_adicionadas_agora = set()
                 
                 # 5. Salva cada faixa na nossa Tabela Quente
@@ -88,10 +84,8 @@ async def robo_rastreador_hourly():
                     track_id = track_data['id']
                     
                     # ======> LÓGICA DE CACHE (Dicionário Permanente)
-                    # 1) Verifica se a música já existe no nosso cofre
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
                     
-                    # 2) Se NÃO existir, nós cadastramos ela agora!
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
                         capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
@@ -103,13 +97,10 @@ async def robo_rastreador_hourly():
                             album_cover_url=capa_url
                         )
                         db.add(novo_cache)
-                        
-                        # 🚨 Anota o ID na prancheta pra não duplicar nessa rodada!
                         musicas_adicionadas_agora.add(track_id) 
-                        
                         logger.info(f"📦 [CACHE] Nova música catalogada: {track_data['name']}")
                     
-                    # Salva o play no histórico (Isso aqui pode duplicar, porque a chave primária é o UUID e não o spotify_id)
+                    # Salva o play no histórico
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
                     
                     novo_historico = MonthlyHistory(
@@ -123,29 +114,10 @@ async def robo_rastreador_hourly():
                 db.commit()
                 logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para o usuário {user.display_name}")
 
-            # 6. SE A PORTA ESTIVER TRANCADA (Token Expirado)
-            except ValueError as e:
-                if str(e) == "TOKEN_EXPIRADO":
-                    logger.warning(f"⚠️ [RASTREADOR] Token do {user.display_name} expirou. Pegando um novo...")
-                    
-                    # Usa o SpotifyService para renovar o crachá
-                    novos_tokens = await spotify.atualizar_token(
-                        user.refresh_token, 
-                        settings.SPOTIFY_CLIENT_ID, 
-                        settings.SPOTIFY_CLIENT_SECRET
-                    )
-                    
-                    # Atualiza no banco o novo Access Token
-                    user.access_token = novos_tokens['access_token']
-                    if 'refresh_token' in novos_tokens:
-                        user.refresh_token = novos_tokens['refresh_token']
-                    
-                    db.commit()
-                    logger.info("🔑 [RASTREADOR] Token renovado! Na próxima hora ele busca os dados.")
-                    
+            # 🚨 Tratamento de Erro Genérico (O fantasma foi exorcizado daqui!)
             except Exception as ex:
                 logger.error(f"❌ [RASTREADOR] Erro genérico no usuário {user.display_name}: {ex}")
-                db.rollback() # Se der erro geral, desfaz a transação!
+                db.rollback() 
 
     finally:
         # Fechamos a gaveta do banco de dados para não vazar memória!
