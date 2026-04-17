@@ -12,7 +12,7 @@ from app.api.v1.endpoints import auth, spotify
 from app.core.database import engine, Base
 
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
-from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache
+from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened
 
 
 # Robôs de Busca.

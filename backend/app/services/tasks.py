@@ -3,6 +3,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+# O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
+from sqlalchemy import func
+
 # Configuração básica de log para vermos os robôs trabalhando no terminal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Tunify-Robots")
@@ -15,7 +18,7 @@ from app.models.track import TrackCache
 import datetime
 from app.core.database import SessionLocal # Usado para abrir a conexão com o banco
 from app.models.user import User
-from app.models.history import MonthlyHistory
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened
 from app.services.spotify_service import SpotifyService
 from app.core.config import settings
 
@@ -94,7 +97,8 @@ async def robo_rastreador_hourly():
                             spotify_id=track_id,
                             name=track_data['name'],
                             artist_name=nomes_artistas,
-                            album_cover_url=capa_url
+                            album_cover_url=capa_url,
+                            duration_ms=track_data.get('duration_ms', 0)
                         )
                         db.add(novo_cache)
                         musicas_adicionadas_agora.add(track_id) 
@@ -130,9 +134,60 @@ async def robo_rastreador_hourly():
 # 2) Faz as contas, salva os Top 200 e apaga o histórico detalhado do mês passado.
 # -------------------------------------------------------------------------------------- #
 async def robo_agregador_mensal():
-    logger.info("[AGREGADOR] Iniciando a faxina mensal e calculando Top 200...")
-    # Aqui vai a lógica de consolidar os dados.
-    logger.info("[AGREGADOR] Faxina concluída! Tabela Top Two Hundred atualizada.")
+    logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas de tempo...")
+    db = SessionLocal()
+    
+    try:
+        # 1. Descobrir qual é o mês que acabou de passar
+        hoje = datetime.datetime.now()
+        # O limite é o primeiro segundo do mês atual
+        primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Formatar o mês de referência (Ex: "2026-03")
+        if hoje.month == 1:
+            mes_ref = f"{hoje.year - 1}-12"
+        else:
+            mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
+
+        # 2. A MÁGICA MATEMÁTICA DO POSTGRESQL (JOIN + SUM)
+        somas_por_usuario = db.query(
+            MonthlyHistory.user_id,
+            func.sum(TrackCache.duration_ms).label('total_ms')
+        ).join(
+            TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyHistory.played_at < primeiro_dia_atual
+        ).group_by(
+            MonthlyHistory.user_id
+        ).all()
+
+        # 3. Salva os minutos calculados na tabela MinutesListened
+        for user_id, total_ms in somas_por_usuario:
+            # Transforma milissegundos em minutos inteiros (1 min = 60.000 ms)
+            minutos_totais = int(total_ms / 60000)
+            
+            novo_fechamento = MinutesListened(
+                user_id=user_id,
+                mes_referencia=mes_ref,
+                total_minutes=minutos_totais
+            )
+            db.add(novo_fechamento)
+            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} minutos em {mes_ref}.")
+
+        # 4. A PURGA (Limpeza da tabela quente)
+        # O banco já fez as contas de tempo, então deletamos as músicas do mês passado!
+        # NOTA: Quando formos criar a lógica do TOP 200, ela entrará AQUI, antes do delete!
+        linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
+        
+        # Só comitamos no final! Se algo der erro, nada é apagado.
+        db.commit()
+        logger.info(f"✅ [AGREGADOR] Faxina concluída! {linhas_deletadas} plays antigos apagados e tempo consolidado.")
+
+    except Exception as e:
+        logger.error(f"❌ [AGREGADOR] Erro no fechamento mensal: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 
 # ======> Função de Ignição
@@ -140,10 +195,10 @@ async def robo_agregador_mensal():
 # 2) Dá a partida no motor do agendador.
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
-    # Adiciona o Robô 1 (Intervalo de 1 hora)
+    # Adiciona o Robô 1 (Intervalo de 5 minutos - Teste)
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(minutes=30),
+        trigger=IntervalTrigger(minutes=10),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True

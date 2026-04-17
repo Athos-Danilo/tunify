@@ -5,7 +5,8 @@
 from .user import User
 
 # Importa os modelos de Histórico que criamos no arquivo history.py
-from .history import MonthlyHistory, TopTwoHundred
+from .history import MonthlyHistory, TopTwoHundred, MinutesListened
+
 
 # Importa o modelo de Cache de Músicas
 from .track import TrackCache

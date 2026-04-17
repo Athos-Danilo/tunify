@@ -74,3 +74,31 @@ class TopTwoHundred(Base):
 
     # 8. Relacionamento Virtual
     user = relationship("User", backref="top_tracks_history")
+
+
+# ======> O Molde da Tabela de Minutos Ouvidos.
+# Armazena o fechamento mensal do tempo total de imersão de cada usuário.
+# -------------------------------------------------------------------------------------- #
+class MinutesListened(Base):
+    __tablename__ = "minutes_listened"
+
+    # 1. Chave Primária (ID)
+    id = Column(Integer, primary_key=True, index=True)
+
+    # 2. ID do Usuário (Chave Estrangeira)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    # 3. Mês de Referência
+    # Segue o mesmo padrão do Top200 (Exemplo: "2026-04").
+    mes_referencia = Column(String, index=True, nullable=False)
+
+    # 4. Tempo Total
+    # A soma total de tempo ouvido no mês (em minutos).
+    total_minutes = Column(Integer, nullable=False, default=0)
+
+    # 5. Data de Criação
+    # Carimba o momento exato do fechamento.
+    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+
+    # 6. Relacionamento Virtual
+    user = relationship("User", backref="minutes_history")

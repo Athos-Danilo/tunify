@@ -1,5 +1,6 @@
 # Ferramentas do SQLAlchemy
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Integer, JSON, DateTime
+from sqlalchemy.sql import func
 
 # Importa a classe Base
 from app.core.database import Base
@@ -25,3 +26,23 @@ class TrackCache(Base):
     # 4. URL da Capa do Álbum
     # Salvamos o link da imagem (geralmente uma URL que começa com 'i.scdn.co')
     album_cover_url = Column(String, nullable=True)
+
+    # 5. Duração da Música
+    # Salva o tempo total da música em milissegundos para uso no Dashboard.
+    duration_ms = Column(Integer, nullable=False, default=0)
+
+    # 6. O "DNA" da Música (Áudio Features)
+    # Guardará os vetores matemáticos como Energia, Valência, Acústica, etc.
+    audio_features = Column(JSON, nullable=True)
+
+    # 7. Gêneros Musicais
+    # Uma lista com as classificações de gênero dessa faixa específica.
+    genres = Column(JSON, nullable=True)
+
+    # 8. Popularidade
+    # Um número de 0 a 100 indicando o quão famosa essa música é no Spotify atualmente.
+    popularity = Column(Integer, nullable=True)
+
+    # 9. Data de Atualização
+    # Registra automaticamente quando foi a última vez que consultamos os dados dessa música.
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
