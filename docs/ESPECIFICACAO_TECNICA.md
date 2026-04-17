@@ -2,11 +2,11 @@
 
 **Slogan:** "A matemática da sua vibe."
 
-**Versão:** 1.0.5
+**Versão:** 1.0.6
 
 **Status:** Desenvolvimento
 
-**Data da Atualização:** 14/04/2026
+**Data da Atualização:** 17/04/2026
 
 ---
 
@@ -100,27 +100,32 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RF28 - Tunify Festival Pass (Social Share Ticket):** O sistema deve possuir um gerador de imagens dinâmico que transforma as estatísticas do usuário em um ingresso virtual de festival. O componente visual deve exibir: O "Line-up" (Top 5 Artistas ou Gêneros), O "Tempo de Show" (Minutos ouvidos) e O "Palco/Vibe" (Média de energia/valência). O usuário poderá alternar entre variantes de cores predefinidas (Temas do ingresso) na interface. O Angular deverá converter este componente HTML/CSS em um arquivo de imagem (.png/.jpeg) para download e compartilhamento nas redes sociais.
 * **RF29 - Métrica "Super Fã" (Loyalty Score):** O Dashboard deve exibir uma métrica de lealdade para os artistas mais ouvidos, indicando a concentração de faixas daquele artista na biblioteca pessoal do usuário.
 * **RF30 - Análise Demográfica de Artistas (Gender Breakdown):** O sistema deve analisar as faixas mais ouvidas/curtidas do usuário e apresentar a distribuição demográfica dos artistas (Masculino, Feminino, Banda/Grupo, Não-Binário/Outros) através de um gráfico de rosca (Donut Chart) no Dashboard. A interface deve gerar um *insight* dinâmico em texto baseado na predominância (ex: "Seu fone de ouvido é dominado por vozes femininas!").
+* **RF31 - Métrica "Fã Raiz" (Tempo vs. Plays):** O Dashboard deve apresentar um ranking dos artistas mais ouvidos baseado no **tempo total de imersão** (minutos) e não apenas na quantidade de reproduções. O sistema fará o cruzamento da tabela de histórico com o tempo da faixa (duration_ms) para revelar os artistas que mais prenderam a atenção do usuário.
+* **RF32 - Gamificação Geek (Equivalências Temporais):** O sistema deve converter o tempo total ouvido no mês em marcos lúdicos de cultura pop ou do mundo real (Ex: "Você ouviu o equivalente a maratonar a trilogia do Senhor dos Anéis 5 vezes"). O frontend renderizará mensagens dinâmicas baseadas em faixas de minutos pré-estabelecidas no backend.
+* **RF33 - Taxa de Imersão (Time Percentage):** O Dashboard exibirá um indicador de impacto visual informando qual a porcentagem do mês o usuário passou ouvindo música. O cálculo dividirá os minutos totais ouvidos pela quantidade de minutos em um mês padrão (~43.200 minutos).
 
 ### **Módulo 7: Transmissão Direta (Comunicação e Feedback)**
 
-* **RF31 - Formulário de Transmissão Direta:** O sistema deve fornecer uma interface dedicada ("Contato") para comunicação entre o usuário e a equipe de engenharia. O formulário deve obrigar a categorização da mensagem através de "chips" predefinidos: *Anomalia na Matrix* (Bug), *Ideia Brilhante* (Feature Request), *Frequência Positiva* (Elogio) e *Ajuste de Rota* (Crítica).
-* **RF32 - Captura Condicional de Contato:** Respeitando o princípio da privacidade, o campo de entrada de e-mail deve ser renderizado condicionalmente. Só será exibido e exigido se o usuário marcar explicitamente a opção de solicitação de retorno ("Gostaria de receber um retorno da equipe").
-* **RF33 - Feedback Visual Transacional:** Após a submissão bem-sucedida do formulário à API, o frontend deve interceptar a resposta e exibir um modal/pop-up de confirmação (sem recarregar a página), limpando o estado do formulário em seguida.
-* **RF34 - Top 10 Mensal (Precisão Absoluta):** O Dashboard exibirá um componente listando as 10 faixas mais ouvidas pelo usuário no mês corrente. Diferente do Spotify (que trabalha com rolling-windows de 28 dias), o Tunify deve calcular esse ranking com base em um rastreamento diário próprio, exibindo o número exato de reproduções (Plays) e a variação de tendência (subiu, desceu, nova) em relação ao mês anterior.
+* **RF34 - Formulário de Transmissão Direta:** O sistema deve fornecer uma interface dedicada ("Contato") para comunicação entre o usuário e a equipe de engenharia. O formulário deve obrigar a categorização da mensagem através de "chips" predefinidos: *Anomalia na Matrix* (Bug), *Ideia Brilhante* (Feature Request), *Frequência Positiva* (Elogio) e *Ajuste de Rota* (Crítica).
+* **RF35 - Captura Condicional de Contato:** Respeitando o princípio da privacidade, o campo de entrada de e-mail deve ser renderizado condicionalmente. Só será exibido e exigido se o usuário marcar explicitamente a opção de solicitação de retorno ("Gostaria de receber um retorno da equipe").
+* **RF36 - Feedback Visual Transacional:** Após a submissão bem-sucedida do formulário à API, o frontend deve interceptar a resposta e exibir um modal/pop-up de confirmação (sem recarregar a página), limpando o estado do formulário em seguida.
+* **RF37 - Top 10 Mensal (Precisão Absoluta):** O Dashboard exibirá um componente listando as 10 faixas mais ouvidas pelo usuário no mês corrente. Diferente do Spotify (que trabalha com rolling-windows de 28 dias), o Tunify deve calcular esse ranking com base em um rastreamento diário próprio, exibindo o número exato de reproduções (Plays) e a variação de tendência (subiu, desceu, nova) em relação ao mês anterior.
 
 ### **Módulo 8: Tunify Sync (Conexão Social e Match de Vibe)**
 
-* **RF35 - Sistema de Convite P2P:** O usuário deve poder gerar um link de convite único (Deep Link) para compartilhar via WhatsApp/redes sociais. Quando outro usuário acessa via link e se autentica, o sistema estabelece uma conexão bidirecional entre as contas.
-* **RF36 - Painel de Compatibilidade (Vibe Match):** Uma interface visual que compara os dados dos dois usuários conectados. Deve exibir: 
+* **RF38 - Sistema de Convite P2P:** O usuário deve poder gerar um link de convite único (Deep Link) para compartilhar via WhatsApp/redes sociais. Quando outro usuário acessa via link e se autentica, o sistema estabelece uma conexão bidirecional entre as contas.
+* **RF39 - Painel de Compatibilidade (Vibe Match):** Uma interface visual que compara os dados dos dois usuários conectados. Deve exibir: 
   1) Uma porcentagem total de similaridade matemática (Match Score).
   2) Um gráfico de radar sobreposto (os dois pentágonos de vibe na mesma imagem para comparar Energia, Valência, etc.).
   3) Artistas em comum identificados na biblioteca de Músicas Curtidas.
-* **RF37 - Playlist "Ponto de Encontro" (Cross-Vibe Generator):** Geração de uma playlist conjunta. O usuário pode escolher gerar uma jornada que tenta agradar aos dois (focando na interseção e similaridade matemática das bibliotecas) ou uma playlist de "Colisão" (intercalando uma faixa de alta afinidade do Usuário A seguida por uma do Usuário B).
+* **RF40 - Playlist "Ponto de Encontro" (Cross-Vibe Generator):** Geração de uma playlist conjunta. O usuário pode escolher gerar uma jornada que tenta agradar aos dois (focando na interseção e similaridade matemática das bibliotecas) ou uma playlist de "Colisão" (intercalando uma faixa de alta afinidade do Usuário A seguida por uma do Usuário B).
+* **RF41 - O Pódio da Casa (Termômetro de Vício):** Quando duas contas estiverem sincronizadas, o painel do Tunify Sync exibirá um placar comparativo do tempo total de escuta (minutos mensais) entre os dois usuários. O componente visual coroará o usuário com mais tempo de imersão como o "Audiófilo do Mês", incentivando o engajamento na plataforma.
 
+---
 ### **Módulo 9: Library Cleaner (Faxina Musical)**
 
-* **RF38 - Scanner de Duplicatas Fantasmas:** Uma ferramenta de utilidade que permite ao usuário escanear uma playlist específica ou sua biblioteca inteira de "Músicas Curtidas" em busca de faixas repetidas. O sistema deve exibir uma interface visual com uma barra de progresso durante a varredura (paginação) e apresentar os "Clones" encontrados agrupados lado a lado.
-* **RF39 - Gestão de Resolução de Conflitos:** A interface de resultado do scanner deve permitir que o usuário escute uma prévia (30s) de cada versão clonada e ofereça um botão de ação rápida para remover a faixa indesejada diretamente da conta do Spotify, mantendo apenas a versão preferida.
+* **RF42 - Scanner de Duplicatas Fantasmas:** Uma ferramenta de utilidade que permite ao usuário escanear uma playlist específica ou sua biblioteca inteira de "Músicas Curtidas" em busca de faixas repetidas. O sistema deve exibir uma interface visual com uma barra de progresso durante a varredura (paginação) e apresentar os "Clones" encontrados agrupados lado a lado.
+* **RF43 - Gestão de Resolução de Conflitos:** A interface de resultado do scanner deve permitir que o usuário escute uma prévia (30s) de cada versão clonada e ofereça um botão de ação rápida para remover a faixa indesejada diretamente da conta do Spotify, mantendo apenas a versão preferida.
 ---
 
 ## **4. Regras de Negócio (RN)**
@@ -198,6 +203,8 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RN21 - Amostragem de Curtidas (Sync Limit):** Para o cálculo do "Tunify Sync" (Módulo 8), o sistema não fará a extração integral da biblioteca "Músicas Curtidas" (Saved Tracks) para evitar estourar o Rate Limit. O algoritmo limitará a extração e análise às **500 faixas mais recentemente salvas** de cada usuário conectado para calcular a interseção e a distância vetorial.
 * **RN22 - Algoritmo de Identificação de Clones (String Normalization):** A verificação de duplicatas (RF38) não deve confiar no `spotify_track_id`, pois versões diferentes da mesma música (ex: Álbum vs. Single) possuem IDs distintos. O Backend deve processar as faixas aplicando normalização de strings (Regex): remover sufixos padrão (como " - Remastered", " (Live)", " - Radio Edit"), converter para *lowercase* e fazer o match combinando `titulo_normalizado + id_artista`.
 * **RN23 - Paginação com Delay (Rate Limit Protection):** Para escanear bibliotecas imensas (ex: 3000+ faixas), a rotina do Backend deve utilizar paginação de 50 em 50 itens (limite da API). Para evitar bloqueio preventivo do Spotify (HTTP 429), a iteração deve possuir um backoff (delay de processamento assíncrono) entre os lotes, alimentando o progresso do frontend via WebSocket ou Polling.
+* **RN24 - Normalização de Duração (Anti-Redundância):** Respeitando o princípio DRY (Don't Repeat Yourself), o dado de duração da música (`duration_ms`) **nunca** será salvo na tabela de histórico quente (`monthly_history`). A duração será armazenada exclusivamente na tabela dicionário (`tracks_cache`). O cálculo de tempo total será sempre realizado via junção relacional (JOIN) sob demanda ou durante o fechamento mensal.
+* **RN25 - Agregação e Fechamento de Tempo (Monthly Time Rollup):** Em conjunto com a RN19 (faxina do dia 1º de cada mês às 03:00 da manhã), o Cron Job executará uma soma (SUM) multiplicando os plays de cada usuário pela duração (`duration_ms`) das respectivas músicas. O resultado total convertido em minutos será salvo na tabela de consolidação `minutes_listened`. Isso garante performance extrema para o Dashboard sem precisar varrer milhares de linhas diariamente.
 ---
 
 ## **5. Requisitos Não-Funcionais (RNF)**
@@ -335,13 +342,15 @@ Esquema relacional otimizado para performance e integridade.
 * is\_alive (Boolean): Se true, será atualizada pelo Cron Job semanalmente.  
 * created\_at (Timestamp).
 
-**Tabela: tracks\_cache** (Cache de Músicas)
+**Tabela: tracks_cache** (Cache de Músicas)
 
 * `spotify_track_id` (String, PK): ID da música no Spotify.  
 * `name` (String): Título.  
-* `artist_name` (String): Artista principal.  
+* `artist_name` (String): Artista principal.
+* `album_cover_url` (String): Link para a imagem da capa no Spotify.
+* `duration_ms` (Integer): Duração exata da faixa em milissegundos. *(Novo)*
 * `audio_features` (JSONB): O "DNA" da música (`{"energy": 0.5, "key": 1...}`).  
-* **`genres` (JSONB): Lista de gêneros específicos da faixa (ex: `["indie rock", "alternative"]`). Prioridade: Dataset \> Inferência do Artista.**  
+* `genres` (JSONB): Lista de gêneros específicos da faixa.
 * `popularity` (Integer): 0-100.  
 * `updated_at` (Timestamp).
 
@@ -352,6 +361,15 @@ Esquema relacional otimizado para performance e integridade.
 * `artist_type` (Enum): Classificação da entidade (PERSON, GROUP, OTHER). 
 * `gender` (Enum): Gênero do artista (MALE, FEMALE, NON_BINARY, UNKNOWN). Aplica-se apenas se `artist_type` for PERSON.
 * `updated_at` (Timestamp): Última vez que o dado foi sincronizado.
+
+**Tabela: minutes_listened** (Arquivo Frio / Tempo Total Consolidado)
+*Descrição: Armazena o fechamento mensal do tempo total de escuta de cada usuário. Gerada no dia 1º de cada mês pelo Cron Job.*
+
+* `id` (UUID, PK): Identificador único do registro de fechamento.
+* `user_id` (UUID, FK -> users.id, Index): Usuário dono do histórico.
+* `mes_referencia` (String, Index): Formato "YYYY-MM" (ex: "2026-04").
+* `total_minutes` (Integer): Soma total do tempo de escuta no mês correspondente.
+* `created_at` (Timestamp): Data em que o robô executou o fechamento matemático.
 
 **Tabela: monthly_history** (Tabela Quente / Dia a Dia)
 *Descrição: Armazena os plays em tempo real do mês corrente. Sofre purga (DELETE) no dia 1º do mês subsequente.*
