@@ -33,14 +33,14 @@
   flex-direction: column; // Celular: um em cima do outro
   gap: 2rem;
   width: 100%;
-  max-width: 1200px; // Limite elegante para o PC
+  max-width: 1400px; // Limite elegante para o PC
   margin: 0 auto;
 
   @include tela-media {
     flex-direction: row; // PC: Lado a lado
     align-items: flex-start; 
     justify-content: center;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 }
 
@@ -314,5 +314,11 @@ app-top-musicas {
   width: 100%;
   min-width: 0; // Evita quebra de layout em telas médias
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+}
+
+/* Garante que o card de minutos se comporte como uma coluna à direita */
+app-minutes-listened {
+  flex-shrink: 0; // Impede que o card seja esmagado pelo Top 10
+  width: fit-content;
 }

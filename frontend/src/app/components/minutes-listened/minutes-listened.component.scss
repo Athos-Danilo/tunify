@@ -1,0 +1,64 @@
+.minutes-card {
+  background-color: #121826; /* Cor do fundo baseada no seu print */
+  border-radius: 24px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .card-title {
+      color: #E2E8F0; /* Cor clara para leitura */
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .arrow-btn {
+      background-color: #1E293B; /* Círculo escuro em volta da seta */
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #F8FAFC;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #334155;
+      }
+    }
+  }
+
+  .card-body {
+    .minutes-value {
+      margin: 0;
+      color: #0ea5e9; /* Aquele azul vibrante do seu design */
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+
+      .minutes-label {
+        font-size: 1.5rem;
+        font-weight: 600;
+        font-style: italic; /* Como no seu logo do Tunify */
+      }
+    }
+  }
+}
