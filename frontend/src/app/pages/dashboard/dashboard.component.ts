@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; 
 import { SpotifyService } from '../../core/services/spotify.service';
+import { DashboardService } from '../../core/services/dashboard.service'; // 1. Importa o novo serviço
 
 import { HeaderComponent } from '../../components/header/header.component';
 import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.component';
@@ -18,7 +19,9 @@ export class DashboardComponent implements OnInit {
   nomeUsuario: string | null = '';
   emailUsuario: string | null = '';
   
-  // Variável que controla a classe [ngClass]="{'tema-claro': !modoEscuro}" lá no HTML
+  // 2. Variável que o nosso Card de Minutos vai "beber"
+  minutosTotais: number = 0; 
+  
   modoEscuro = true;
 
   dadosDemograficos: any = {
@@ -32,6 +35,7 @@ export class DashboardComponent implements OnInit {
 
   private router = inject(Router);
   private spotifyService = inject(SpotifyService);
+  private dashboardService = inject(DashboardService); // 3. Injeta o serviço de estatísticas
   private cdr = inject(ChangeDetectorRef); 
 
   ngOnInit() {
@@ -44,7 +48,7 @@ export class DashboardComponent implements OnInit {
       return; 
     }
 
-    // Busca os dados
+    // Chamada 1: Resumo do Perfil (Spotify API)
     this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
       next: (resumoReal) => {
         this.nomeUsuario = resumoReal.dono_da_conta; 
@@ -64,9 +68,19 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    // 4. Chamada 2: Minutos Ouvidos (Nosso Backend / PostgreSQL)
+    this.dashboardService.obterMinutosOuvidos(this.emailUsuario).subscribe({
+      next: (res) => {
+        this.minutosTotais = res.total_minutos;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[ERRO] Falha ao buscar minutos:', err);
+      }
+    });
   }
 
-  // Apenas inverte o booleano. O Angular cuida de trocar as cores via CSS!
   alternarTema() {
     this.modoEscuro = !this.modoEscuro; 
   }
