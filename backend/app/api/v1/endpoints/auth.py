@@ -21,6 +21,8 @@ from app.core.database import get_db
 # Importa o schema do Usuário no banco.
 from app.models.user import User
 
+from fastapi import Query
+
 router = APIRouter()
 
 
@@ -78,7 +80,24 @@ def login_spotify():
 # 5) Se existir, atualizar os tokens; se for novo, criar o registro.
 # ------------------------------------------------------------------------- #
 @router.get("/callback")
-def callback_spotify(code: str, db: Session = Depends(get_db)):
+def callback_spotify(
+    # 🚨 1. Mudamos a porta de entrada para aceitar o "error" e tornar o "code" opcional
+    code: str | None = None, 
+    error: str | None = None, 
+    db: Session = Depends(get_db)
+):
+    # 🚨 2. Trava de segurança 1: A usuária clicou em "Cancelar"
+    if error == "access_denied":
+        print("[AVISO] O login foi cancelado na tela do Spotify.")
+        # Manda ela de volta para a tela de login do Angular para tentar de novo
+        return RedirectResponse(url="http://localhost:4200/login?erro=cancelado", status_code=302)
+        
+    # 🚨 3. Trava de segurança 2: A URL veio vazia, sem código e sem erro
+    if not code:
+        print("[ERRO] Callback chamado sem código de autorização.")
+        raise HTTPException(status_code=400, detail="Código de autorização não encontrado.")
+
+    # Se passou das duas travas acima, temos o código! O fluxo segue normal.
     print(f"[INFO] Processando callback. Código temporário recebido com sucesso.")
     
     try:

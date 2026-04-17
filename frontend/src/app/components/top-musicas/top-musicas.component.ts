@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+// 🚨 IMPORTANTE: Ajuste o caminho de acordo com onde você salvou o service!
+import { SpotifyService } from '../../core/services/spotify.service';
 
 interface Musica {
   posicao: number;
@@ -21,25 +24,59 @@ interface Musica {
 export class TopMusicasComponent implements OnInit {
   mesAtual: string = '';
   ultimaAtualizacao: string = '';
-  musicas: Musica[] = [
-    { posicao: 1, titulo: 'Starboy', artista: 'The Weeknd', capa: 'https://picsum.photos/50/50?random=1', reproducoes: 145, tendencia: 'estavel' },
-    { posicao: 2, titulo: 'Blinding Lights', artista: 'The Weeknd', capa: 'https://picsum.photos/50/50?random=2', reproducoes: 128, tendencia: 'sobe', valorTendencia: 2 },
-    { posicao: 3, titulo: 'Flowers', artista: 'Miley Cyrus', capa: 'https://picsum.photos/50/50?random=3', reproducoes: 112, tendencia: 'nova' },
-    { posicao: 4, titulo: 'Cruel Summer', artista: 'Taylor Swift', capa: 'https://picsum.photos/50/50?random=4', reproducoes: 98, tendencia: 'desce', valorTendencia: 1 },
-    { posicao: 5, titulo: 'Levitating', artista: 'Dua Lipa', capa: 'https://picsum.photos/50/50?random=5', reproducoes: 85, tendencia: 'sobe', valorTendencia: 3 },
-    { posicao: 6, titulo: 'As It Was', artista: 'Harry Styles', capa: 'https://picsum.photos/50/50?random=6', reproducoes: 76, tendencia: 'estavel' },
-    { posicao: 7, titulo: 'Do I Wanna Know?', artista: 'Arctic Monkeys', capa: 'https://picsum.photos/50/50?random=7', reproducoes: 65, tendencia: 'nova' },
-    { posicao: 8, titulo: 'good 4 u', artista: 'Olivia Rodrigo', capa: 'https://picsum.photos/50/50?random=8', reproducoes: 58, tendencia: 'desce', valorTendencia: 2 },
-    { posicao: 9, titulo: 'Locked Out of Heaven', artista: 'Bruno Mars', capa: 'https://picsum.photos/50/50?random=9', reproducoes: 49, tendencia: 'sobe', valorTendencia: 1 },
-    { posicao: 10, titulo: 'Mr. Brightside', artista: 'The Killers', capa: 'https://picsum.photos/50/50?random=10', reproducoes: 42, tendencia: 'estavel' },
-  ];
+  
+  // Começamos com a lista vazia
+  musicas: Musica[] = [];
+  
+  // Variável para mostrar um "Carregando..." no HTML se você quiser depois
+  carregando: boolean = true; 
+
+  // Injetamos o nosso carteiro
+  private spotifyService = inject(SpotifyService);
 
   ngOnInit() {
     this.mesAtual = new Intl.DateTimeFormat('pt-PT', { month: 'long' }).format(new Date());
     this.calcularUltimaAtualizacao();
+    
+    // Chama a função que busca no Backend
+    this.buscarDadosDoBackend();
+  }
+
+  buscarDadosDoBackend() {
+    const emailLogado = localStorage.getItem('usuario_email'); 
+
+    if (!emailLogado) {
+      console.error('Nenhum usuário logado encontrado!');
+      return;
+    }
+
+    // Passa o e-mail para o carteiro!
+    this.spotifyService.getTopMensal(emailLogado).subscribe({
+      next: (resposta) => {
+        // A MÁGICA DA TRADUÇÃO: Transformamos o JSON do backend na nossa Interface!
+        this.musicas = resposta.dados.map((item: any) => ({
+          posicao: item.rank,
+          titulo: item.nome,
+          artista: item.artista,
+          capa: item.capa_url,
+          reproducoes: item.total_plays,
+          // Como o backend ainda não calcula histórico de subida/descida, colocamos 'nova' por enquanto
+          tendencia: 'nova' 
+        }));
+        
+        this.carregando = false;
+      },
+      error: (erro) => {
+        console.error('Erro ao buscar o Top Mensal da API', erro);
+        this.carregando = false;
+      }
+    });
   }
 
   getLarguraRegua(reproducoes: number): string {
+    // Proteção: Se a lista estiver vazia, não faz a conta para evitar erro de divisão
+    if (this.musicas.length === 0) return '0%';
+    
     const maxPlays = this.musicas[0].reproducoes;
     return `${(reproducoes / maxPlays) * 100}%`;
   }

@@ -111,40 +111,43 @@ async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
 # 1) O Angular chama essa rota.
 # 2) O banco conta os plays da Tabela Quente e junta com o Nome/Capa do Cache.
 # -------------------------------------------------------------------------------------- #
-@router.get("/top-mensal")
+@router.get("/top-mensal/{email}")
 async def obter_top_mensal(
-    db: Session = Depends(get_db),
-    # user = Depends(get_current_user) # Descomente e ajuste de acordo com o seu sistema de Login
+    email: str, # 🚨 Agora exigimos o email na URL!
+    db: Session = Depends(get_db)
 ):
-    # Para testarmos agora sem o sistema de login travar a gente, 
-    # vamos forçar o ID do seu usuário temporariamente (troque pelo ID do seu banco, provavelmente 1)
-    meu_user_id = 1 
+    # 1. Acha quem é o dono desse email no banco de dados
+    usuario_real = db.query(User).filter(User.email == email).first()
+    
+    if not usuario_real:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado no banco.")
 
-    # A Mágica do SQL (JOIN + COUNT + GROUP BY)
+    # 2. Pega o ID verdadeiro da pessoa (Adeus, meu_user_id = 1!)
+    user_id_dinamico = usuario_real.id
+
+    # A Mágica do SQL (Usando o ID dinâmico)
     top_tracks = db.query(
         MonthlyHistory.spotify_track_id,
-        func.count(MonthlyHistory.id).label('play_count'), # Conta quantas vezes repetiu
+        func.count(MonthlyHistory.id).label('play_count'),
         TrackCache.name,
         TrackCache.artist_name,
         TrackCache.album_cover_url
     ).join(
         TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
     ).filter(
-        MonthlyHistory.user_id == meu_user_id # Filtra só as SUAS músicas
+        MonthlyHistory.user_id == user_id_dinamico # 🚨 Filtra usando o ID de quem realmente pediu!
     ).group_by(
         MonthlyHistory.spotify_track_id,
         TrackCache.name,
         TrackCache.artist_name,
         TrackCache.album_cover_url
     ).order_by(
-        desc('play_count') # Ordena da mais ouvida para a menos ouvida
-    ).limit(10).all() # Pega apenas o Top 10!
+        desc('play_count')
+    ).limit(10).all()
 
-    # Se o usuário for novo e o robô ainda não pegou nada (Cold Start)
     if not top_tracks:
         return {"mensagem": "O robô ainda está mapeando sua vibe!", "dados": []}
 
-    # Formata a resposta para o Angular ler facilmente
     resultado_formatado = []
     for posicao, track in enumerate(top_tracks, start=1):
         resultado_formatado.append({
