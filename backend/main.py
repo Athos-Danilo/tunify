@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
 # Importa as rotas.
-from app.api.v1.endpoints import auth, spotify
+from app.api.v1.endpoints import auth, spotify, dashboard
+
 
 # Importa o motor do banco de dados e a classe Base.
 from app.core.database import engine, Base
@@ -51,6 +52,7 @@ app.add_middleware(
 # ------------------------------------------------------------------------------------------- #
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(spotify.router, prefix="/api/v1/spotify", tags=["Spotify"])
+app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 
 
 # ======> Eventos de Inicialização.

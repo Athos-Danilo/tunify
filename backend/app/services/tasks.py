@@ -3,7 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-# O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
+# 🚨 IMPORT NOVO: O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
 from sqlalchemy import func
 
 # Configuração básica de log para vermos os robôs trabalhando no terminal
@@ -134,7 +134,7 @@ async def robo_rastreador_hourly():
 # 2) Faz as contas, salva os Top 200 e apaga o histórico detalhado do mês passado.
 # -------------------------------------------------------------------------------------- #
 async def robo_agregador_mensal():
-    logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas de tempo...")
+    logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas...")
     db = SessionLocal()
     
     try:
@@ -149,7 +149,7 @@ async def robo_agregador_mensal():
         else:
             mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
 
-        # 2. A MÁGICA MATEMÁTICA DO POSTGRESQL (JOIN + SUM)
+        # 2. A MÁGICA DOS MINUTOS OUVIDOS (JOIN + SUM)
         somas_por_usuario = db.query(
             MonthlyHistory.user_id,
             func.sum(TrackCache.duration_ms).label('total_ms')
@@ -163,9 +163,7 @@ async def robo_agregador_mensal():
 
         # 3. Salva os minutos calculados na tabela MinutesListened
         for user_id, total_ms in somas_por_usuario:
-            # Transforma milissegundos em minutos inteiros (1 min = 60.000 ms)
             minutos_totais = int(total_ms / 60000)
-            
             novo_fechamento = MinutesListened(
                 user_id=user_id,
                 mes_referencia=mes_ref,
@@ -174,14 +172,47 @@ async def robo_agregador_mensal():
             db.add(novo_fechamento)
             logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} minutos em {mes_ref}.")
 
-        # 4. A PURGA (Limpeza da tabela quente)
-        # O banco já fez as contas de tempo, então deletamos as músicas do mês passado!
-        # NOTA: Quando formos criar a lógica do TOP 200, ela entrará AQUI, antes do delete!
+        # 4. A MÁGICA DO TOP 200 (GROUP BY + COUNT + LIMIT)
+        # Primeiro, pegamos a lista de todos os usuários que ouviram alguma coisa no mês passado
+        usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(
+            MonthlyHistory.played_at < primeiro_dia_atual
+        ).distinct().all()
+
+        for (u_id,) in usuarios_com_historico:
+            # Pede pro banco contar os plays, ordenar do maior pro menor e limitar aos 200 primeiros!
+            ranking_musicas = db.query(
+                MonthlyHistory.spotify_track_id,
+                func.count(MonthlyHistory.id).label('play_count')
+            ).filter(
+                MonthlyHistory.user_id == u_id,
+                MonthlyHistory.played_at < primeiro_dia_atual
+            ).group_by(
+                MonthlyHistory.spotify_track_id
+            ).order_by(
+                func.count(MonthlyHistory.id).desc()
+            ).limit(200).all()
+
+            # Varre o ranking gerado pelo banco e salva na nossa tabela definitiva
+            # O enumerate(start=1) cria a posição automaticamente (1, 2, 3...)
+            for rank, (track_id, play_count) in enumerate(ranking_musicas, start=1):
+                novo_top = TopTwoHundred(
+                    user_id=u_id,
+                    mes_referencia=mes_ref,
+                    spotify_track_id=track_id,
+                    play_count=play_count,
+                    rank_position=rank
+                )
+                db.add(novo_top)
+            
+            logger.info(f"🏆 [TOP 200] Ranking de {mes_ref} gerado com sucesso para o usuário {u_id}.")
+
+        # 5. A PURGA (Limpeza da tabela quente)
+        # O banco já calculou os minutos e já salvou o Top 200, então podemos deletar o passado!
         linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
         
-        # Só comitamos no final! Se algo der erro, nada é apagado.
+        # Só comitamos no final! A transação garante que, se algo der erro, nada é apagado pela metade.
         db.commit()
-        logger.info(f"✅ [AGREGADOR] Faxina concluída! {linhas_deletadas} plays antigos apagados e tempo consolidado.")
+        logger.info(f"✅ [AGREGADOR] Faxina concluída! {linhas_deletadas} plays antigos apagados do sistema.")
 
     except Exception as e:
         logger.error(f"❌ [AGREGADOR] Erro no fechamento mensal: {e}")
