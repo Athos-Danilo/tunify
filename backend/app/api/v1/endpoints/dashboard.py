@@ -4,20 +4,23 @@ from fastapi import APIRouter, Depends, HTTPException
 # Gerenciador de sessão do SQLAlchemy.
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from sqlalchemy import func
 
 # Importa a função que abre a porta do banco de dados.
 from app.core.database import get_db
 
 # Importa os moldes que vamos usar para ler os dados.
 from app.models.user import User
-from app.models.history import MinutesListened, TopTwoHundred
+from app.models.history import MinutesListened, TopTwoHundred, MonthlyHistory
 from app.models.track import TrackCache
 
+import datetime
 router = APIRouter()
 
-# ======> Rota: Total de Minutos Ouvidos (Fechamento Mensal)
+# ======> Rota: Total de Minutos Ouvidos (TEMPO REAL DO MÊS ATUAL)
 # 1) Recebe o e-mail na URL.
-# 2) Puxa o último registro de minutos salvos pelo Robô da Faxina.
+# 2) Pega o primeiro dia do mês atual.
+# 3) Soma a duração de todas as músicas na Tabela Quente neste período.
 # --------------------------------------------------------------------------- #
 @router.get("/minutos/{email}")
 async def obter_minutos_totais(email: str, db: Session = Depends(get_db)):
@@ -27,24 +30,30 @@ async def obter_minutos_totais(email: str, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    # 2. Busca o último fechamento de minutos dele (ordenado do mais recente pro mais antigo)
-    ultimo_fechamento = db.query(MinutesListened).filter(
-        MinutesListened.user_id == usuario.id
-    ).order_by(
-        desc(MinutesListened.created_at)
+    # 2. Descobre qual é o mês atual e o primeiro dia dele
+    hoje = datetime.datetime.now()
+    primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    mes_atual_str = f"{hoje.year}-{hoje.month:02d}" # Ex: "2026-04"
+
+    # 3. A Mágica do Tempo Real (Soma a tabela Quente + Cache)
+    resultado = db.query(
+        func.sum(TrackCache.duration_ms).label('total_ms')
+    ).join(
+        MonthlyHistory, TrackCache.spotify_id == MonthlyHistory.spotify_track_id
+    ).filter(
+        MonthlyHistory.user_id == usuario.id,
+        MonthlyHistory.played_at >= primeiro_dia_atual # 🚨 Só pega as músicas deste mês!
     ).first()
 
-    # Se o robô ainda não rodou no dia 1º, retornamos zero para o Angular não quebrar.
-    if not ultimo_fechamento:
-        return {
-            "mensagem": "Fechamento ainda não realizado.",
-            "mes_referencia": "N/A",
-            "total_minutos": 0
-        }
+    # 4. Tratamento do resultado
+    # Se o resultado vier vazio (None), quer dizer que o usuário não ouviu nada esse mês ainda.
+    total_ms = resultado.total_ms if resultado and resultado.total_ms else 0
+    minutos_totais = int(total_ms / 60000)
 
+    # 5. Devolvemos no mesmo formato que o Angular já está esperando!
     return {
-        "mes_referencia": ultimo_fechamento.mes_referencia,
-        "total_minutos": ultimo_fechamento.total_minutes
+        "mes_referencia": mes_atual_str,
+        "total_minutos": minutos_totais
     }
 
 
