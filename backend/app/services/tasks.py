@@ -229,7 +229,7 @@ def iniciar_robos():
     # Adiciona o Robô 1 (Intervalo de 5 minutos - Teste)
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(minutes=10),
+        trigger=IntervalTrigger(hours=1),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True
