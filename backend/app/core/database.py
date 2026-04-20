@@ -11,7 +11,14 @@ from app.core.config import settings
 # 2) Cria o "motor" que vai gerenciar a comunicação física com o PostgreSQL.
 # ---------------------------------------------------------------------------- #
 print("[INFO] Configurando o motor de conexão com o PostgreSQL...")
-engine = create_engine(settings.DATABASE_URL)
+
+url_do_banco = settings.DATABASE_URL
+
+# A vacina contra o bug do Render (Troca postgres:// por postgresql://)
+if url_do_banco and url_do_banco.startswith("postgres://"):
+    url_do_banco = url_do_banco.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(url_do_banco)
 
 
 # ======> Sessão.
