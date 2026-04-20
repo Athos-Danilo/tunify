@@ -3,14 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators'; // Necessário para filtrar o total de playlists
 
+// 1. Importando a nossa caixa inteligente!
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class SpotifyService {
 
   private http = inject(HttpClient);
-  // A sua URL já está configurada perfeitamente!
-  private backendUrl = 'http://localhost:8000/api/v1/spotify';
+  
+  // 2. Agora a URL base vem do ambiente (PC ou Nuvem) + o caminho do spotify
+  private backendUrl = `${environment.apiUrl}/spotify`;
 
   /**
    * 🚨 Rota Antiga: Busca o Perfil Completo do Usuário
