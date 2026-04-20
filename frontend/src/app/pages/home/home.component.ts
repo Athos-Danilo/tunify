@@ -9,6 +9,8 @@ import { LogoComponent } from '../../components/logo.component';
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common';
 
+import { environment } from '../../../environments/environment';
+
 // ======> Variáveis Globais Externas.
 // 1) FinisherHeader: Instância da biblioteca externa do fundo animado (Canvas).
 // ------------------------------------------------------------------------------ //
@@ -321,7 +323,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // 1) Dispara a navegação direta para o backend iniciar o fluxo de login no Spotify.
   // ------------------------------------------------------------------------------ //
   fazerLogin() {
-    window.location.href = 'http://127.0.0.1:8000/api/v1/auth/login';
+    window.location.href = `${environment.apiUrl}/auth/login`;
   }
 
   // ======> Motor da Onda Fluida (Canvas Nativo).

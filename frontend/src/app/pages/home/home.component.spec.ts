@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest'; // A nova máquina do tempo nativa!
 
+import { environment } from '../../../environments/environment';
+
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
@@ -194,7 +196,7 @@ describe('HomeComponent', () => {
     component.fazerLogin();
 
     // 4. Verificação: O componente tentou mandar o usuário pro lugar certo?
-    expect((window as any).location.href).toBe('http://127.0.0.1:8000/api/v1/auth/login');
+    expect((window as any).location.href).toBe(`${environment.apiUrl}/auth/login`);
 
     // 5. A DEVOLUÇÃO: Devolvemos a URL original para os próximos testes
     (window as any).location = originalLocation;
