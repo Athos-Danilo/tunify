@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 import urllib.parse
 import requests
 import base64
+import os
 
 # Importa as variáveis de ambiente.
 from app.core.config import settings
@@ -89,8 +90,12 @@ def callback_spotify(
     # 🚨 2. Trava de segurança 1: A usuária clicou em "Cancelar"
     if error == "access_denied":
         print("[AVISO] O login foi cancelado na tela do Spotify.")
-        # Manda ela de volta para a tela de login do Angular para tentar de novo
-        return RedirectResponse(url="http://localhost:4200/login?erro=cancelado", status_code=302)
+        
+        # Puxa a URL do Render, se não achar, usa o Localhost
+        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        
+        # Manda ela de volta para a tela de login para tentar de novo
+        return RedirectResponse(url=f"{base_url}/login?erro=cancelado", status_code=302)
         
     # 🚨 3. Trava de segurança 2: A URL veio vazia, sem código e sem erro
     if not code:
@@ -182,8 +187,9 @@ def callback_spotify(
             mensagem = "Novo usuário registrado com sucesso no banco de dados!"
             print(f"[SUCESSO] Novo usuário '{display_name}' criado no banco de dados.")
 
-        # Retorna o resultado final para o Angular.
-        frontend_url = "http://localhost:4200/callback"
+        # Retorna o resultado final para o Angular usando a variável de ambiente.
+        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        frontend_url = f"{base_url}/callback"
         
         # Empacotamos o token e o nome para o Angular salvar na memória (LocalStorage).
         params = {
