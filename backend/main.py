@@ -36,12 +36,19 @@ app = FastAPI(title=settings.PROJECT_NAME)
 # ======> A Ponte com o Frontend (CORS).
 # 1) Libera o acesso para o frontend.
 # ---------------------------------------- #
+
+# A Lista VIP de quem pode conversar com a sua API
+origens_permitidas = [
+    "http://localhost:4200",               # Para você continuar testando no seu PC
+    "https://tunify-pearl.vercel.app",     # O seu prédio oficial no Vercel (SEM barra no final)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Libera a porta exata Angular.
+    allow_origins=origens_permitidas,
     allow_credentials=True,
-    allow_methods=["*"],  # Libera todos os métodos (GET, POST, etc).
-    allow_headers=["*"],  # Libera todos os cabeçalhos.
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
