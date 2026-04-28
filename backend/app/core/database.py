@@ -18,7 +18,12 @@ url_do_banco = settings.DATABASE_URL
 if url_do_banco and url_do_banco.startswith("postgres://"):
     url_do_banco = url_do_banco.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(url_do_banco)
+# A BLINDAGEM DA AUTO-CURA ENTRA AQUI:
+engine = create_engine(
+    url_do_banco,
+    pool_pre_ping=True,  # Testa a conexão antes de usar. Se tiver morta, ele reconecta sozinho.
+    pool_recycle=280     # A cada 280 segundos (antes dos 5 min da Neon), o Python renova a conexão.
+)
 
 
 # ======> Sessão.

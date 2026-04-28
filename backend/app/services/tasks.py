@@ -15,6 +15,8 @@ scheduler = AsyncIOScheduler()
 
 from app.models.track import TrackCache
 
+import asyncio
+import time  # 🚨 IMPORT NOVO: Necessário para o robô saber esperar o banco acordar
 import datetime
 from app.core.database import SessionLocal # Usado para abrir a conexão com o banco
 from app.models.user import User
@@ -29,14 +31,27 @@ from app.core.config import settings
 async def robo_rastreador_hourly():
     logger.info("🤖 [RASTREADOR] Acordando para buscar novas músicas...")
     
-    # 1. Abre uma sessão com o banco de dados (Abre a gaveta)
+    # 1. Abre uma sessão com o banco de dados
     db = SessionLocal()
     spotify = SpotifyService()
     
     try:
-        # 2. Pega TODOS os usuários que têm o refresh_token salvo (Estão ativos no Tunify)
-        usuarios_ativos = db.query(User).filter(User.refresh_token.isnot(None)).all()
-        
+        # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
+        # Tentamos ler os usuários 3 vezes para dar tempo da Neon ligar os motores
+        usuarios_ativos = []
+        for tentativa_db in range(3):
+            try:
+                usuarios_ativos = db.query(User).filter(User.refresh_token.isnot(None)).all()
+                break 
+            except Exception as db_error:
+                if tentativa_db < 2:
+                    logger.warning(f"⚠️ [RASTREADOR] Neon dormindo ou conexão instável. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
+                    await asyncio.sleep(5) # Espera assíncrona (não trava o app)
+                else:
+                    logger.error(f"❌ [RASTREADOR] Falha crítica: Banco não acordou. Erro: {db_error}")
+                    return
+
+        # 2. Se chegamos aqui, a Neon está acordada!
         for user in usuarios_ativos:
             try:
                 # 3. Descobre qual foi a última música salva para esse usuário
@@ -44,49 +59,36 @@ async def robo_rastreador_hourly():
                                   .order_by(MonthlyHistory.played_at.desc()).first()
                 
                 after_ts = int(ultima_musica.played_at.timestamp() * 1000) if ultima_musica else None
-                
-                faixas_recentes = [] # Inicia a gaveta vazia aqui fora
+                faixas_recentes = []
 
-                # 🚨 A NOVA MÁGICA: Sistema de Tentativas (Retry)
+                # 🚨 SISTEMA DE TENTATIVAS (SPOTIFY + TOKEN)
                 for tentativa in range(2):
                     try:
-                        # Pede as músicas pro Spotify (Agora APENAS dentro do loop seguro)
                         faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
-                        
-                        # Se passou dessa linha sem dar erro, deu tudo certo! Quebramos o loop.
                         break 
-                        
                     except ValueError as e:
                         if str(e) == "TOKEN_EXPIRADO" and tentativa == 0:
-                            logger.warning(f"⚠️ [RASTREADOR] Token do {user.display_name} expirou. Trocando o pneu com o carro andando...")
-                            
-                            # Usa o SpotifyService para renovar o crachá
+                            logger.warning(f"⚠️ [RASTREADOR] Token do {user.display_name} expirou. Renovando...")
                             novos_tokens = await spotify.atualizar_token(
                                 user.refresh_token, 
                                 settings.SPOTIFY_CLIENT_ID, 
                                 settings.SPOTIFY_CLIENT_SECRET
                             )
-                            
-                            # Atualiza no banco o novo Access Token
                             user.access_token = novos_tokens['access_token']
                             if 'refresh_token' in novos_tokens:
                                 user.refresh_token = novos_tokens['refresh_token']
                             db.commit()
-                            
-                            logger.info("🔑 [RASTREADOR] Token renovado! Buscando as músicas IMEDIATAMENTE (Tentativa 2).")
                         else:
-                            # Se der erro na 2ª tentativa, levanta a bandeira vermelha
                             raise e
 
-                # 🚨 A PRANCHETA (Memória de curto prazo)
+                # 4. Processamento das músicas encontradas
                 musicas_adicionadas_agora = set()
                 
-                # 5. Salva cada faixa na nossa Tabela Quente
                 for item in faixas_recentes:
                     track_data = item['track']
                     track_id = track_data['id']
                     
-                    # ======> LÓGICA DE CACHE (Dicionário Permanente)
+                    # Verifica se a música já existe no nosso Dicionário (Cache)
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
                     
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
@@ -104,7 +106,7 @@ async def robo_rastreador_hourly():
                         musicas_adicionadas_agora.add(track_id) 
                         logger.info(f"📦 [CACHE] Nova música catalogada: {track_data['name']}")
                     
-                    # Salva o play no histórico
+                    # Salva o play no histórico mensal
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
                     
                     novo_historico = MonthlyHistory(
@@ -114,19 +116,18 @@ async def robo_rastreador_hourly():
                     )
                     db.add(novo_historico)
                 
-                # Confirma as alterações no banco de dados!
+                # Salva tudo o que foi feito para este usuário
                 db.commit()
-                logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para o usuário {user.display_name}")
+                if faixas_recentes:
+                    logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {user.display_name}")
 
-            # 🚨 Tratamento de Erro Genérico (O fantasma foi exorcizado daqui!)
             except Exception as ex:
-                logger.error(f"❌ [RASTREADOR] Erro genérico no usuário {user.display_name}: {ex}")
+                logger.error(f"❌ [RASTREADOR] Erro no usuário {user.display_name}: {ex}")
                 db.rollback() 
 
     finally:
-        # Fechamos a gaveta do banco de dados para não vazar memória!
         db.close()
-        logger.info("🤖 [RASTREADOR] Busca finalizada. Voltando a dormir.")
+        logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
 
 
 # ======> Robô 2: O Agregador Mensal (O Rollup)
@@ -149,17 +150,33 @@ async def robo_agregador_mensal():
         else:
             mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
 
-        # 2. A MÁGICA DOS MINUTOS OUVIDOS (JOIN + SUM)
-        somas_por_usuario = db.query(
-            MonthlyHistory.user_id,
-            func.sum(TrackCache.duration_ms).label('total_ms')
-        ).join(
-            TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
-        ).filter(
-            MonthlyHistory.played_at < primeiro_dia_atual
-        ).group_by(
-            MonthlyHistory.user_id
-        ).all()
+        # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
+        # Tentamos bater no banco 3 vezes para acordar a Neon antes de puxar as somas pesadas
+        somas_por_usuario = []
+        for tentativa_db in range(3):
+            try:
+                # 2. A MÁGICA DOS MINUTOS OUVIDOS (JOIN + SUM)
+                somas_por_usuario = db.query(
+                    MonthlyHistory.user_id,
+                    func.sum(TrackCache.duration_ms).label('total_ms')
+                ).join(
+                    TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+                ).filter(
+                    MonthlyHistory.played_at < primeiro_dia_atual
+                ).group_by(
+                    MonthlyHistory.user_id
+                ).all()
+                
+                # Se conseguiu ler o banco, quebra o loop e segue a faxina!
+                break 
+                
+            except Exception as db_error:
+                if tentativa_db < 2:
+                    logger.warning(f"⚠️ [AGREGADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
+                    await asyncio.sleep(5) # Espera assíncrona
+                else:
+                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou para o fechamento mensal. Erro: {db_error}")
+                    return # Aborta o fechamento para não apagar os dados errados
 
         # 3. Salva os minutos calculados na tabela MinutesListened
         for user_id, total_ms in somas_por_usuario:
@@ -173,13 +190,11 @@ async def robo_agregador_mensal():
             logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} minutos em {mes_ref}.")
 
         # 4. A MÁGICA DO TOP 200 (GROUP BY + COUNT + LIMIT)
-        # Primeiro, pegamos a lista de todos os usuários que ouviram alguma coisa no mês passado
         usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(
             MonthlyHistory.played_at < primeiro_dia_atual
         ).distinct().all()
 
         for (u_id,) in usuarios_com_historico:
-            # Pede pro banco contar os plays, ordenar do maior pro menor e limitar aos 200 primeiros!
             ranking_musicas = db.query(
                 MonthlyHistory.spotify_track_id,
                 func.count(MonthlyHistory.id).label('play_count')
@@ -192,8 +207,6 @@ async def robo_agregador_mensal():
                 func.count(MonthlyHistory.id).desc()
             ).limit(200).all()
 
-            # Varre o ranking gerado pelo banco e salva na nossa tabela definitiva
-            # O enumerate(start=1) cria a posição automaticamente (1, 2, 3...)
             for rank, (track_id, play_count) in enumerate(ranking_musicas, start=1):
                 novo_top = TopTwoHundred(
                     user_id=u_id,
@@ -207,10 +220,9 @@ async def robo_agregador_mensal():
             logger.info(f"🏆 [TOP 200] Ranking de {mes_ref} gerado com sucesso para o usuário {u_id}.")
 
         # 5. A PURGA (Limpeza da tabela quente)
-        # O banco já calculou os minutos e já salvou o Top 200, então podemos deletar o passado!
         linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
         
-        # Só comitamos no final! A transação garante que, se algo der erro, nada é apagado pela metade.
+        # Só comitamos no final!
         db.commit()
         logger.info(f"✅ [AGREGADOR] Faxina concluída! {linhas_deletadas} plays antigos apagados do sistema.")
 
