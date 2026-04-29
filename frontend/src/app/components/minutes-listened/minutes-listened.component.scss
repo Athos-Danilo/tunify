@@ -37,7 +37,7 @@
 
   .minutes-value {
     margin: 0;
-    color: var(--azul-claro-dk); 
+    color: var(--azul-dk); 
     font-family: var(--fonte-especial); 
     font-size: 2.2rem; 
     font-weight: 800;
@@ -77,8 +77,12 @@
     }
 
     &:hover {
-      background-color: var(--azul-dk);
-      transform: scale(1.05);
+      background-color: var(--azul-claro-dk);
+      
+      svg {
+        transition: 0.5s;
+        transform: translateX(3px); /* Empurra a seta 4px pra direita */
+      }
     }
   }
 
@@ -138,7 +142,7 @@
     color: var(--branco-lt);
 
     &:hover {
-      background-color: var(--azul-lt);
+      background-color: var(--azul-claro-lt);
     }
   }
 }
