@@ -33,7 +33,7 @@
   flex-direction: column; // Celular: um em cima do outro
   gap: 2rem;
   width: 100%;
-  max-width: 1400px; // Limite elegante para o PC
+  max-width: 1500px; // Limite elegante para o PC
   margin: 0 auto;
 
   @include tela-media {
