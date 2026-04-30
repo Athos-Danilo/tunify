@@ -29,38 +29,93 @@
 
 /*-------------------- A BANDEJA (GRID BENTO BOX) --------------------*/
 .dashboard-grid {
-  display: flex;
-  flex-direction: column; // Celular: um em cima do outro
-  gap: 2rem;
+  display: grid;
   width: 100%;
-  max-width: 1500px; // Limite elegante para o PC
+  max-width: 1500px;
   margin: 0 auto;
 
+  /* 📱 MOBILE (Mobile-First): 1 Coluna */
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: center;
+
+  /* 💻 TABLET: 2 Colunas (Esquerda menor, Direita livre) */
   @include tela-media {
-    flex-direction: row; // PC: Lado a lado
-    align-items: flex-start; 
-    justify-content: center;
+    grid-template-columns: minmax(250px, 290px) 1fr; 
     gap: 2.5rem;
+    align-items: start; /* Para os cards não esticarem para baixo sozinhos */
+  }
+
+  /* 🖥️ DESKTOP: 3 Colunas (Laterais fixas, Meio livre) */
+  @include tela-grande {
+    grid-template-columns: minmax(250px, 290px) 1fr minmax(280px, 350px);
+    gap: 3rem;
   }
 }
 
 /*-------------------- BLOCOS DO GRID --------------------*/
+
 app-card-perfil {
-  /* Garante que o Angular trate esse componente como um bloco para não amassar no flex */
   display: block; 
-  flex-shrink: 0;
+  
+  /* Mobile: Força a ser o 1º da fila */
+  order: 1; 
+
+  @include tela-media {
+    /* 💻 Tablet: Coluna 1 (Esquerda), Linha 1 (Topo) */
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    order: unset; 
+  }
+
+  @include tela-grande {
+    /* 🖥️ Desktop: Mantém na Coluna 1 */
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+}
+
+app-minutes-listened {
+  display: block;
+  
+  /* Mobile: Força a ser o 2º da fila (passando na frente das músicas) */
+  order: 2;
+
+  @include tela-media {
+    /* Tablet: Coluna 1 (Esquerda), Linha 2 (Abaixo do Perfil) */
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+    justify-self: center; /* Centraliza ele direitinho embaixo da foto */
+    order: unset;
+  }
+
+  @include tela-grande {
+    /* Desktop: Coluna 3 (Direita), Linha 1 (Topo) */
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+    justify-self: start; 
+  }
 }
 
 app-top-musicas {
-  flex: 1; 
-  width: 100%;
-  min-width: 0; // Evita quebra de layout em telas médias
   display: flex;
   justify-content: center;
-}
+  width: 100%;
+  min-width: 0; 
+  
+  /* Mobile: Força a ser o 3º da fila (Vai pro final) */
+  order: 3;
 
-/* Garante que o card de minutos se comporte como uma coluna à direita */
-app-minutes-listened {
-  flex-shrink: 0; // Impede que o card seja esmagado pelo Top 10
-  width: fit-content;
+  @include tela-media {
+    /* Tablet: Coluna 2 (Direita). Ocupa as linhas 1 e 2 (Fica altão) */
+    grid-column: 2 / 3;
+    grid-row: 1 / 3; 
+    order: unset;
+  }
+
+  @include tela-grande {
+    /* Desktop: Coluna 2 (Meio), Linha 1 (Topo) */
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
 }
