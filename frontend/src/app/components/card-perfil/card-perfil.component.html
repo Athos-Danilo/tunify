@@ -1,4 +1,4 @@
-<div class="card-perfil">
+<article class="card-perfil">
       
   <div class="card-image-container">
     <img [src]="dadosDemograficos.foto_perfil" alt="Foto de perfil de {{ nomeUsuario }}" class="profile-photo">
@@ -12,31 +12,31 @@
     </span>
   </div>
 
-  <div class="card-separador"></div>
+  <hr class="card-separador" aria-hidden="true">
 
-  <div class="card-stats-container">
+  <ul class="card-stats-container">
     
-    <div class="stat-row">
-      <div class="stat-icon">
-        <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt="Ícone Playlist"> 
+    <li class="stat-row">
+      <div class="stat-icon" aria-hidden="true">
+        <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt=""> 
       </div>
       <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
-    </div>
+    </li>
 
-    <div class="stat-row">
-      <div class="stat-icon">
-        <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="Ícone Seguidor">
+    <li class="stat-row">
+      <div class="stat-icon" aria-hidden="true">
+        <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="">
       </div>
       <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
-    </div>
+    </li>
 
-    <div class="stat-row">
-      <div class="stat-icon">
-        <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="Ícone Seguindo">
+    <li class="stat-row">
+      <div class="stat-icon" aria-hidden="true">
+        <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="">
       </div>
       <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
-    </div>
+    </li>
 
-  </div>
+  </ul>
 
-</div>
+</article>

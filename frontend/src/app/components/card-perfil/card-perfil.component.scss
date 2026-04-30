@@ -8,7 +8,8 @@
 .card-perfil {
   background-color: var(--azul-muito-escuro-dk);
   border: 1px solid rgba(255, 255, 255, 0.07); 
-  width: 100%;
+  width: 100%; 
+  box-sizing: border-box;
   flex-shrink: 0;
   transition: all 0.3s ease;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
@@ -21,7 +22,6 @@
   align-items: center; 
   column-gap: 20px; 
   row-gap: 10px; 
-  width: fit-content; 
   margin: 0 auto; 
   padding: 7px 12px 7px 7px; 
   border-radius: 30px; 
@@ -35,6 +35,7 @@
     grid-template-areas: none;
     grid-template-columns: none;
     grid-template-rows: none;
+    /* 👇 No tablet e PC, ele respeita essa largura máxima */
     max-width: 255px; 
     padding: 8px; 
     border-radius: 40px; 
@@ -164,6 +165,7 @@
     display: none; 
     width: 80%;
     height: 1px;
+    border: none; /* 👇 Zera a borda padrão feia do <hr> */
     background-color: rgba(255, 255, 255, 0.03);
 
     @include tela-media { display: block; }
@@ -176,7 +178,8 @@
     flex-direction: column;
     align-items: flex-start; 
     margin: 0; 
-    padding: 0;
+    padding: 0; /* 👇 Tira o espaçamento lateral nativo da <ul> */
+    list-style: none; /* 👇 Tira as bolinhas (bullets) da lista */
     width: 100%; 
     gap: 5px; 
 
@@ -246,7 +249,7 @@
   }
 }
 
-// Card do Perfil <<< Modo Claro >>>
+// Card do Perfil <<< Modo Claro >>> (Usando :host-context pro Angular ler)
 :host-context(.tema-claro) .card-perfil {
   background-color: var(--branco-lt);
   border: 1px solid rgb(191, 190, 190);
