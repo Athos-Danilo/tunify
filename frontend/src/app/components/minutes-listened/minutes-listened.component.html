@@ -1,7 +1,8 @@
-<div class="minutes-card">
+<section class="minutes-card" aria-labelledby="minutes-title">
+  
   <!-- Agrupamos os textos na esquerda -->
   <div class="content-left">
-    <span class="card-title">Tempo Ouvido:</span>
+    <p id="minutes-title" class="card-title">Tempo Ouvido:</p>
     
     <h2 class="minutes-value">
       {{ minutosAnimados | number:'1.0-0':'pt-BR' }}
@@ -10,10 +11,17 @@
   </div>
 
   <!-- O botão fica isolado na direita -->
-  <button class="arrow-btn" routerLink="/estatisticas" title="Ver estatísticas detalhadas">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <button 
+    class="arrow-btn" 
+    routerLink="/estatisticas" 
+    aria-label="Ver estatísticas detalhadas"
+    title="Ver estatísticas detalhadas">
+    
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="5" y1="12" x2="19" y2="12"></line>
       <polyline points="12 5 19 12 12 19"></polyline>
     </svg>
+    
   </button>
-</div>
+
+</section>

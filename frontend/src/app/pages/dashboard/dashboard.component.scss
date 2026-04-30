@@ -42,7 +42,8 @@
   /* 💻 TABLET: 2 Colunas (Esquerda menor, Direita livre) */
   @include tela-media {
     grid-template-columns: minmax(250px, 290px) 1fr; 
-    gap: 2.5rem;
+    column-gap: 2.5rem;  /* 👈 Mantém o respiro lateral com as músicas */
+    row-gap: 1.2rem;     /* 👈 Reduz pela metade a cratera vertical! */
     align-items: start; /* Para os cards não esticarem para baixo sozinhos */
   }
 
@@ -85,7 +86,7 @@ app-minutes-listened {
     /* Tablet: Coluna 1 (Esquerda), Linha 2 (Abaixo do Perfil) */
     grid-column: 1 / 2;
     grid-row: 2 / 3;
-    justify-self: center; /* Centraliza ele direitinho embaixo da foto */
+    justify-self: stretch; /* Centraliza ele direitinho embaixo da foto */
     order: unset;
   }
 
