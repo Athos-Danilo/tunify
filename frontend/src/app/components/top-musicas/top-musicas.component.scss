@@ -327,3 +327,57 @@
 @keyframes entrada-cascata {
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ========================================================= */
+/* ☀️ O CHAVEAMENTO PARA O MODO CLARO                        */
+/* ========================================================= */
+:host-context(.tema-claro) .card-top-musicas {
+  background-color: var(--branco-lt);
+  border-color: rgb(191, 190, 190); /* Mesma borda dos outros cards */
+
+  .header-ranking {
+    .subtitulo {
+      color: var(--preto-lt);
+      opacity: 0.6;
+    }
+    .data-atualizacao {
+      color: rgba(0, 0, 0, 0.4);
+    }
+    /* O .mes-letreiro azul continua lindo no fundo branco, não precisamos mexer! */
+  }
+
+  .musica-row {
+    &:hover {
+      background: rgba(0, 0, 0, 0.04); /* Hover agora escurece levemente o fundo */
+    }
+  }
+
+  .rank-info {
+    .numero {
+      color: var(--preto-lt);
+      opacity: 0.3; /* Deixa o número sutil no fundo branco */
+    }
+  }
+
+  .meta-info {
+    .titulo-musica {
+      color: var(--preto-lt);
+    }
+    .artista-nome {
+      color: var(--preto-lt);
+      opacity: 0.6;
+    }
+    .regua-vicio {
+      background: rgba(0, 0, 0, 0.1); /* Fundo da régua mais escurinho */
+      /* A barrinha .progresso continua var(--verde-spotify-dk), que dá um contraste show! */
+    }
+  }
+
+  .plays-badge {
+    background: rgba(0, 0, 0, 0.05);
+    span {
+      color: var(--preto-lt);
+      opacity: 0.7;
+    }
+  }
+}
