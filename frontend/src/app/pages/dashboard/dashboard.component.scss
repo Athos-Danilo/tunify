@@ -9,6 +9,27 @@
   background-color: var(--azul-escuro-dk);
   transition: background-color 0.3s ease;
   min-height: 100vh; 
+  position: relative;
+
+  &.tema-claro {
+    /* Fundo levemente azulado/cinza para destacar os cards brancos puros que ficam por cima */
+    background-color: var(--branco-escuro-lt); 
+  }
+}
+
+.radar-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none; 
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 1; 
   display: flex;
   flex-direction: column; 
   align-items: center; 
@@ -20,10 +41,6 @@
 
   @include tela-grande {
     padding: 130px 4rem 4rem 4rem;
-  }
-
-  &.tema-claro {
-    background-color: var(--branco-lt); 
   }
 }
 
