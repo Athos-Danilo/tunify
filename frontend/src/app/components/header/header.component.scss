@@ -1,24 +1,26 @@
 @use '../../../assets/mixins' as *;
 
-// No celular (menor que 900px), esse header inteiro deixa de existir
+/* ========================================================= */
+/* 🖥️ HEADER DESKTOP (Oculto no celular)                     */
+/* ========================================================= */
 .header-desktop-wrapper {
-  display: none; 
+  display: none; // Escondido por padrão (Mobile First)
 
   @include tela-media {
     display: flex;
     justify-content: center;
     width: 100%;
-    position: fixed; // Flutua sempre no topo da tela
+    position: fixed; 
     top: 20px; 
     left: 0;
-    z-index: 9999; // Andar mais alto do prédio
-    pointer-events: none; // Permite clicar "através" do espaço vazio
+    z-index: 9999; 
+    pointer-events: none; 
   }
 }
 
 // A "Pílula" de Vidro
 .cyber-glass-pill {
-  pointer-events: auto; // Restaura o clique apenas na pílula
+  pointer-events: auto; 
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,16 +29,14 @@
   height: 70px;
   padding: 0 24px;
   
-  // 🚨 EFEITO GLASSMORPHISM
-  background: rgba(11, 17, 32, 0.4); // Fundo escuro semi-transparente
-  backdrop-filter: blur(16px); // Desfoque brutal do fundo
+  background: rgba(11, 17, 32, 0.4); 
+  backdrop-filter: blur(16px); 
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08); // Borda de vidro
-  border-radius: 50px; // Formato de pílula
+  border: 1px solid rgba(255, 255, 255, 0.08); 
+  border-radius: 50px; 
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
-  // Tema Claro para o Header
-  .tema-claro & {
+  :host-context(.tema-claro) & {
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(0, 0, 0, 0.05);
   }
@@ -62,9 +62,8 @@
     position: relative;
     transition: color 0.3s ease;
 
-    .tema-claro & { color: var(--cinza-escuro-dk); }
+    :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
 
-    // 🚨 EFEITO NEON RUN
     &::after {
       content: '';
       position: absolute;
@@ -74,246 +73,376 @@
       height: 2px;
       background-color: var(--verde-spotify-dk);
       transition: width 0.3s ease;
-      box-shadow: 0 0 8px var(--verde-spotify-dk); // Brilho Neon
+      box-shadow: 0 0 8px var(--verde-spotify-dk);
     }
 
     &:hover, &.ativo {
       color: var(--branco-dk);
-      .tema-claro & { color: var(--preto-dk); }
-
-      &::after { width: 100%; } // Linha corre embaixo da palavra
+      :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); }
+      &::after { width: 100%; }
     }
   }
 }
 
-// Ações (Direita)
+// Ações (Pesquisa, Tema, Perfil)
 .header-actions {
   display: flex;
   align-items: center;
   gap: 15px;
 
-  .divisor-vertical {
-    width: 1px;
-    height: 30px;
-    background-color: rgba(255, 255, 255, 0.1);
-    .tema-claro & { background-color: rgba(0, 0, 0, 0.1); }
-  }
-
-  // Mini Perfil
-  .perfil-mini {
+  // BARRA DE PESQUISA ANIMADA
+  .search-container {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px 12px 4px 4px;
-    background: rgba(255, 255, 255, 0.03);
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.3s ease;
+    height: 40px;
+    width: 40px; 
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
 
-    &:hover { background: rgba(255, 255, 255, 0.08); }
-    .tema-claro & { background: rgba(0,0,0, 0.03); border-color: rgba(0,0,0, 0.05); }
+    :host-context(.tema-claro) & {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
 
-    .avatar-img {
-      width: 32px;
-      height: 32px;
+    .btn-search-icon {
+      background: transparent; border: none; color: var(--cinza-claro-dk); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: color 0.3s ease; outline: none;
+      
+      :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+      &:hover { color: var(--branco-dk); }
+      :host-context(.tema-claro) &:hover { color: var(--preto-lt, #0f172a); }
+    }
+
+    .search-input {
+      background: transparent; border: none; font-family: var(--fonte-principal); font-size: 0.9rem; width: 0; padding: 0; opacity: 0; transition: all 0.4s ease; outline: none;
+      color: rgba(255, 255, 255, 0.5); 
+      &:focus { color: var(--branco-dk); }
+
+      :host-context(.tema-claro) & { color: rgba(0, 0, 0, 0.5); }
+      :host-context(.tema-claro) &:focus { color: var(--preto-lt, #0f172a); }
+
+      &::placeholder { color: rgba(255,255,255,0.4); }
+      :host-context(.tema-claro) &::placeholder { color: rgba(0,0,0,0.5); }
+    }
+
+    .btn-submit-icon {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%) scale(0.5) translateX(10px); width: 28px; height: 28px; border-radius: 50%; background: var(--cor-azul); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      &:hover { background: var(--verde-spotify-dk); transform: translateY(-50%) scale(1.05) translateX(0); }
+    }
+
+    // 🚨 BUGS DE TABLET RESOLVIDO: Trocado de tela-grande para tela-media
+    @include tela-media {
+      &:hover, 
+      &:focus-within,
+      &:has(.search-input:not(:placeholder-shown)) { 
+        width: 250px; 
+        background: rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.2); 
+        box-shadow: none; 
+
+        :host-context(.tema-claro) & { 
+          background: var(--branco-lt); 
+          border-color: rgba(0, 0, 0, 0.15); 
+        }
+        
+        .search-input { width: 100%; padding-right: 40px; opacity: 1; }
+      }
+
+      &:focus-within {
+        border-color: var(--cor-azul);
+        box-shadow: 0 0 10px rgba(52, 124, 212, 0.3);
+        .btn-search-icon { color: var(--cor-azul); } 
+      }
+    }
+
+    &:has(.search-input:not(:placeholder-shown)) {
+      .btn-submit-icon { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1) translateX(0); }
+    }
+  }
+
+  .divisor-vertical {
+    width: 1px; height: 30px; background-color: rgba(255, 255, 255, 0.1);
+    :host-context(.tema-claro) & { background-color: rgba(0, 0, 0, 0.1); }
+  }
+
+  // DROPDOWN DE PERFIL
+  .profile-dropdown-wrapper {
+    position: relative; 
+
+    &::after { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 25px; background: transparent; }
+
+    &:hover {
+      .perfil-mini {
+        background: rgba(255, 255, 255, 0.08); 
+        :host-context(.tema-claro) & { background: rgba(0,0,0, 0.08); }
+        .icone-chevron { transform: rotate(180deg); color: var(--cor-azul); }
+      }
+
+      .dropdown-menu { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1) translateY(0); }
+    }
+
+    .perfil-mini {
+      display: flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px; background: rgba(255, 255, 255, 0.03); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; cursor: pointer;
+      :host-context(.tema-claro) & { background: rgba(0,0,0, 0.03); border-color: rgba(0,0,0, 0.05); }
+
+      .avatar-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+      .nome-txt { color: var(--branco-dk); font-family: var(--fonte-principal); font-weight: 600; font-size: 0.9rem; :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); } }
+      .icone-chevron { color: var(--cinza-claro-dk); transition: transform 0.3s ease; :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); } }
+    }
+
+    .dropdown-menu {
+      position: absolute; top: calc(100% + 15px); right: 0; width: 220px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 8px 0; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); overflow: hidden; opacity: 0; visibility: hidden; pointer-events: none; transform: scale(0.95) translateY(-10px); transform-origin: top right; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+
+      :host-context(.tema-claro) & { background: rgba(255, 255, 255, 0.95); border-color: rgba(0, 0, 0, 0.08); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); }
+
+      .dropdown-item {
+        display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--cinza-claro-dk); text-decoration: none; font-family: var(--fonte-principal); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; background: transparent; border: none; width: 100%; text-align: left; cursor: pointer;
+        :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+        .material-icons { font-size: 1.2rem; }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05); color: var(--branco-dk); padding-left: 25px; 
+          :host-context(.tema-claro) & { background: rgba(0, 0, 0, 0.04); color: var(--preto-lt, #0f172a); }
+        }
+      }
+
+      .dropdown-divisor { height: 1px; background: rgba(255, 255, 255, 0.1); margin: 8px 0; :host-context(.tema-claro) & { background: rgba(0, 0, 0, 0.08); } }
+      .btn-sair-dropdown:hover { background: rgba(255, 71, 87, 0.1) !important; color: #ff4757 !important; .icone-sair-svg { stroke: #ff4757; transform: translateX(3px); } }
+    }
+  }
+}
+
+/* ========================================================= */
+/* 🚨 BOTAO TOGGLE DE TEMA (NEON) MANTIDO INTACTO            */
+/* ========================================================= */
+.btn-tema-neon { background: transparent; border: none; padding: 0; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; margin-right: 10px; }
+.btn-tema-neon .track { width: 60px; height: 30px; background-color: var(--azul-muito-escuro-dk); border-radius: 34px; position: relative; box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); transition: all 0.4s ease; }
+:host-context(.tema-claro) .btn-tema-neon .track { background-color: var(--branco-lt); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.1); }
+.btn-tema-neon .knob { position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background-color: var(--cinza-escuro-lt); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), box-shadow 0.4s ease, border 0.4s ease, background-color 0.4s ease; box-shadow: 0 0 10px rgba(85, 85, 85, 0.899), inset 0 0 4px rgba(255, 255, 255, 0.5); border: 1px solid rgba(209, 207, 207, 0.464); }
+.icone-sol, .icone-lua { width: 14px; height: 14px; transition: all 0.3s ease; }
+.icone-sol { stroke: #ffb400; filter: drop-shadow(0 0 2px #ffb400); }
+.icone-lua { stroke: #02d3ff; filter: drop-shadow(0 0 3px #02d3ff); }
+.btn-tema-neon.is-escuro .track { background-color: var(--azul-escuro-dk); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05); }
+.btn-tema-neon.is-escuro .knob { background-color: #1a1e29; transform: translateX(30px); box-shadow: 0 0 15px rgba(2, 211, 255, 0.6), 0 0 5px rgba(2, 211, 255, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.3); border: 1px solid rgba(2, 211, 255, 0.6); }
+.btn-tema-neon.is-escuro .knob::after { content: ''; position: absolute; top: -1px; left: 5px; width: 8px; height: 3px; background: #ffffff; border-radius: 50%; filter: blur(1.5px); transform: rotate(-30deg); }
+
+/* ========================================================= */
+/* 📱 ELEMENTOS MOBILE (Header Invisível e Bottom Nav)       */
+/* ========================================================= */
+
+// Esconde os elementos mobile quando a tela for tablet ou maior
+@include tela-media {
+  .header-top-mobile,
+  .bottom-nav-mobile {
+    display: none !important;
+  }
+}
+
+// 1. TOP HEADER MOBILE (Apenas a Logo e a Lupa)
+.header-top-mobile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  z-index: 9998;
+  box-sizing: border-box; 
+  pointer-events: none; 
+  
+  top: 0; left: 0; right: 0; 
+  padding: max(30px, env(safe-area-inset-top)) 1.5rem 15px 1.5rem;
+  background: linear-gradient(to bottom, rgba(11, 17, 32, 0.95) 20%, transparent); 
+  border-radius: 0;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+
+  :host-context(.tema-claro) & {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.98) 20%, transparent);
+  }
+
+  .mobile-logo-mini {
+    pointer-events: auto; 
+    overflow: hidden; // Prepara pra sumir
+    max-width: 150px; 
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  // 🚨 A NOVA CAIXA DA PESQUISA
+  .mobile-search-input-wrapper {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    flex: 1; 
+    max-width: 0; 
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    
+    .mobile-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 30px;
+      padding: 10px 15px;
+      color: var(--branco-dk);
+      outline: none;
+      font-family: var(--fonte-principal);
+
+      :host-context(.tema-claro) & {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.1);
+        color: var(--preto-lt, #0f172a);
+      }
+    }
+
+    .btn-fechar-pesquisa {
+      background: transparent; border: none; color: var(--cinza-claro-dk); padding: 5px; margin-left: 10px; cursor: pointer;
+      :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+    }
+  }
+
+  .mobile-top-actions {
+    pointer-events: auto; 
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    overflow: hidden; // Prepara os botões pra sumirem juntos
+    max-width: 150px;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+    .btn-search-mobile {
+      background: transparent; border: none; color: var(--cinza-claro-dk); display: flex; align-items: center; justify-content: center; cursor: pointer;
+      :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+    }
+
+    .btn-tema-neon.mini {
+      margin-right: 0;
+      transform: scale(0.85); 
+      transform-origin: right center; 
+      
+      // 🚨 A TESOURA NO FANTASMA DO BOTÃO
+      overflow: hidden; 
+      max-width: 60px; 
+      opacity: 1;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  }
+
+  // =======================================================
+  // 1️⃣ MODO COMPACTO (Ao rolar a página)
+  // =======================================================
+  &.compacta {
+    top: max(15px, env(safe-area-inset-top)); 
+    left: 1.5rem; right: 1.5rem; 
+    padding: 12px 20px; 
+    border-radius: 40px; 
+    background: rgba(11, 17, 32, 0.85); 
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+
+    :host-context(.tema-claro) & {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    // Mata o fantasma do botão de vez!
+    .btn-tema-neon.mini {
+      max-width: 0;
+      opacity: 0;
+      margin-left: -15px; // Engole o gap do flexbox
+      pointer-events: none; 
+    }
+  }
+
+  // =======================================================
+  // 2️⃣ MODO PESQUISA ABERTA (MÁGICA!)
+  // =======================================================
+  &.search-aberta {
+    // Esconde a Logo
+    .mobile-logo-mini { max-width: 0; opacity: 0; margin: 0; }
+    
+    // Esconde a Lupa e o Botão de Tema juntos
+    .mobile-top-actions { max-width: 0; opacity: 0; gap: 0; margin: 0; }
+    
+    // Mostra o Input espremendo todo o espaço
+    .mobile-search-input-wrapper {
+      max-width: 100%;
+      opacity: 1;
+    }
+  }
+}
+
+// 2. BOTTOM NAVIGATION MOBILE (A Pílula do Dedão)
+.bottom-nav-mobile {
+  position: fixed;
+  bottom: 20px; // Flutuando chique
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px; // Não deixa esticar muito em telas médias
+  z-index: 9999;
+  
+  .nav-glass-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(11, 17, 32, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    padding: 12px 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+
+    :host-context(.tema-claro) & {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--cinza-claro-dk);
+    transition: color 0.3s ease;
+
+    :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+
+    span.material-icons {
+      font-size: 1.5rem;
+    }
+
+    span:not(.material-icons) {
+      font-size: 0.65rem; // Texto bem pequeno pra caber embaixo do ícone
+      font-family: var(--fonte-principal);
+      font-weight: 500;
+    }
+
+    // A foto de perfil como ícone de menu
+    .mobile-avatar {
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       object-fit: cover;
+      border: 2px solid transparent;
+      transition: border-color 0.3s ease;
     }
 
-    .nome-txt {
-      color: var(--branco-dk);
-      font-family: var(--fonte-principal);
-      font-weight: 600;
-      font-size: 0.9rem;
-      .tema-claro & { color: var(--preto-dk); }
-    }
-  }
+    // Efeito quando o ícone está ativo ou ao clicar
+    &.ativo, &:hover {
+      color: var(--verde-spotify-dk);
+      :host-context(.tema-claro) & { color: var(--verde-spotify-dk); }
 
-  // Botões
-  .action-btn {
-    background: transparent;
-    border: none;
-    color: var(--cinza-claro-dk);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    .tema-claro & { color: var(--cinza-escuro-dk); }
-
-    &.neon-hover:hover {
-      color: var(--branco-dk);
-      background: rgba(255, 255, 255, 0.05);
-      .tema-claro & { color: var(--preto-dk); background: rgba(0,0,0,0.05); }
-    }
-
-    &.sair-btn:hover {
-      color: #ff4757; // Vermelho de alerta ao passar o mouse
-      background: rgba(255, 71, 87, 0.1);
-    }
-  }
-}
-
-
-/* ========================================================= */
-/* 🚨 BOTÃO TOGGLE DE TEMA (NEON) */
-/* ========================================================= */
-.btn-tema-neon {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-  
-  // Tira a margem padrão para ele ficar alinhado com o divisor
-  margin-right: 10px; 
-}
-
-/* Fundo do botão (A Pista) */
-.btn-tema-neon .track {
-  width: 60px; // 🚨 Ajustado para caber no header
-  height: 30px; // 🚨 Ajustado para caber no header
-  background-color: var(--azul-muito-escuro-dk);
-  border-radius: 34px;
-  position: relative;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.4s ease;
-}
-
-// Fundo do botão do Tema <<< Modo Claro >>>
-// 🚨 (Aqui eu arrumei a herança do SASS para o Header!)
-:host-context(.tema-claro) .btn-tema-neon .track {
-  background-color: var(--branco-lt);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-/* Bolinha (O Pneu) */
-.btn-tema-neon .knob {
-  position: absolute;
-  top: 2px; 
-  left: 2px; 
-  width: 26px; // 🚨 Ajustado
-  height: 26px; // 🚨 Ajustado
-  background-color: var(--cinza-escuro-lt); 
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
-              box-shadow 0.4s ease, 
-              border 0.4s ease,
-              background-color 0.4s ease;
-  
-  box-shadow: 0 0 10px rgba(85, 85, 85, 0.899), inset 0 0 4px rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(209, 207, 207, 0.464);
-}
-
-/* --- Ícones SVG --- */
-.icone-sol, .icone-lua {
-  width: 14px;
-  height: 14px;
-  transition: all 0.3s ease;
-}
-
-.icone-sol {
-  stroke: #ffb400; 
-  filter: drop-shadow(0 0 2px #ffb400);
-}
-
-.icone-lua {
-  stroke: #02d3ff; 
-  filter: drop-shadow(0 0 3px #02d3ff);
-}
-
-/* ======================================= */
-/* ESTADO MODO ESCURO (ON) */
-/* ======================================= */
-
-.btn-tema-neon.is-escuro .track {
-  background-color: var(--azul-escuro-dk); 
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.btn-tema-neon.is-escuro .knob {
-  background-color: #1a1e29; 
-  
-  // 🚨 O Cálculo exato: Largura da Pista (60) - Largura da Bolinha (26) - Margem Direita e Esquerda (4) = 30px
-  transform: translateX(30px); 
-  
-  box-shadow: 
-    0 0 15px rgba(2, 211, 255, 0.6), 
-    0 0 5px rgba(2, 211, 255, 0.8),  
-    inset 0 0 4px rgba(255, 255, 255, 0.3); 
-  border: 1px solid rgba(2, 211, 255, 0.6);
-}
-
-/* Brilho extra na lua */
-.btn-tema-neon.is-escuro .knob::after {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 5px;
-  width: 8px;
-  height: 3px;
-  background: #ffffff;
-  border-radius: 50%;
-  filter: blur(1.5px);
-  transform: rotate(-30deg);
-}
-
-
-/* ========================================================= */
-/* 🚨 BOTAO SAIR MINIMALISTA */
-/* ========================================================= */
-.sair-btn-minimal {
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-
-  .icone-sair-svg {
-    width: 18px;
-    height: 18px;
-    color: var(--cinza-claro-dk); 
-    display: block;
-    transition: color 0.3s ease, transform 0.3s ease;
-    
-    // Cor no modo claro
-    :host-context(.tema-claro) & { color: var(--cinza-escuro-dk); }
-  }
-
-  .sair-txt {
-    color: var(--cinza-claro-dk);
-    font-family: var(--fonte-principal);
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: color 0.3s ease;
-    
-    // Cor no modo claro
-    :host-context(.tema-claro) & { color: var(--cinza-escuro-dk); }
-  }
-
-  // 🚨 EFEITO HOVER (Passar o mouse)
-  &:hover {
-    background: rgba(255, 71, 87, 0.1); // Fundo vermelho ultra suave
-
-    .icone-sair-svg {
-      stroke: #ff4757; // Fica vermelho alerta
-      transform: translateX(3px); // A setinha "anda" pra porta
-    }
-
-    .sair-txt {
-      color: #ff4757; 
+      .mobile-avatar {
+        border-color: var(--verde-spotify-dk);
+      }
     }
   }
 }

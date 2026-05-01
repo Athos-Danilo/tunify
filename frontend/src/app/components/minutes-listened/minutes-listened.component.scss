@@ -1,64 +1,183 @@
+@use '../../../assets/mixins' as *;
+
 .minutes-card {
-  background-color: #121826; /* Cor do fundo baseada no seu print */
-  border-radius: 24px;
-  padding: 24px 32px;
+  /* ---------- Lógica Mobile-First & Dark Mode (Padrão) ---------- */
+  background-color: var(--azul-muito-escuro-dk);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 32px; 
+  
+  /* 👇 BLINDAGEM DO MOBILE: Preenche 100% e não vaza pelas bordas */
+  width: 100%;
+  box-sizing: border-box;
+
+  /* AJUSTE: Padding assimétrico. Menos espaço embaixo (12px) para equilibrar */
+  padding: 16px 24px 12px 24px; 
+  
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  justify-content: space-between;
+  align-items: center; /* Centralizado para alinhar o texto com a seta */
+  
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease; 
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px); 
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); 
   }
 
-  .card-header {
+  .content-left {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0px; 
+  }
+
+  .card-title {
+    color: var(--branco-dk);
+    font-family: var(--fonte-principal);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.2; 
+  }
+
+  .minutes-value {
+    margin: 0;
+    color: var(--azul-dk); 
+    font-family: var(--fonte-especial); 
+    font-size: 2.2rem; 
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1; 
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+
+    .minutes-label {
+      font-family: var(--fonte-especial);
+      font-size: 2.2rem; 
+      font-weight: 700;
+      font-style: italic;
+    }
+  }
+
+  .arrow-btn {
+    margin-top: -2px; 
+    background-color: var(--azul-medio-dk); 
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
     align-items: center;
+    color: var(--branco-dk);
+    cursor: pointer;
+    flex-shrink: 0; /* Impede que o botão seja esmagado pelo texto */
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background-color: var(--azul-claro-dk);
+      
+      svg {
+        transition: 0.5s;
+        transform: translateX(3px); 
+      }
+    }
+  }
+
+  /* ---------- TABLET (Fica embaixo do Perfil na coluna da esquerda) ---------- */
+  @include tela-media {
+    border-radius: 40px; 
+    
+    /* 👇 Limita a largura para ficar igualzinha à do Card de Perfil */
+    max-width: 100%; 
+    margin: 0; 
+    
+    /* Reduzimos o padding para o texto poder respirar */
+    padding: 16px 20px; 
+
+    .content-left {
+      gap: 4px;
+    }
 
     .card-title {
-      color: #E2E8F0; /* Cor clara para leitura */
-      font-size: 1.2rem;
-      font-weight: 500;
+      font-size: 0.95rem; /* Mais sutil para o tablet */
+    }
+
+    .minutes-value {
+      font-size: 1.6rem; /* 👇 Tivemos que diminuir para caber na caixa de 255px */
+      gap: 5px;
+
+      .minutes-label {
+        font-size: 1.6rem; 
+      }
     }
 
     .arrow-btn {
-      background-color: #1E293B; /* Círculo escuro em volta da seta */
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #F8FAFC;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: #334155;
-      }
+      width: 38px;
+      height: 38px;
+      margin-top: 0;
     }
   }
 
-  .card-body {
+  /* ---------- DESKTOP (Vai para o canto direito e cresce de novo) ---------- */
+  @include tela-grande {
+    max-width: 350px; 
+    margin: 0; /* 👇 Tira a margem do tablet para ele alinhar perfeitamente no grid */
+    padding: 20px 32px; 
+
+    .content-left {
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+    }
+
     .minutes-value {
-      margin: 0;
-      color: #0ea5e9; /* Aquele azul vibrante do seu design */
-      font-size: 3rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      display: flex;
-      align-items: baseline;
+      font-size: 2.5rem; /* 👇 Volta a ficar grandão e imponente! */
       gap: 8px;
 
       .minutes-label {
-        font-size: 1.5rem;
-        font-weight: 600;
-        font-style: italic; /* Como no seu logo do Tunify */
+        font-size: 2.5rem; 
       }
+    }
+
+    .arrow-btn {
+      width: 44px;
+      height: 44px;
+      
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+}
+
+/* ---------- O Chaveamento para o Modo Claro ---------- */
+:host-context(.tema-claro) .minutes-card {
+  background-color: var(--branco-lt);
+  border-color: rgb(191, 190, 190); 
+
+  .card-title {
+    color: var(--preto-lt);
+  }
+
+  .minutes-value {
+    color: var(--azul-lt);
+  }
+
+  .arrow-btn {
+    background-color: var(--preto-lt); 
+    color: var(--branco-lt);
+
+    &:hover {
+      background-color: var(--azul-claro-lt);
     }
   }
 }

@@ -1,27 +1,30 @@
-<section class="card-bento card-top-musicas">
+<section class="card-bento card-top-musicas" aria-labelledby="ranking-title">
   
   <header class="header-ranking">
     <span class="subtitulo">AS TUAS FAIXAS MAIS OUVIDAS</span>
-    <h1 class="mes-letreiro">{{ mesAtual | uppercase }}</h1>
+    <h2 id="ranking-title" class="mes-letreiro">{{ mesAtual }}</h2>
     <span class="data-atualizacao">{{ ultimaAtualizacao }}</span>
   </header>
 
-  <div class="lista-musicas">
+  <ol class="lista-musicas">
     @for (musica of musicas; track musica.posicao) {
-      <div class="musica-row" [style.--delay]="$index">
+      
+
+      <li class="musica-row" [style.--delay]="$index">
         
         <div class="rank-info">
-          <span class="numero">{{ musica.posicao }}</span>
-          <div class="tendencia" [ngClass]="musica.tendencia">
-            @if (musica.tendencia === 'sobe') { <span class="material-icons">north</span> {{ musica.valorTendencia }} }
-            @if (musica.tendencia === 'desce') { <span class="material-icons">south</span> {{ musica.valorTendencia }} }
+          <span class="numero" aria-hidden="true">{{ musica.posicao }}</span>
+          
+          <div class="tendencia" [ngClass]="musica.tendencia" [attr.aria-label]="'Tendência: ' + musica.tendencia">
+            @if (musica.tendencia === 'sobe') { <span class="material-icons" aria-hidden="true">north</span> {{ musica.valorTendencia }} }
+            @if (musica.tendencia === 'desce') { <span class="material-icons" aria-hidden="true">south</span> {{ musica.valorTendencia }} }
             @if (musica.tendencia === 'nova') { <span class="tag-nova">NOVA</span> }
           </div>
         </div>
 
         <div class="capa-container">
-          <img [src]="musica.capa" [alt]="musica.titulo">
-          <div class="overlay-play">
+          <img [src]="musica.capa" alt="">
+          <div class="overlay-play" aria-hidden="true">
             <span class="material-icons">play_arrow</span>
           </div>
         </div>
@@ -31,7 +34,8 @@
             <h3 class="titulo-musica">{{ musica.titulo }}</h3>
             <p class="artista-nome">{{ musica.artista }}</p>
           </div>
-          <div class="regua-vicio">
+
+          <div class="regua-vicio" aria-hidden="true">
             <div class="progresso" [style.width]="getLarguraRegua(musica.reproducoes)"></div>
           </div>
         </div>
@@ -40,13 +44,13 @@
           <span>{{ musica.reproducoes }} plays</span>
         </div>
 
-      </div>
+      </li>
     }
-  </div>
+  </ol>
 
   <footer class="footer-actions">
-    <button class="btn-spotify-premium">
-      <span class="material-icons icone-animado">playlist_add</span>
+    <button class="btn-spotify-premium" aria-label="Criar nova playlist com estas faixas">
+      <span class="material-icons icone-animado" aria-hidden="true">playlist_add</span>
       <span class="texto-btn">Criar Playlist</span>
     </button>
   </footer>

@@ -2,16 +2,23 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common'; 
 import { SpotifyService } from '../../core/services/spotify.service';
-import { DashboardService } from '../../core/services/dashboard.service'; // 1. Importa o novo serviço
+import { DashboardService } from '../../core/services/dashboard.service'; 
 
 import { HeaderComponent } from '../../components/header/header.component';
 import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.component';
 import { MinutesListenedComponent } from '../../components/minutes-listened/minutes-listened.component'; 
+import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, TopMusicasComponent, MinutesListenedComponent],
+  imports: [
+    CommonModule, 
+    HeaderComponent, 
+    TopMusicasComponent, 
+    MinutesListenedComponent, 
+    CardPerfilComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -19,7 +26,6 @@ export class DashboardComponent implements OnInit {
   nomeUsuario: string | null = '';
   emailUsuario: string | null = '';
   
-  // 2. Variável que o nosso Card de Minutos vai "beber"
   minutosTotais: number = 0; 
   
   modoEscuro = true;
@@ -35,7 +41,7 @@ export class DashboardComponent implements OnInit {
 
   private router = inject(Router);
   private spotifyService = inject(SpotifyService);
-  private dashboardService = inject(DashboardService); // 3. Injeta o serviço de estatísticas
+  private dashboardService = inject(DashboardService); 
   private cdr = inject(ChangeDetectorRef); 
 
   ngOnInit() {
@@ -69,7 +75,7 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 4. Chamada 2: Minutos Ouvidos (Nosso Backend / PostgreSQL)
+    // Chamada 2: Minutos Ouvidos (Nosso Backend / PostgreSQL)
     this.dashboardService.obterMinutosOuvidos(this.emailUsuario).subscribe({
       next: (res) => {
         this.minutosTotais = res.total_minutos;

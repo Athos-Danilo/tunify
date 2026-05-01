@@ -125,6 +125,7 @@ async def robo_rastreador_hourly():
                 logger.error(f"❌ [RASTREADOR] Erro no usuário {user.display_name}: {ex}")
                 db.rollback() 
 
+            await asyncio.sleep(30)
     finally:
         db.close()
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
@@ -229,6 +230,7 @@ async def robo_agregador_mensal():
     except Exception as e:
         logger.error(f"❌ [AGREGADOR] Erro no fechamento mensal: {e}")
         db.rollback()
+    
     finally:
         db.close()
 
@@ -241,7 +243,7 @@ def iniciar_robos():
     # Adiciona o Robô 1 (Intervalo de 5 minutos - Teste)
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(hours=1),
+        trigger=IntervalTrigger(minutes=100),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True
