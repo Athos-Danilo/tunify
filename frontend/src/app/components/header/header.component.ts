@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LogoComponent } from '../logo.component'; // Ajuste o caminho se necessário!
+import { LogoComponent } from '../logo.component';
 
 @Component({
   selector: 'app-header',
@@ -11,24 +11,31 @@ import { LogoComponent } from '../logo.component'; // Ajuste o caminho se necess
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  // Recebe os dados lá do Dashboard
   @Input() nomeUsuario: string | null = '';
   @Input() fotoPerfil: string = '';
   @Input() modoEscuro: boolean = true;
 
-  // Avisa o Dashboard quando o usuário clicar nos botões
   @Output() onAlternarTema = new EventEmitter<void>();
   @Output() onLogout = new EventEmitter<void>();
 
-  alternarTema() {
-    this.onAlternarTema.emit();
+  isScrolled = false;
+
+  // 🚨 NOVA VARIÁVEL: Controla se a barra de pesquisa do celular está aberta
+  isSearchMobileOpen = false;
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    // Se passar de 20px de descida, ativa o modo compacto!
+    this.isScrolled = window.scrollY > 20; 
   }
 
-  fazerLogout() {
-    this.onLogout.emit();
-  }
+  // 🚨 FUNÇÕES PARA ABRIR/FECHAR A PESQUISA
+  abrirPesquisaMobile() { this.isSearchMobileOpen = true; }
+  fecharPesquisaMobile() { this.isSearchMobileOpen = false; }
 
-  // Pega só o primeiro nome para não quebrar o layout
+  alternarTema() { this.onAlternarTema.emit(); }
+  fazerLogout() { this.onLogout.emit(); }
+
   get primeiroNome(): string {
     return this.nomeUsuario ? this.nomeUsuario.split(' ')[0] : 'Usuário';
   }
