@@ -16,10 +16,18 @@ export class DashboardService {
   private backendUrl = `${environment.apiUrl}/dashboard`;
 
   /**
-   * Busca o total de minutos que o robô da faxina calculou
+   * Busca o total de minutos e o total de artistas que o usuário ouviu no mês
    */
   obterMinutosOuvidos(email: string): Observable<any> {
-    console.log(`[SERVIÇO] Indo no Python buscar os minutos de: ${email}...`);
+    console.log(`[SERVIÇO] Indo no Python buscar os minutos e artistas de: ${email}...`);
     return this.http.get(`${this.backendUrl}/minutos/${email}`);
+  }
+
+  /**
+   * 🚨 NOVA ROTA: Busca o Top Artistas do Mês (com status de Subiu/Desceu/Novo)
+   */
+  obterTopArtistas(email: string): Observable<any> {
+    console.log(`[SERVIÇO] Indo no Python buscar o Top Artistas de: ${email}...`);
+    return this.http.get(`${this.backendUrl}/top_artistas/${email}`);
   }
 }
