@@ -96,11 +96,14 @@ class MinutesListened(Base):
     # A soma total de tempo ouvido no mês (em minutos).
     total_minutes = Column(Integer, nullable=False, default=0)
 
-    # 5. Data de Criação
+    # 5. Artistas Total
+    total_unique_artists = Column(Integer, nullable=False, default=0)
+
+    # 6. Data de Criação
     # Carimba o momento exato do fechamento.
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # 6. Relacionamento Virtual
+    # 7. Relacionamento Virtual
     user = relationship("User", backref="minutes_history")
 
 

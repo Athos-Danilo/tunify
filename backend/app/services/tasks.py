@@ -155,10 +155,10 @@ async def robo_agregador_mensal():
         somas_por_usuario = []
         for tentativa_db in range(3):
             try:
-                # 2. A MÁGICA DOS MINUTOS OUVIDOS (JOIN + SUM)
                 somas_por_usuario = db.query(
                     MonthlyHistory.user_id,
-                    func.sum(TrackCache.duration_ms).label('total_ms')
+                    func.sum(TrackCache.duration_ms).label('total_ms'),
+                    func.count(func.distinct(TrackCache.artist_name)).label('total_artistas') # 🚨 Conta os artistas sem repetir!
                 ).join(
                     TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
                 ).filter(
@@ -166,9 +166,7 @@ async def robo_agregador_mensal():
                 ).group_by(
                     MonthlyHistory.user_id
                 ).all()
-                
                 break 
-                
             except Exception as db_error:
                 if tentativa_db < 2:
                     logger.warning(f"⚠️ [AGREGADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
@@ -177,16 +175,17 @@ async def robo_agregador_mensal():
                     logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou. Erro: {db_error}")
                     return 
 
-        # 3. Salva os minutos calculados na tabela MinutesListened
-        for user_id, total_ms in somas_por_usuario:
+        # 3. Salva os minutos E artistas calculados na tabela MinutesListened
+        for user_id, total_ms, total_artistas in somas_por_usuario:
             minutos_totais = int(total_ms / 60000)
             novo_fechamento = MinutesListened(
                 user_id=user_id,
                 mes_referencia=mes_ref,
-                total_minutes=minutos_totais
+                total_minutes=minutos_totais,
+                total_unique_artists=total_artistas # 🚨 Salva o total calculado aqui!
             )
             db.add(novo_fechamento)
-            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} minutos em {mes_ref}.")
+            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} min e {total_artistas} artistas em {mes_ref}.")
 
         # 4. A MÁGICA DO TOP 200 (GROUP BY + COUNT + LIMIT)
         usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(

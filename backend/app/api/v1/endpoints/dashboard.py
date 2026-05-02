@@ -11,7 +11,7 @@ from app.core.database import get_db
 
 # Importa os moldes que vamos usar para ler os dados.
 from app.models.user import User
-from app.models.history import MinutesListened, TopTwoHundred, MonthlyHistory
+from app.models.history import MinutesListened, TopTwoHundred, MonthlyHistory, MonthlyTopArtist
 from app.models.track import TrackCache
 
 import datetime
@@ -24,36 +24,34 @@ router = APIRouter()
 # --------------------------------------------------------------------------- #
 @router.get("/minutos/{email}")
 async def obter_minutos_totais(email: str, db: Session = Depends(get_db)):
-    # 1. Acha o usuário pelo email
     usuario = db.query(User).filter(User.email == email).first()
     
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    # 2. Descobre qual é o mês atual e o primeiro dia dele
     hoje = datetime.datetime.now()
     primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    mes_atual_str = f"{hoje.year}-{hoje.month:02d}" # Ex: "2026-04"
+    mes_atual_str = f"{hoje.year}-{hoje.month:02d}"
 
-    # 3. A Mágica do Tempo Real (Soma a tabela Quente + Cache)
+    # A Mágica do Tempo Real Turbinada (Soma os ms + Conta Artistas Únicos)
     resultado = db.query(
-        func.sum(TrackCache.duration_ms).label('total_ms')
+        func.sum(TrackCache.duration_ms).label('total_ms'),
+        func.count(func.distinct(TrackCache.artist_name)).label('total_artistas') # 🚨 Conta os artistas aqui!
     ).join(
         MonthlyHistory, TrackCache.spotify_id == MonthlyHistory.spotify_track_id
     ).filter(
         MonthlyHistory.user_id == usuario.id,
-        MonthlyHistory.played_at >= primeiro_dia_atual # 🚨 Só pega as músicas deste mês!
+        MonthlyHistory.played_at >= primeiro_dia_atual 
     ).first()
 
-    # 4. Tratamento do resultado
-    # Se o resultado vier vazio (None), quer dizer que o usuário não ouviu nada esse mês ainda.
     total_ms = resultado.total_ms if resultado and resultado.total_ms else 0
+    total_artistas = resultado.total_artistas if resultado and resultado.total_artistas else 0
     minutos_totais = int(total_ms / 60000)
 
-    # 5. Devolvemos no mesmo formato que o Angular já está esperando!
     return {
         "mes_referencia": mes_atual_str,
-        "total_minutos": minutos_totais
+        "total_minutos": minutos_totais,
+        "total_artistas_ouvidos": total_artistas # 🚨 Manda pro Angular aqui!
     }
 
 
@@ -99,3 +97,90 @@ async def obter_top_200(email: str, db: Session = Depends(get_db)):
         })
 
     return {"dados": resultado_formatado}
+
+# ======> Rota: Top Artistas (Compara o último mês com o mês anterior)
+# 1) Recebe o e-mail na URL.
+# 2) Descobre quais são os dois últimos fechamentos do usuário.
+# 3) Calcula quem subiu, quem desceu e quem é novidade.
+# 4) Devolve os Top 10 mastigadinhos pro Angular!
+# --------------------------------------------------------------------------- #
+@router.get("/top_artistas/{email}")
+async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
+    usuario = db.query(User).filter(User.email == email).first()
+    
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    # 1. Busca os dois últimos meses que temos salvos para esse usuário
+    meses_disponiveis = db.query(MonthlyTopArtist.mes_referencia)\
+                          .filter(MonthlyTopArtist.user_id == usuario.id)\
+                          .distinct()\
+                          .order_by(desc(MonthlyTopArtist.mes_referencia))\
+                          .limit(2).all()
+    
+    if not meses_disponiveis:
+        return {"mensagem": "Nenhum histórico de artistas fechado ainda.", "dados": []}
+    
+    # O primeiro da lista é o mês mais recente (Ex: 2026-04)
+    mes_fechado = meses_disponiveis[0][0]
+    # Se ele for usuário novo, pode não ter um mês anterior
+    mes_retrasado = meses_disponiveis[1][0] if len(meses_disponiveis) > 1 else None
+
+    # 2. Pega os Top 10 do mês mais recente
+    top_atual = db.query(MonthlyTopArtist).filter(
+        MonthlyTopArtist.user_id == usuario.id,
+        MonthlyTopArtist.mes_referencia == mes_fechado
+    ).order_by(MonthlyTopArtist.rank_position).limit(10).all()
+
+    # 3. Pega os Top 15 do mês anterior (se existir)
+    top_anterior = []
+    if mes_retrasado:
+        top_anterior = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == usuario.id,
+            MonthlyTopArtist.mes_referencia == mes_retrasado
+        ).all()
+
+    # Cria um "Dicionário de Consulta Rápida" pro mês anterior (O(1) de performance)
+    mapa_anterior = {artista.artist_spotify_id: artista.rank_position for artista in top_anterior}
+
+    # 4. A Mágica da Matemática (Subiu, Desceu, Novo)
+    resultado_formatado = []
+    for artista in top_atual:
+        status_rank = "new"
+        posicoes_mudadas = 0
+
+        if artista.artist_spotify_id in mapa_anterior:
+            rank_antigo = mapa_anterior[artista.artist_spotify_id]
+            rank_novo = artista.rank_position
+
+            if rank_novo < rank_antigo:
+                status_rank = "up"
+                posicoes_mudadas = rank_antigo - rank_novo # Ex: era 5, virou 2 (subiu 3)
+            elif rank_novo > rank_antigo:
+                status_rank = "down"
+                posicoes_mudadas = rank_novo - rank_antigo # Ex: era 1, virou 3 (caiu 2)
+            else:
+                status_rank = "same"
+        
+        resultado_formatado.append({
+            "rank": artista.rank_position,
+            "nome": artista.artist_name,
+            "capa_url": artista.artist_image_url,
+            "minutos": artista.minutes_listened,
+            "status": status_rank,
+            "posicoes_mudadas": posicoes_mudadas
+        })
+
+    # 5. Pega o número total de artistas ouvidos no mês
+    registro_minutos = db.query(MinutesListened).filter(
+        MinutesListened.user_id == usuario.id,
+        MinutesListened.mes_referencia == mes_fechado
+    ).first()
+
+    total_artistas_ouvidos = registro_minutos.total_unique_artists if registro_minutos else 0
+
+    return {
+        "mes_referencia": mes_fechado,
+        "total_artistas_ouvidos": total_artistas_ouvidos, # 🚨 Manda pro Angular desenhar!
+        "dados": resultado_formatado
+    }
