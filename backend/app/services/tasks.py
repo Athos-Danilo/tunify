@@ -20,7 +20,7 @@ import time  # 🚨 IMPORT NOVO: Necessário para o robô saber esperar o banco 
 import datetime
 from app.core.database import SessionLocal # Usado para abrir a conexão com o banco
 from app.models.user import User
-from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist
 from app.services.spotify_service import SpotifyService
 from app.core.config import settings
 
@@ -133,7 +133,7 @@ async def robo_rastreador_hourly():
 
 # ======> Robô 2: O Agregador Mensal (O Rollup)
 # 1) Roda todo dia 1º de cada mês, às 03:00 da manhã.
-# 2) Faz as contas, salva os Top 200 e apaga o histórico detalhado do mês passado.
+# 2) Faz as contas, salva os Top 200, Top 15 Artistas e apaga o histórico do mês passado.
 # -------------------------------------------------------------------------------------- #
 async def robo_agregador_mensal():
     logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas...")
@@ -152,7 +152,6 @@ async def robo_agregador_mensal():
             mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
 
         # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
-        # Tentamos bater no banco 3 vezes para acordar a Neon antes de puxar as somas pesadas
         somas_por_usuario = []
         for tentativa_db in range(3):
             try:
@@ -168,16 +167,15 @@ async def robo_agregador_mensal():
                     MonthlyHistory.user_id
                 ).all()
                 
-                # Se conseguiu ler o banco, quebra o loop e segue a faxina!
                 break 
                 
             except Exception as db_error:
                 if tentativa_db < 2:
                     logger.warning(f"⚠️ [AGREGADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
-                    await asyncio.sleep(5) # Espera assíncrona
+                    await asyncio.sleep(5)
                 else:
-                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou para o fechamento mensal. Erro: {db_error}")
-                    return # Aborta o fechamento para não apagar os dados errados
+                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou. Erro: {db_error}")
+                    return 
 
         # 3. Salva os minutos calculados na tabela MinutesListened
         for user_id, total_ms in somas_por_usuario:
@@ -218,7 +216,41 @@ async def robo_agregador_mensal():
                 )
                 db.add(novo_top)
             
-            logger.info(f"🏆 [TOP 200] Ranking de {mes_ref} gerado com sucesso para o usuário {u_id}.")
+            logger.info(f"🏆 [TOP 200] Ranking gerado com sucesso para o usuário {u_id}.")
+
+            # -------------------------------------------------------------------------
+            # 4.5 A MÁGICA DO TOP 15 ARTISTAS (GROUP BY ARTIST_NAME + SUM DURATION)
+            # -------------------------------------------------------------------------
+            ranking_artistas = db.query(
+                TrackCache.artist_name,
+                func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
+                func.max(TrackCache.album_cover_url).label('capa_album_exemplo') # Pega a capa para servir de foto
+            ).join(
+                MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+            ).filter(
+                MonthlyHistory.user_id == u_id,
+                MonthlyHistory.played_at < primeiro_dia_atual
+            ).group_by(
+                TrackCache.artist_name
+            ).order_by(
+                func.sum(TrackCache.duration_ms).desc()
+            ).limit(15).all()
+
+            for rank_artista, (artist_name, tempo_total_ms, capa_url) in enumerate(ranking_artistas, start=1):
+                minutos_artista = int(tempo_total_ms / 60000)
+                
+                novo_top_artista = MonthlyTopArtist(
+                    user_id=u_id,
+                    mes_referencia=mes_ref,
+                    artist_spotify_id=artist_name, # Usamos o nome como ID único aqui
+                    artist_name=artist_name,
+                    artist_image_url=capa_url,
+                    minutes_listened=minutos_artista,
+                    rank_position=rank_artista
+                )
+                db.add(novo_top_artista)
+                
+            logger.info(f"🎤 [TOP ARTISTAS] Top 15 Artistas gerado para o usuário {u_id}.")
 
         # 5. A PURGA (Limpeza da tabela quente)
         linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
@@ -233,7 +265,6 @@ async def robo_agregador_mensal():
     
     finally:
         db.close()
-
 
 # ======> Função de Ignição
 # 1) Conecta as funções de cima aos seus respectivos "relógios".
