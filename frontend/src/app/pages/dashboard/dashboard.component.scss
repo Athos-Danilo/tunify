@@ -137,3 +137,26 @@ app-top-musicas {
     grid-row: 1 / 2;
   }
 }
+
+app-top-artistas {
+  display: block;
+  width: 100%;
+  
+  /* 📱 Mobile: Força a ser o 4º da fila (Fica lá embaixo, depois das músicas) */
+  order: 4;
+
+  @include tela-media {
+    /* 💻 Tablet: Fica embaixo de tudo, ocupando a largura inteira da tela! */
+    /* Como o tablet tem 2 colunas, ele vai da linha 1 do grid até a linha 3 (ou seja, pega a 1 e a 2 inteiras) */
+    grid-column: 1 / 3; 
+    grid-row: 3 / 4; /* Fica na 3ª "linha" horizontal do grid */
+    order: unset;
+  }
+
+  @include tela-grande {
+    /* 🖥️ Desktop: Coluna 3 (Direita), Linha 2 (Exatamente embaixo de Minutos Ouvidos) */
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+    justify-self: stretch;
+  }
+}

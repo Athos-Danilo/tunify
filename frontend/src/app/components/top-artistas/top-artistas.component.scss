@@ -1,0 +1,173 @@
+// Substitua pelos seus imports reais
+// @import '../../../styles/variables';
+// @import '../../../styles/mixins';
+@use '../../../assets/mixins' as *;
+
+.card-top-artistas {
+  // Ajuste para usar suas variáveis de cor e vidro
+  background-color: #151E32; // Cor do seu card escuro
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  color: #FFFFFF;
+
+  .card-header {
+    margin-bottom: 24px;
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: #B3B3B3; // Seu cinza clarinho
+      font-size: 0.95rem;
+
+      .destaque-azul {
+        color: #0285FF; // O azul elétrico da sua paleta
+        font-weight: bold;
+      }
+    }
+  }
+
+  // AQUI COMEÇA A MÁGICA DA RESPONSIVIDADE (MOBILE-FIRST)
+  .lista-artistas {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    // 1. REGRA PADRÃO (MOBILE): Mostra apenas os 5 primeiros
+    .artista-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      &:nth-child(n+6) {
+        display: none; // Esconde do 6º em diante
+      }
+
+      .rank {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #474952; // Cinza escuro
+        width: 24px;
+      }
+
+      .foto-artista {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .artista-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .nome {
+          font-size: 1rem;
+          font-weight: 500;
+          margin: 0;
+        }
+
+        // Estilização das Badges de Status
+        .badge {
+          font-size: 0.75rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          &.badge-new { color: #0285FF; } // Azul
+          &.badge-up { color: #1DB954; } // Verde Spotify
+          &.badge-down { color: #E74C3C; } // Vermelho padrão
+          &.badge-same { color: #B3B3B3; } // Cinza
+        }
+      }
+    }
+
+    // 2. REGRA PARA TABLET: Muda pra Grid e mostra os 10!
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); // Duas colunas lado a lado
+      column-gap: 32px;
+
+      .artista-item {
+        &:nth-child(n+6) {
+          display: flex; // Traz os itens 6 a 10 de volta a vida
+        }
+      }
+    }
+
+    // 3. REGRA PARA DESKTOP: Volta para Coluna e volta a esconder os 5 últimos
+    @media (min-width: 1024px) {
+      display: flex;
+      flex-direction: column;
+      
+      .artista-item {
+        &:nth-child(n+6) {
+          display: none; // Esconde novamente para o Desktop
+        }
+      }
+    }
+  }
+
+  // ESTILO DO ESTADO VAZIO (EMPTY STATE)
+  .estado-vazio {
+    text-align: center;
+    padding: 40px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .ilustracao-vazia {
+      background: rgba(2, 133, 255, 0.1); // Fundo com o seu azul translúcido
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      animation: pulsarRadar 2s infinite ease-in-out;
+
+      .icone-radar {
+        font-size: 2.5rem;
+      }
+    }
+
+    h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #FFFFFF;
+    }
+
+    .mensagem-principal {
+      font-size: 1rem;
+      color: #B3B3B3;
+      margin-bottom: 16px;
+    }
+
+    .dica-robo {
+      font-size: 0.85rem;
+      color: #8a8d96; // Um cinza um pouquinho mais escuro
+      max-width: 280px;
+      line-height: 1.5;
+
+      strong {
+        color: #0285FF;
+      }
+    }
+  }
+} 
+
+// Animação charmosinha pro Radar (Colocar fora do .card-top-artistas, lá no final do arquivo)
+@keyframes pulsarRadar {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 133, 255, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(2, 133, 255, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 133, 255, 0); }
+}

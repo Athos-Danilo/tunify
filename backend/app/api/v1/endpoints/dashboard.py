@@ -29,7 +29,7 @@ async def obter_minutos_totais(email: str, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    hoje = datetime.datetime.now()
+    hoje = datetime.datetime.now(datetime.timezone.utc)
     primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     mes_atual_str = f"{hoje.year}-{hoje.month:02d}"
 
@@ -111,76 +111,74 @@ async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    # 1. Busca os dois últimos meses que temos salvos para esse usuário
-    meses_disponiveis = db.query(MonthlyTopArtist.mes_referencia)\
+    # 1. Definir o início do mês atual (Com fuso horário para não dar bug no Postgres!)
+    hoje = datetime.datetime.now(datetime.timezone.utc)
+    primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    mes_atual_str = f"{hoje.year}-{hoje.month:02d}"
+
+    # 2. A MÁGICA DO TEMPO REAL: Calcula o Top 10 agora lendo a tabela quente
+    ranking_atual = db.query(
+        TrackCache.artist_name.label('artist_name'),
+        func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
+        func.max(TrackCache.album_cover_url).label('capa_url')
+    ).join(
+        MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+    ).filter(
+        MonthlyHistory.user_id == usuario.id,
+        MonthlyHistory.played_at >= primeiro_dia_atual
+    ).group_by(
+        TrackCache.artist_name
+    ).order_by(
+        desc('tempo_total_ms')
+    ).limit(10).all()
+
+    # 3. BUSCAR O MÊS PASSADO: Olha o álbum de fotos para a comparação
+    ultimo_fechamento = db.query(MonthlyTopArtist.mes_referencia)\
                           .filter(MonthlyTopArtist.user_id == usuario.id)\
-                          .distinct()\
                           .order_by(desc(MonthlyTopArtist.mes_referencia))\
-                          .limit(2).all()
+                          .first()
     
-    if not meses_disponiveis:
-        return {"mensagem": "Nenhum histórico de artistas fechado ainda.", "dados": []}
-    
-    # O primeiro da lista é o mês mais recente (Ex: 2026-04)
-    mes_fechado = meses_disponiveis[0][0]
-    # Se ele for usuário novo, pode não ter um mês anterior
-    mes_retrasado = meses_disponiveis[1][0] if len(meses_disponiveis) > 1 else None
-
-    # 2. Pega os Top 10 do mês mais recente
-    top_atual = db.query(MonthlyTopArtist).filter(
-        MonthlyTopArtist.user_id == usuario.id,
-        MonthlyTopArtist.mes_referencia == mes_fechado
-    ).order_by(MonthlyTopArtist.rank_position).limit(10).all()
-
-    # 3. Pega os Top 15 do mês anterior (se existir)
-    top_anterior = []
-    if mes_retrasado:
+    mapa_anterior = {}
+    if ultimo_fechamento:
+        mes_passado = ultimo_fechamento[0]
         top_anterior = db.query(MonthlyTopArtist).filter(
             MonthlyTopArtist.user_id == usuario.id,
-            MonthlyTopArtist.mes_referencia == mes_retrasado
+            MonthlyTopArtist.mes_referencia == mes_passado
         ).all()
+        # Cria um dicionário rápido: { "The Weeknd": 1, "Drake": 2 }
+        mapa_anterior = {artista.artist_name: artista.rank_position for artista in top_anterior}
 
-    # Cria um "Dicionário de Consulta Rápida" pro mês anterior (O(1) de performance)
-    mapa_anterior = {artista.artist_spotify_id: artista.rank_position for artista in top_anterior}
-
-    # 4. A Mágica da Matemática (Subiu, Desceu, Novo)
+    # 4. MONTAR A VITRINE DO FRONTEND
     resultado_formatado = []
-    for artista in top_atual:
+    for rank_atual, artista in enumerate(ranking_atual, start=1):
         status_rank = "new"
         posicoes_mudadas = 0
+        nome_artista = artista.artist_name
+        minutos_ouvidos = int(artista.tempo_total_ms / 60000)
 
-        if artista.artist_spotify_id in mapa_anterior:
-            rank_antigo = mapa_anterior[artista.artist_spotify_id]
-            rank_novo = artista.rank_position
-
-            if rank_novo < rank_antigo:
+        # Se o artista já estava no top 15 do mês passado...
+        if nome_artista in mapa_anterior:
+            rank_antigo = mapa_anterior[nome_artista]
+            
+            if rank_atual < rank_antigo:
                 status_rank = "up"
-                posicoes_mudadas = rank_antigo - rank_novo # Ex: era 5, virou 2 (subiu 3)
-            elif rank_novo > rank_antigo:
+                posicoes_mudadas = rank_antigo - rank_atual # Ex: era 5, virou 2 (Subiu 3)
+            elif rank_atual > rank_antigo:
                 status_rank = "down"
-                posicoes_mudadas = rank_novo - rank_antigo # Ex: era 1, virou 3 (caiu 2)
+                posicoes_mudadas = rank_atual - rank_antigo # Ex: era 1, virou 3 (Caiu 2)
             else:
                 status_rank = "same"
         
         resultado_formatado.append({
-            "rank": artista.rank_position,
-            "nome": artista.artist_name,
-            "capa_url": artista.artist_image_url,
-            "minutos": artista.minutes_listened,
+            "rank": rank_atual,
+            "nome": nome_artista,
+            "capa_url": artista.capa_url,
+            "minutos": minutos_ouvidos,
             "status": status_rank,
             "posicoes_mudadas": posicoes_mudadas
         })
 
-    # 5. Pega o número total de artistas ouvidos no mês
-    registro_minutos = db.query(MinutesListened).filter(
-        MinutesListened.user_id == usuario.id,
-        MinutesListened.mes_referencia == mes_fechado
-    ).first()
-
-    total_artistas_ouvidos = registro_minutos.total_unique_artists if registro_minutos else 0
-
     return {
-        "mes_referencia": mes_fechado,
-        "total_artistas_ouvidos": total_artistas_ouvidos, # 🚨 Manda pro Angular desenhar!
+        "mes_referencia": mes_atual_str,
         "dados": resultado_formatado
     }

@@ -141,7 +141,7 @@ async def robo_agregador_mensal():
     
     try:
         # 1. Descobrir qual é o mês que acabou de passar
-        hoje = datetime.datetime.now()
+        hoje = datetime.datetime.now(datetime.timezone.utc)
         # O limite é o primeiro segundo do mês atual
         primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         

@@ -1,0 +1,71 @@
+<!-- Só mostra o card quando o loading terminar -->
+<div class="card-top-artistas" *ngIf="!carregando">
+  
+  <div class="card-header">
+    <h3>Top Artistas</h3>
+    <p>Você ouviu <span class="destaque-azul">{{ totalArtistasMes }} artistas</span> este mês.</p>
+  </div>
+
+  <div class="lista-artistas" *ngIf="topArtistas.length > 0">
+    <!-- O Angular vai renderizar os 10, o CSS vai decidir quantos mostrar -->
+    <div class="artista-item" *ngFor="let artista of topArtistas; let i = index">
+      
+      <!-- Número da Posição (01, 02...) -->
+      <div class="rank">{{ (i + 1).toString().padStart(2, '0') }}</div>
+      
+      <!-- Foto Redonda -->
+      <img [src]="artista.capa_url" [alt]="artista.nome" class="foto-artista">
+      
+      <!-- Informações e Status -->
+      <div class="artista-info">
+        <h4 class="nome">{{ artista.nome }}</h4>
+        
+        <div class="status-container" [ngSwitch]="artista.status">
+          <!-- Se for novidade -->
+          <span *ngSwitchCase="'new'" class="badge badge-new">Novo no Top</span>
+          
+          <!-- Se subiu posições -->
+          <span *ngSwitchCase="'up'" class="badge badge-up">
+            <span class="seta verde">↑</span> Subiu {{ artista.posicoes_mudadas }}
+          </span>
+          
+          <!-- Se caiu posições -->
+          <span *ngSwitchCase="'down'" class="badge badge-down">
+            <span class="seta vermelha">↓</span> Caiu {{ artista.posicoes_mudadas }}
+          </span>
+          
+          <!-- Se manteve a mesma posição -->
+          <span *ngSwitchCase="'same'" class="badge badge-same">
+            <span class="seta neutra">-</span> Manteve
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MENSAGEM SE AINDA NÃO TIVER HISTÓRICO (Empty State) -->
+  <div class="estado-vazio" *ngIf="topArtistas.length === 0">
+    
+    <!-- Espaço para a ilustração/ícone (O CSS vai dar vida a isso) -->
+    <div class="ilustracao-vazia">
+      <!-- Sugestão: Podemos usar um SVG de um fantasminha, um radar buscando, ou um disco de vinil parado -->
+      <span class="icone-radar">🎧</span> 
+    </div>
+
+    <h4>Eita... que silêncio!</h4>
+    <p class="mensagem-principal">
+      Ainda não temos informações suficientes do seu histórico de músicas.
+    </p>
+    <p class="dica-robo">
+      O nosso robô já está vasculhando o seu Spotify! Dê o play em algumas faixas e <strong>volte daqui a alguns minutos</strong> para ver a mágica acontecer.
+    </p>
+
+  </div>
+
+</div>
+
+<!-- Loading State charmoso -->
+<div class="card-top-artistas skeleton-loading" *ngIf="carregando">
+  <p>Analisando seus artistas...</p>
+</div>

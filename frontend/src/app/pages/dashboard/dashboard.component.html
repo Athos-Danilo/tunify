@@ -23,6 +23,8 @@
 
       <app-minutes-listened [totalMinutos]="minutosTotais"></app-minutes-listened>
 
+      <app-top-artistas *ngIf="emailUsuario" [email]="emailUsuario"></app-top-artistas>
+
     </div>
   </div>
 

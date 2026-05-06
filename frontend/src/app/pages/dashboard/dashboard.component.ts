@@ -8,6 +8,8 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.component';
 import { MinutesListenedComponent } from '../../components/minutes-listened/minutes-listened.component';
 import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.component';
+import { TopArtistasComponent } from '../../components/top-artistas/top-artistas.component';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +19,8 @@ import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.co
     HeaderComponent,
     TopMusicasComponent,
     MinutesListenedComponent,
-    CardPerfilComponent
+    CardPerfilComponent,
+    TopArtistasComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -101,6 +104,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   fazerLogout() {
     localStorage.clear();
+    this.dashboardService.limparCache();
     this.router.navigate(['/']);
   }
 
