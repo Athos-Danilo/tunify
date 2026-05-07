@@ -1,71 +1,73 @@
-<!-- Só mostra o card quando o loading terminar -->
-<div class="card-top-artistas" *ngIf="!carregando">
+<div class="card-top-artistas">
   
   <div class="card-header">
-    <h3>Top Artistas</h3>
-    <p>Você ouviu <span class="destaque-azul">{{ totalArtistasMes }} artistas</span> este mês.</p>
+    <h2 class="titulo-especial">Top 10 Artistas</h2>
+    <p class="subtitulo">Você ouviu <span class="destaque-verde">{{ totalArtistasMes }} artistas</span> este mês</p>
   </div>
 
-  <div class="lista-artistas" *ngIf="topArtistas.length > 0">
-    <!-- O Angular vai renderizar os 10, o CSS vai decidir quantos mostrar -->
-    <div class="artista-item" *ngFor="let artista of topArtistas; let i = index">
-      
-      <!-- Número da Posição (01, 02...) -->
-      <div class="rank">{{ (i + 1).toString().padStart(2, '0') }}</div>
-      
-      <!-- Foto Redonda -->
-      <img [src]="artista.capa_url" [alt]="artista.nome" class="foto-artista">
-      
-      <!-- Informações e Status -->
-      <div class="artista-info">
-        <h4 class="nome">{{ artista.nome }}</h4>
+  <ng-container *ngIf="!carregando; else loadingTemplate">
+    
+    <div class="hero-artista" *ngIf="topArtistas.length > 0">
+      <div class="hero-card-outline">
         
-        <div class="status-container" [ngSwitch]="artista.status">
-          <!-- Se for novidade -->
-          <span *ngSwitchCase="'new'" class="badge badge-new">Novo no Top</span>
+        <div class="posicao-rank hero-rank">1º</div>
+        
+        <img [src]="topArtistas[0].capa_url" [alt]="topArtistas[0].nome" class="hero-img">
+        
+        <div class="hero-info">
+          <h3 class="hero-nome">{{ topArtistas[0].nome }}</h3>
           
-          <!-- Se subiu posições -->
-          <span *ngSwitchCase="'up'" class="badge badge-up">
-            <span class="seta verde">↑</span> Subiu {{ artista.posicoes_mudadas }}
-          </span>
+          <p class="hero-musicas">{{ topArtistas[0].musicas_diferentes }} Músicas Diferentes</p>
+          <p class="hero-minutos">{{ topArtistas[0].minutos }} min ouvidos</p>
           
-          <!-- Se caiu posições -->
-          <span *ngSwitchCase="'down'" class="badge badge-down">
-            <span class="seta vermelha">↓</span> Caiu {{ artista.posicoes_mudadas }}
-          </span>
+          <div class="status-container" [ngSwitch]="topArtistas[0].status">
+            <span *ngSwitchCase="'new'" class="badge badge-new">Novidade</span>
+            <span *ngSwitchCase="'up'" class="badge badge-up">Subiu</span>
+            <span *ngSwitchCase="'down'" class="badge badge-down">Desceu</span>
+            <span *ngSwitchCase="'same'" class="badge badge-same">Igual</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carrossel-wrapper" *ngIf="topArtistas.length > 1">
+      
+      <button class="seta-btn esquerda" (click)="rolarCarrossel('esq')">&#10094;</button>
+
+      <div class="carrossel-container" #carrossel>
+        <div class="circulo-artista" *ngFor="let artista of topArtistas | slice:1; let i = index">
           
-          <!-- Se manteve a mesma posição -->
-          <span *ngSwitchCase="'same'" class="badge badge-same">
-            <span class="seta neutra">-</span> Manteve
-          </span>
+          <div class="img-container">
+            <div class="posicao-rank list-rank">{{ i + 2 }}º</div>
+            <img [src]="artista.capa_url" [alt]="artista.nome" class="circulo-img">
+          </div>
+          
+          <h4 class="circulo-nome">{{ artista.nome }}</h4>
+          
+          <p class="circulo-musicas">{{ artista.musicas_diferentes }} Músicas Diferentes</p>
+          <p class="circulo-minutos">{{ artista.minutos }} min ouvidos</p>
+          
+          <div class="status-container" [ngSwitch]="artista.status">
+            <span *ngSwitchCase="'new'" class="badge badge-new">Novidade</span>
+            <span *ngSwitchCase="'up'" class="badge badge-up">Subiu</span>
+            <span *ngSwitchCase="'down'" class="badge badge-down">Desceu</span>
+            <span *ngSwitchCase="'same'" class="badge badge-same">Igual</span>
+          </div>
         </div>
       </div>
 
+      <button class="seta-btn direita" (click)="rolarCarrossel('dir')">&#10095;</button>
+
     </div>
-  </div>
+  </ng-container>
 
-  <!-- MENSAGEM SE AINDA NÃO TIVER HISTÓRICO (Empty State) -->
-  <div class="estado-vazio" *ngIf="topArtistas.length === 0">
-    
-    <!-- Espaço para a ilustração/ícone (O CSS vai dar vida a isso) -->
-    <div class="ilustracao-vazia">
-      <!-- Sugestão: Podemos usar um SVG de um fantasminha, um radar buscando, ou um disco de vinil parado -->
-      <span class="icone-radar">🎧</span> 
+  <ng-template #loadingTemplate>
+    <div class="estado-vazio">
+      <div class="ilustracao-vazia">
+        <span class="icone-radar">📡</span>
+      </div>
+      <h4>Analisando seu Top 10...</h4>
     </div>
+  </ng-template>
 
-    <h4>Eita... que silêncio!</h4>
-    <p class="mensagem-principal">
-      Ainda não temos informações suficientes do seu histórico de músicas.
-    </p>
-    <p class="dica-robo">
-      O nosso robô já está vasculhando o seu Spotify! Dê o play em algumas faixas e <strong>volte daqui a alguns minutos</strong> para ver a mágica acontecer.
-    </p>
-
-  </div>
-
-</div>
-
-<!-- Loading State charmoso -->
-<div class="card-top-artistas skeleton-loading" *ngIf="carregando">
-  <p>Analisando seus artistas...</p>
 </div>

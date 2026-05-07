@@ -102,7 +102,7 @@ async def obter_top_200(email: str, db: Session = Depends(get_db)):
 # 1) Recebe o e-mail na URL.
 # 2) Descobre quais são os dois últimos fechamentos do usuário.
 # 3) Calcula quem subiu, quem desceu e quem é novidade.
-# 4) Devolve os Top 10 mastigadinhos pro Angular!
+# 4) Devolve os Top 10 mastigadinhos pro Angular (AGORA COM FAIXAS ÚNICAS)!
 # --------------------------------------------------------------------------- #
 @router.get("/top_artistas/{email}")
 async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
@@ -120,7 +120,9 @@ async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
     ranking_atual = db.query(
         TrackCache.artist_name.label('artist_name'),
         func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
-        func.max(TrackCache.album_cover_url).label('capa_url')
+        func.max(TrackCache.album_cover_url).label('capa_url'),
+        # ✨ A NOVA MÁGICA AQUI: Conta quantas músicas únicas geraram esse tempo!
+        func.count(func.distinct(MonthlyHistory.spotify_track_id)).label('musicas_unicas')
     ).join(
         MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
     ).filter(
@@ -174,6 +176,7 @@ async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
             "nome": nome_artista,
             "capa_url": artista.capa_url,
             "minutos": minutos_ouvidos,
+            "musicas_diferentes": artista.musicas_unicas, # ✨ NOSSO NOVO DADO ENTRANDO AQUI
             "status": status_rank,
             "posicoes_mudadas": posicoes_mudadas
         })

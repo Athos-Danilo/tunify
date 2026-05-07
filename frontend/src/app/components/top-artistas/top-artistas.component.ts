@@ -1,13 +1,14 @@
-import { Component, OnInit, Input, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardService } from '../../core/services/dashboard.service'; // Ajuste o caminho se precisar
-import { forkJoin } from 'rxjs'; // 🚨 IMPORT NOVO AQUI!
+import { DashboardService } from '../../core/services/dashboard.service'; 
+import { forkJoin } from 'rxjs'; 
 
 export interface ArtistaStatus {
   rank: number;
   nome: string;
   capa_url: string;
   minutos: number;
+  musicas_diferentes: number; 
   status: 'up' | 'down' | 'same' | 'new';
   posicoes_mudadas: number;
 }
@@ -26,6 +27,9 @@ export class TopArtistasComponent implements OnInit {
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
 
+  // Pega a referência da div do carrossel no HTML
+  @ViewChild('carrossel') carrosselRef!: ElementRef;
+
   topArtistas: ArtistaStatus[] = [];
   mesReferencia: string = '';
   totalArtistasMes: number = 0;
@@ -40,27 +44,38 @@ export class TopArtistasComponent implements OnInit {
   buscarDadosDoComponente() {
     this.carregando = true;
 
-    // O forkJoin dispara as duas chamadas juntas e só entra no 'next' quando as duas terminarem!
     forkJoin({
       top: this.dashboardService.obterTopArtistas(this.email),
       minutos: this.dashboardService.obterMinutosOuvidos(this.email)
     }).subscribe({
       next: (res) => {
-        // Pega os dados, ou usa um array vazio/zero caso não exista nada no banco ainda
-        this.topArtistas = res.top.dados || [];
+        // Pega os dados brutos
+        const dadosRaw = res.top.dados || [];
+        this.topArtistas = dadosRaw;
         this.mesReferencia = res.top.mes_referencia || 'Mês Atual';
         this.totalArtistasMes = res.minutos.total_artistas_ouvidos || 0;
         
-        // Desliga o loading independentemente de ter vindo dados ou não!
         this.carregando = false;
-
-        // 3. O PULO DO GATO: Força o Angular a aceitar a mudança síncrona do cache
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); 
       },
       error: (err) => {
         console.error('Erro ao buscar dados do Top Artistas:', err);
-        this.carregando = false; // Em caso de erro, também tira o loading
+        this.carregando = false;
+        this.cdr.detectChanges(); 
       }
     });
+  }
+
+  // Função para mover o carrossel com as setinhas!
+  rolarCarrossel(direcao: 'esq' | 'dir') {
+    if (this.carrosselRef) {
+      const scrollAmount = 250; // Quantos pixels ele pula por clique
+      const currentScroll = this.carrosselRef.nativeElement.scrollLeft;
+      
+      this.carrosselRef.nativeElement.scrollTo({
+        left: direcao === 'esq' ? currentScroll - scrollAmount : currentScroll + scrollAmount,
+        behavior: 'smooth' // Animação suave nativa do navegador
+      });
+    }
   }
 }
