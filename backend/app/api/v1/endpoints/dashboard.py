@@ -13,6 +13,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.history import MinutesListened, TopTwoHundred, MonthlyHistory, MonthlyTopArtist
 from app.models.track import TrackCache
+from app.models.artist import ArtistCache # 🚨 [NOVO] Importa a nossa nova tabela de fotos de artistas!
 
 import datetime
 router = APIRouter()
@@ -120,11 +121,20 @@ async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
     ranking_atual = db.query(
         TrackCache.artist_name.label('artist_name'),
         func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
-        func.max(TrackCache.album_cover_url).label('capa_url'),
+        
+        # 🚨 [NOVO] O Pulo do Gato (COALESCE): Tenta pegar a foto oficial. Se não tiver, usa a capa do álbum!
+        func.coalesce(
+            func.max(ArtistCache.profile_image_url), 
+            func.max(TrackCache.album_cover_url)
+        ).label('capa_url'),
+        
         # ✨ A NOVA MÁGICA AQUI: Conta quantas músicas únicas geraram esse tempo!
         func.count(func.distinct(MonthlyHistory.spotify_track_id)).label('musicas_unicas')
     ).join(
         MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+    ).outerjoin(
+        # 🚨 [NOVO] Tenta cruzar com a tabela de artistas pelo nome
+        ArtistCache, ArtistCache.name == TrackCache.artist_name
     ).filter(
         MonthlyHistory.user_id == usuario.id,
         MonthlyHistory.played_at >= primeiro_dia_atual
