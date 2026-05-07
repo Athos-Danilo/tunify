@@ -13,14 +13,16 @@ from app.api.v1.endpoints import auth, spotify, dashboard
 from app.core.database import engine, Base
 
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
+# 🚨 [AJUSTE] Adicionamos o ArtistCache aqui para o banco criar a tabela de fotos oficiais!
 from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened
+from app.models.artist import ArtistCache 
 
 
 # Robôs de Busca.
 from app.services.tasks import iniciar_robos
 
 # ======> Sincronização.
-# 1) O SQLAlchemy olha para todos os modelos;
+# 1) O SQLAlchemy olha para todos os modelos importados acima;
 # 2) Verifica se cada tabela existe, se não existir, ele cria. 
 # --------------------------------------------------------------- #
 Base.metadata.create_all(bind=engine)
@@ -69,17 +71,10 @@ app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboar
 async def startup_event():
     print(f"> Tunify rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
     print("> Banco de Dados conectado e tabelas verificadas!")
-
-# ======> Eventos de Inicialização.
-# 1) Executa comandos assim que o servidor é ligado no terminal.
-# --------------------------------------------------------------------------- #
-@app.on_event("startup")
-async def startup_event():
-    print(f"> Tunify rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
-    print("> Banco de Dados conectado e tabelas verificadas!")
     
     # Liga a nossa central de robôs!
     iniciar_robos()
+
 
 # ======> Rota Raiz.
 # 1) Rota simples apenas para checar se o servidor está online pelo navegador.
