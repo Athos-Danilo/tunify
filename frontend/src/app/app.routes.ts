@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+
 // Imports das Telas (Components)
 import { HomeComponent } from './pages/home/home.component'; 
 import { PrivacidadeComponent } from './pages/privacidade/privacidade.component'; 
@@ -9,6 +10,9 @@ import { ContatoComponent } from './pages/contato/contato.component';
 import { CallbackComponent } from './pages/callback/callback';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 
+// 🚨 AQUI: Importação da nossa nova tela de configurações
+import { ConfiguracoesComponent } from './pages/configuracoes/configuracoes.component';
+
 export const routes: Routes = [
 
   // ÁREA PÚBLICA (Qualquer um acessa)
@@ -17,7 +21,7 @@ export const routes: Routes = [
   // Páginas do Rodapé
   { path: 'privacidade', component: PrivacidadeComponent }, // '/privacidade' abre a política
   { path: 'termos', component: TermosComponent }, // '/termos' abre os termos
-  { path: 'contato', component: ContatoComponent }, // '/termos' abre os termos
+  { path: 'contato', component: ContatoComponent }, // '/contato' abre os contatos
 
   // ---------------------------------------------------------
   // 🔑 AUTENTICAÇÃO (A Ponte Invisível)
@@ -32,6 +36,9 @@ export const routes: Routes = [
   
   // '/dashboard' abre a tela oficial do Vibe Architect ( Área VIP)
   { path: 'dashboard', component: DashboardComponent },
+  
+  // 🚨 AQUI: '/configuracoes' abre a nossa nova tela do Modo de Contenção
+  { path: 'configuracoes', component: ConfiguracoesComponent },
 
   // ---------------------------------------------------------
   // 🚧 SEGURANÇA (O Wildcard) - SEMPRE POR ÚLTIMO!
