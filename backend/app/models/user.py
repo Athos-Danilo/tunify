@@ -31,3 +31,7 @@ class User(Base):
     # 6. Refresh Token
     # É a chave que usamos para gerar um novo Access Token quando ele vence depois de 1 hora.
     refresh_token = Column(String, nullable=True)
+
+    # 7. Password Hash - A "senha criptografada" para o login independente (Modo de Contenção).
+    # Guardamos o hash (Bcrypt) em vez da senha real por segurança máxima.
+    password_hash = Column(String, nullable=True)
