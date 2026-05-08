@@ -25,7 +25,7 @@ from app.models.user import User
 from fastapi import Query
 
 # 🚨 NOVIDADES AQUI NO TOPO: Importando o nosso chaveiro e as ferramentas do Pydantic
-from app.core.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password, criar_token_jwt
 from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
@@ -272,10 +272,8 @@ def cadastrar_senha(dados: CadastrarSenhaRequest, db: Session = Depends(get_db))
 def login_local(dados: LoginLocalRequest, db: Session = Depends(get_db)):
     print(f"[INFO] Tentativa de login local com email: {dados.email}")
     
-    # 1. Busca a pessoa pelo e-mail
     usuario = db.query(User).filter(User.email == dados.email).first()
     
-    # Se não achou a pessoa OU se a pessoa existe mas nunca criou a senha local
     if not usuario or not usuario.password_hash:
         print("[ERRO] E-mail não cadastrado ou senha não configurada.")
         raise HTTPException(
@@ -283,7 +281,6 @@ def login_local(dados: LoginLocalRequest, db: Session = Depends(get_db)):
             detail="E-mail ou senha incorretos."
         )
 
-    # 2. Verifica se a senha que ela digitou agora bate com a criptografia do banco
     senha_valida = verify_password(dados.senha, usuario.password_hash)
     
     if not senha_valida:
@@ -295,14 +292,19 @@ def login_local(dados: LoginLocalRequest, db: Session = Depends(get_db)):
 
     print(f"[SUCESSO] Login local aprovado para o email: {dados.email}")
     
-    # 3. DEVOLVE OS DADOS: Por enquanto, vamos devolver apenas uma mensagem de sucesso 
-    # e os dados do usuário, simulando que o Angular conseguiu entrar.
-    # (Na próxima etapa nós vamos gerar o JWT de verdade aqui!)
+    # 🚨 A MÁGICA ACONTECE AQUI: Geramos o passaporte!
+    # O padrão do JWT é usar a chave "sub" (subject) para guardar quem é o dono.
+    dados_do_token = {"sub": usuario.email}
+    passaporte_jwt = criar_token_jwt(dados_do_token)
+    
+    # Devolvemos o token no formato que o Angular (e o mercado) espera receber
     return {
-        "message": "Login realizado com sucesso pelo Modo de Contenção!",
+        "access_token": passaporte_jwt,
+        "token_type": "bearer",
+        "message": "Login realizado com sucesso!",
         "usuario": {
             "nome": usuario.display_name,
             "email": usuario.email,
-            "spotify_token": usuario.access_token # O Angular ainda precisa disso por enquanto pra rodar o painel
+            "spotify_token": usuario.access_token 
         }
     }
