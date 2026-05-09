@@ -52,23 +52,29 @@ class SpotifyService:
             data = response.json()
             return data.get("items", [])
     
-    # 🚨 [NOVO] ======> Rota: Buscar Múltiplos Artistas (Lote/Batch)
+    # 🚨 [ATUALIZADO] ======> Rota: Buscar Múltiplos Artistas (Lote/Batch)
     # 1) Permite buscar até 50 artistas de uma única vez para economizar requisições.
     # 2) Retorna os dados completos do artista, incluindo a foto de perfil oficial.
     # -------------------------------------------------------------------------------------- #
     async def get_artists(self, access_token: str, artist_ids: List[str]) -> Dict[str, Any]:
-        url = f"{self.base_url}/artists"
-        
-        # O Spotify exige os IDs separados por vírgula na URL (Ex: ?ids=id1,id2,id3)
+        # O Spotify exige os IDs separados por vírgula.
         ids_string = ",".join(artist_ids)
-        params = {"ids": ids_string}
         
+        # 🚨 Bypass 2: Colocamos os IDs direto na string da URL para o httpx não transformar a vírgula em '%2C'
+        url = f"{self.base_url}/artists?ids={ids_string}"
+        
+        # 🚨 Bypass 1: A Carteirada Anti-Bot! 
+        # Colocamos o User-Agent e o Accept para o Spotify achar que somos um App oficial de verdade.
         headers = {
-            "Authorization": f"Bearer {access_token}"
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Tunify/1.0 (Windows NT 10.0; Win64; x64)" 
         }
 
+        # Não enviamos 'params' aqui embaixo, pois já colamos na URL ali em cima!
         async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers, params=params)
+            response = await client.get(url, headers=headers)
             
             if response.status_code == 401:
                 raise ValueError("TOKEN_EXPIRADO")
@@ -76,6 +82,7 @@ class SpotifyService:
             if response.status_code == 429:
                 raise Exception("RATE_LIMIT_ATINGIDO")
 
+            # Se ainda der erro, isso vai nos mostrar no terminal exatamente qual foi
             response.raise_for_status()
             
             # Devolve o JSON completo (que contém uma chave "artists" com a lista)
