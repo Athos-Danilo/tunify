@@ -266,7 +266,7 @@ async def robo_agregador_mensal():
 def iniciar_robos():
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(minutes=5),
+        trigger=IntervalTrigger(minutes=100),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True
