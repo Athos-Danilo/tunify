@@ -96,9 +96,47 @@ class MinutesListened(Base):
     # A soma total de tempo ouvido no mês (em minutos).
     total_minutes = Column(Integer, nullable=False, default=0)
 
-    # 5. Data de Criação
+    # 5. Artistas Total
+    total_unique_artists = Column(Integer, nullable=False, default=0)
+
+    # 6. Data de Criação
     # Carimba o momento exato do fechamento.
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
 
-    # 6. Relacionamento Virtual
+    # 7. Relacionamento Virtual
     user = relationship("User", backref="minutes_history")
+
+
+# ======> O Molde da Tabela do Top Artistas Mensal.
+# Armazena o fechamento mensal dos 15 artistas mais ouvidos de cada usuário.
+# Serve para a lógica de UI de comparar se o artista subiu, desceu ou é novo no ranking.
+# ----------------------------------------------------------------------------------------- #
+class MonthlyTopArtist(Base):
+    __tablename__ = "monthly_top_artists"
+
+    # 1. Chave Primária (ID)
+    id = Column(Integer, primary_key=True, index=True)
+
+    # 2. ID do Usuário (Chave Estrangeira)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    # 3. Mês de Referência
+    # Segue o mesmo padrão do Top200 e MinutesListened (Exemplo: "2026-04").
+    mes_referencia = Column(String, index=True, nullable=False)
+
+    # 4. Dados do Artista
+    # Salvamos o ID do Spotify para cruzamento exato e os dados visuais para o Frontend.
+    artist_spotify_id = Column(String, nullable=False)
+    artist_name = Column(String, nullable=False)
+    artist_image_url = Column(String, nullable=True) 
+
+    # 5. Contagem de Minutos e Posição
+    minutes_listened = Column(Integer, nullable=False)
+    rank_position = Column(Integer, nullable=False) # Vai salvar o Top 15
+
+    # 6. Data de Criação
+    # Carimba o momento exato do fechamento.
+    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+
+    # 7. Relacionamento Virtual
+    user = relationship("User", backref="top_artists_history")

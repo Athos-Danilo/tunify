@@ -1,5 +1,5 @@
 # Ferramentas do FastAPI para criar rotas, injetar dependências e lançar erros HTTP.
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 # Ferramenta para redirecionar o usuário para outra página (neste caso, o site do Spotify).
 from fastapi.responses import RedirectResponse
@@ -24,7 +24,22 @@ from app.models.user import User
 
 from fastapi import Query
 
+# 🚨 NOVIDADES AQUI NO TOPO: Importando o nosso chaveiro e as ferramentas do Pydantic
+from app.core.security import get_password_hash, verify_password, criar_token_jwt
+from pydantic import BaseModel, EmailStr
+
 router = APIRouter()
+
+
+# ======> MOLDES DO PYDANTIC (Para o FastAPI ler o que o Angular manda)
+# --------------------------------------------------------------------------- #
+class CadastrarSenhaRequest(BaseModel):
+    email: EmailStr
+    nova_senha: str
+
+class LoginLocalRequest(BaseModel):
+    email: EmailStr
+    senha: str
 
 
 # ======> Inicia o Login com o Spotify.
@@ -215,3 +230,81 @@ def callback_spotify(
         # Desfaz qualquer tentativa de salvar no banco para não corromper os dados.
         db.rollback()
         raise HTTPException(status_code=500, detail="Aconteceu um erro no servidor, tente novamente mais tarde!")
+
+
+# =========================================================================== #
+#                      🔐 MODO DE CONTENÇÃO (LOGIN LOCAL)                     #
+# =========================================================================== #
+
+# ======> Cadastrar Senha Local
+# Rota usada lá na tela de Configurações para a Ainoã criar a senha dela.
+# Recebe o e-mail dela e a senha nova, e salva tudo criptografado no banco.
+# --------------------------------------------------------------------------- #
+@router.post("/local/cadastrar-senha")
+def cadastrar_senha(dados: CadastrarSenhaRequest, db: Session = Depends(get_db)):
+    print(f"[INFO] Tentando cadastrar senha local para o email: {dados.email}")
+    
+    # 1. Verifica se a pessoa já existe no banco (ela TÊM que ter entrado pelo Spotify antes)
+    usuario = db.query(User).filter(User.email == dados.email).first()
+    
+    if not usuario:
+        print(f"[ERRO] Usuário não encontrado no banco.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Usuário não encontrado. Você precisa fazer login com o Spotify pelo menos uma vez."
+        )
+
+    # 2. Transforma a senha "123456" num Hash (ex: $2b$12$X5G...)
+    senha_criptografada = get_password_hash(dados.nova_senha)
+    
+    # 3. Salva a versão criptografada na gaveta nova que criamos
+    usuario.password_hash = senha_criptografada
+    db.commit()
+    
+    print(f"[SUCESSO] Senha cadastrada e criptografada para o email: {dados.email}")
+    return {"message": "Senha configurada com sucesso! Agora você pode logar sem o Spotify."}
+
+
+# ======> Login com Senha Local
+# A rota que salva o dia se o Spotify der erro 429! 
+# --------------------------------------------------------------------------- #
+@router.post("/local/login")
+def login_local(dados: LoginLocalRequest, db: Session = Depends(get_db)):
+    print(f"[INFO] Tentativa de login local com email: {dados.email}")
+    
+    usuario = db.query(User).filter(User.email == dados.email).first()
+    
+    if not usuario or not usuario.password_hash:
+        print("[ERRO] E-mail não cadastrado ou senha não configurada.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="E-mail ou senha incorretos."
+        )
+
+    senha_valida = verify_password(dados.senha, usuario.password_hash)
+    
+    if not senha_valida:
+        print("[ERRO] Senha incorreta digitada.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="E-mail ou senha incorretos."
+        )
+
+    print(f"[SUCESSO] Login local aprovado para o email: {dados.email}")
+    
+    # 🚨 A MÁGICA ACONTECE AQUI: Geramos o passaporte!
+    # O padrão do JWT é usar a chave "sub" (subject) para guardar quem é o dono.
+    dados_do_token = {"sub": usuario.email}
+    passaporte_jwt = criar_token_jwt(dados_do_token)
+    
+    # Devolvemos o token no formato que o Angular (e o mercado) espera receber
+    return {
+        "access_token": passaporte_jwt,
+        "token_type": "bearer",
+        "message": "Login realizado com sucesso!",
+        "usuario": {
+            "nome": usuario.display_name,
+            "email": usuario.email,
+            "spotify_token": usuario.access_token 
+        }
+    }

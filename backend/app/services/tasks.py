@@ -3,7 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-# 🚨 IMPORT NOVO: O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
+# O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
 from sqlalchemy import func
 
 # Configuração básica de log para vermos os robôs trabalhando no terminal
@@ -14,13 +14,12 @@ logger = logging.getLogger("Tunify-Robots")
 scheduler = AsyncIOScheduler()
 
 from app.models.track import TrackCache
-
 import asyncio
-import time  # 🚨 IMPORT NOVO: Necessário para o robô saber esperar o banco acordar
+import time 
 import datetime
-from app.core.database import SessionLocal # Usado para abrir a conexão com o banco
+from app.core.database import SessionLocal 
 from app.models.user import User
-from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist
 from app.services.spotify_service import SpotifyService
 from app.core.config import settings
 
@@ -31,13 +30,11 @@ from app.core.config import settings
 async def robo_rastreador_hourly():
     logger.info("🤖 [RASTREADOR] Acordando para buscar novas músicas...")
     
-    # 1. Abre uma sessão com o banco de dados
     db = SessionLocal()
     spotify = SpotifyService()
     
     try:
         # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
-        # Tentamos ler os usuários 3 vezes para dar tempo da Neon ligar os motores
         usuarios_ativos = []
         for tentativa_db in range(3):
             try:
@@ -46,7 +43,7 @@ async def robo_rastreador_hourly():
             except Exception as db_error:
                 if tentativa_db < 2:
                     logger.warning(f"⚠️ [RASTREADOR] Neon dormindo ou conexão instável. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
-                    await asyncio.sleep(5) # Espera assíncrona (não trava o app)
+                    await asyncio.sleep(5) 
                 else:
                     logger.error(f"❌ [RASTREADOR] Falha crítica: Banco não acordou. Erro: {db_error}")
                     return
@@ -115,8 +112,8 @@ async def robo_rastreador_hourly():
                         played_at=played_at
                     )
                     db.add(novo_historico)
-                
-                # Salva tudo o que foi feito para este usuário
+
+                # Salva tudo o que foi feito para este usuário no banco definitivamente!
                 db.commit()
                 if faixas_recentes:
                     logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {user.display_name}")
@@ -125,7 +122,7 @@ async def robo_rastreador_hourly():
                 logger.error(f"❌ [RASTREADOR] Erro no usuário {user.display_name}: {ex}")
                 db.rollback() 
 
-            await asyncio.sleep(30)
+            await asyncio.sleep(35) # Pausa pequena entre usuários para não sobrecarregar
     finally:
         db.close()
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
@@ -133,7 +130,7 @@ async def robo_rastreador_hourly():
 
 # ======> Robô 2: O Agregador Mensal (O Rollup)
 # 1) Roda todo dia 1º de cada mês, às 03:00 da manhã.
-# 2) Faz as contas, salva os Top 200 e apaga o histórico detalhado do mês passado.
+# 2) Faz as contas, salva os Top 200, Top 15 Artistas e apaga o histórico do mês passado.
 # -------------------------------------------------------------------------------------- #
 async def robo_agregador_mensal():
     logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas...")
@@ -141,25 +138,22 @@ async def robo_agregador_mensal():
     
     try:
         # 1. Descobrir qual é o mês que acabou de passar
-        hoje = datetime.datetime.now()
-        # O limite é o primeiro segundo do mês atual
+        hoje = datetime.datetime.now(datetime.timezone.utc)
         primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
-        # Formatar o mês de referência (Ex: "2026-03")
         if hoje.month == 1:
             mes_ref = f"{hoje.year - 1}-12"
         else:
             mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
 
         # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
-        # Tentamos bater no banco 3 vezes para acordar a Neon antes de puxar as somas pesadas
         somas_por_usuario = []
         for tentativa_db in range(3):
             try:
-                # 2. A MÁGICA DOS MINUTOS OUVIDOS (JOIN + SUM)
                 somas_por_usuario = db.query(
                     MonthlyHistory.user_id,
-                    func.sum(TrackCache.duration_ms).label('total_ms')
+                    func.sum(TrackCache.duration_ms).label('total_ms'),
+                    func.count(func.distinct(TrackCache.artist_name)).label('total_artistas') 
                 ).join(
                     TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
                 ).filter(
@@ -167,28 +161,26 @@ async def robo_agregador_mensal():
                 ).group_by(
                     MonthlyHistory.user_id
                 ).all()
-                
-                # Se conseguiu ler o banco, quebra o loop e segue a faxina!
                 break 
-                
             except Exception as db_error:
                 if tentativa_db < 2:
                     logger.warning(f"⚠️ [AGREGADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
-                    await asyncio.sleep(5) # Espera assíncrona
+                    await asyncio.sleep(5)
                 else:
-                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou para o fechamento mensal. Erro: {db_error}")
-                    return # Aborta o fechamento para não apagar os dados errados
+                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou. Erro: {db_error}")
+                    return 
 
-        # 3. Salva os minutos calculados na tabela MinutesListened
-        for user_id, total_ms in somas_por_usuario:
+        # 3. Salva os minutos E artistas calculados na tabela MinutesListened
+        for user_id, total_ms, total_artistas in somas_por_usuario:
             minutos_totais = int(total_ms / 60000)
             novo_fechamento = MinutesListened(
                 user_id=user_id,
                 mes_referencia=mes_ref,
-                total_minutes=minutos_totais
+                total_minutes=minutos_totais,
+                total_unique_artists=total_artistas 
             )
             db.add(novo_fechamento)
-            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} minutos em {mes_ref}.")
+            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} min e {total_artistas} artistas em {mes_ref}.")
 
         # 4. A MÁGICA DO TOP 200 (GROUP BY + COUNT + LIMIT)
         usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(
@@ -218,7 +210,41 @@ async def robo_agregador_mensal():
                 )
                 db.add(novo_top)
             
-            logger.info(f"🏆 [TOP 200] Ranking de {mes_ref} gerado com sucesso para o usuário {u_id}.")
+            logger.info(f"🏆 [TOP 200] Ranking gerado com sucesso para o usuário {u_id}.")
+
+            # -------------------------------------------------------------------------
+            # 4.5 A MÁGICA DO TOP 15 ARTISTAS (GROUP BY ARTIST_NAME + SUM DURATION)
+            # -------------------------------------------------------------------------
+            ranking_artistas = db.query(
+                TrackCache.artist_name,
+                func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
+                func.max(TrackCache.album_cover_url).label('capa_album_exemplo') # A NOSSA SALVAÇÃO AQUI!
+            ).join(
+                MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+            ).filter(
+                MonthlyHistory.user_id == u_id,
+                MonthlyHistory.played_at < primeiro_dia_atual
+            ).group_by(
+                TrackCache.artist_name
+            ).order_by(
+                func.sum(TrackCache.duration_ms).desc()
+            ).limit(15).all()
+
+            for rank_artista, (artist_name, tempo_total_ms, capa_url) in enumerate(ranking_artistas, start=1):
+                minutos_artista = int(tempo_total_ms / 60000)
+                
+                novo_top_artista = MonthlyTopArtist(
+                    user_id=u_id,
+                    mes_referencia=mes_ref,
+                    artist_spotify_id=artist_name, # Usamos o nome como ID único aqui
+                    artist_name=artist_name,
+                    artist_image_url=capa_url,
+                    minutes_listened=minutos_artista,
+                    rank_position=rank_artista
+                )
+                db.add(novo_top_artista)
+                
+            logger.info(f"🎤 [TOP ARTISTAS] Top 15 Artistas gerado para o usuário {u_id}.")
 
         # 5. A PURGA (Limpeza da tabela quente)
         linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
@@ -236,20 +262,16 @@ async def robo_agregador_mensal():
 
 
 # ======> Função de Ignição
-# 1) Conecta as funções de cima aos seus respectivos "relógios".
-# 2) Dá a partida no motor do agendador.
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
-    # Adiciona o Robô 1 (Intervalo de 5 minutos - Teste)
     scheduler.add_job(
         robo_rastreador_hourly,
-        trigger=IntervalTrigger(minutes=100),
+        trigger=IntervalTrigger(minutes=5),
         id="rastreador_spotify",
         name="Busca histórico a cada hora",
         replace_existing=True
     )
 
-    # Adiciona o Robô 2 (Cron Job: Dia 1, 03:00 da manhã)
     scheduler.add_job(
         robo_agregador_mensal,
         trigger=CronTrigger(day=1, hour=3, minute=0),
@@ -258,6 +280,5 @@ def iniciar_robos():
         replace_existing=True
     )
 
-    # Liga a chave geral
     scheduler.start()
-    logger.info("Central de Robôs do Tunify iniciada com sucesso!")
+    logger.info("Central de Robôs do Tunify iniciada com sucesso (Modo Catálogo Desativado por regras do Spotify)!")

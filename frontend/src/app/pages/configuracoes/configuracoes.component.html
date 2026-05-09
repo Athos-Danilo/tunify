@@ -1,0 +1,29 @@
+<div class="container-config">
+  <h2>Configurações da Conta</h2>
+
+  <div class="card-beta">
+    <h3>Habilitar "Modo de Contenção"</h3>
+    <p>Crie uma senha para acessar o Tunify direto, caso o Spotify caia.</p>
+
+    <div class="grupo-input">
+      <label>Email vinculado:</label>
+      <input type="text" [value]="emailUsuario" disabled>
+    </div>
+
+    <div class="grupo-input">
+      <label>Nova Senha:</label>
+      <input type="password" [(ngModel)]="novaSenha" placeholder="Mínimo 6 caracteres">
+    </div>
+
+    <div class="grupo-input">
+      <label>Confirmar Senha:</label>
+      <input type="password" [(ngModel)]="confirmarSenha" placeholder="Repita a senha">
+    </div>
+
+    <button (click)="salvarNovaSenha()" [disabled]="carregando">
+      {{ carregando ? 'Salvando no cofre...' : 'Salvar Senha' }}
+    </button>
+
+    <p class="aviso" *ngIf="mensagem">{{ mensagem }}</p>
+  </div>
+</div>

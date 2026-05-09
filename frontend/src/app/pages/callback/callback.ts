@@ -1,5 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+// 🚨 Importando o nosso novo carteiro de autenticação
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-callback',
@@ -18,6 +20,8 @@ export class CallbackComponent implements OnInit {
   // Injetamos as ferramentas do Angular para ler a URL (ActivatedRoute) e para mudar de página (Router)
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  // 🚨 Injetando o AuthService!
+  private authService = inject(AuthService); 
 
   ngOnInit(): void {
     // Fica escutando a URL em busca de parâmetros (?token=...&nome=...)
@@ -29,7 +33,13 @@ export class CallbackComponent implements OnInit {
       if (token && nome) {
         console.log('[SUCESSO] O Porteiro pegou os dados da URL!');
         
-        // 1. Tranca os dados no cofre do navegador
+        // 🚨 1. Tranca os dados usando o nosso novo AuthService para a tela de configurações achar!
+        // Criamos o objeto do usuário exatamente como o Configurações espera:
+        const usuario = { nome: nome, email: email };
+        this.authService.salvarSessao(token, usuario);
+
+        // Mantendo os antigos temporariamente só pra garantir que a sua Dashboard não quebre
+        // (podemos limpar isso no futuro quando o projeto inteiro estiver usando o AuthService)
         localStorage.setItem('spotify_token', token);
         localStorage.setItem('usuario_nome', nome);
         localStorage.setItem('usuario_email', email);

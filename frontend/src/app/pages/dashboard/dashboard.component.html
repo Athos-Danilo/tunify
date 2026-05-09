@@ -1,25 +1,31 @@
 <main class="dashboard" [ngClass]="{'tema-claro': !modoEscuro}">
 
-  <app-header 
-    [nomeUsuario]="nomeUsuario" 
-    [fotoPerfil]="dadosDemograficos.foto_perfil"
-    [modoEscuro]="modoEscuro"
-    (onAlternarTema)="alternarTema()"
-    (onLogout)="fazerLogout()">
-  </app-header>
+  <canvas #radarCanvas class="radar-canvas"></canvas>
 
-  <div class="dashboard-grid">
+  <div class="dashboard-content">
+    <app-header 
+      [nomeUsuario]="nomeUsuario" 
+      [fotoPerfil]="dadosDemograficos.foto_perfil"
+      [modoEscuro]="modoEscuro"
+      (onAlternarTema)="alternarTema()"
+      (onLogout)="fazerLogout()">
+    </app-header>
 
-    <app-card-perfil 
-      [nomeUsuario]="nomeUsuario"
-      [dadosDemograficos]="dadosDemograficos"
-      [modoEscuro]="modoEscuro">
-    </app-card-perfil>
+    <div class="dashboard-grid">
 
-    <app-top-musicas></app-top-musicas>
+      <app-card-perfil 
+        [nomeUsuario]="nomeUsuario"
+        [dadosDemograficos]="dadosDemograficos"
+        [modoEscuro]="modoEscuro">
+      </app-card-perfil>
 
-    <app-minutes-listened [totalMinutos]="minutosTotais"></app-minutes-listened>
+      <app-top-musicas></app-top-musicas>
 
+      <app-minutes-listened [totalMinutos]="minutosTotais"></app-minutes-listened>
+
+      <app-top-artistas *ngIf="emailUsuario" [email]="emailUsuario"></app-top-artistas>
+
+    </div>
   </div>
 
 </main>

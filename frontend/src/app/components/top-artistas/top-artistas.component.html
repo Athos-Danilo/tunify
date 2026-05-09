@@ -1,0 +1,73 @@
+<div class="card-top-artistas">
+  
+  <div class="card-header">
+    <h2 class="titulo-especial">Top 10 Artistas</h2>
+    <p class="subtitulo">Você ouviu <span class="destaque-verde">{{ totalArtistasMes }} artistas</span> este mês</p>
+  </div>
+
+  <ng-container *ngIf="!carregando; else loadingTemplate">
+    
+    <div class="hero-artista" *ngIf="topArtistas.length > 0">
+      <div class="hero-card-outline">
+        
+        <div class="posicao-rank hero-rank">1º</div>
+        
+        <img [src]="topArtistas[0].capa_url" [alt]="topArtistas[0].nome" class="hero-img">
+        
+        <div class="hero-info">
+          <h3 class="hero-nome">{{ topArtistas[0].nome }}</h3>
+          
+          <p class="hero-musicas">{{ topArtistas[0].musicas_diferentes }} Músicas Diferentes</p>
+          <p class="hero-minutos">{{ topArtistas[0].minutos }} min ouvidos</p>
+          
+          <div class="status-container" [ngSwitch]="topArtistas[0].status">
+            <span *ngSwitchCase="'new'" class="badge badge-new">Novidade</span>
+            <span *ngSwitchCase="'up'" class="badge badge-up">Subiu</span>
+            <span *ngSwitchCase="'down'" class="badge badge-down">Desceu</span>
+            <span *ngSwitchCase="'same'" class="badge badge-same">Igual</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carrossel-wrapper" *ngIf="topArtistas.length > 1">
+      
+      <button class="seta-btn esquerda" (click)="rolarCarrossel('esq')">&#10094;</button>
+
+      <div class="carrossel-container" #carrossel>
+        <div class="circulo-artista" *ngFor="let artista of topArtistas | slice:1; let i = index">
+          
+          <div class="img-container">
+            <div class="posicao-rank list-rank">{{ i + 2 }}º</div>
+            <img [src]="artista.capa_url" [alt]="artista.nome" class="circulo-img">
+          </div>
+          
+          <h4 class="circulo-nome">{{ artista.nome }}</h4>
+          
+          <p class="circulo-musicas">{{ artista.musicas_diferentes }} Músicas Diferentes</p>
+          <p class="circulo-minutos">{{ artista.minutos }} min ouvidos</p>
+          
+          <div class="status-container" [ngSwitch]="artista.status">
+            <span *ngSwitchCase="'new'" class="badge badge-new">Novidade</span>
+            <span *ngSwitchCase="'up'" class="badge badge-up">Subiu</span>
+            <span *ngSwitchCase="'down'" class="badge badge-down">Desceu</span>
+            <span *ngSwitchCase="'same'" class="badge badge-same">Igual</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="seta-btn direita" (click)="rolarCarrossel('dir')">&#10095;</button>
+
+    </div>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="estado-vazio">
+      <div class="ilustracao-vazia">
+        <span class="icone-radar">📡</span>
+      </div>
+      <h4>Analisando seu Top 10...</h4>
+    </div>
+  </ng-template>
+
+</div>
