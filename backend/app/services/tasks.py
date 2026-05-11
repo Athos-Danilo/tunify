@@ -14,6 +14,7 @@ logger = logging.getLogger("Tunify-Robots")
 scheduler = AsyncIOScheduler()
 
 from app.models.track import TrackCache
+from app.models.artist import ArtistCache # 🚨 REATIVADO: Importando a tabela de artistas
 import asyncio
 import time 
 import datetime
@@ -21,11 +22,12 @@ from app.core.database import SessionLocal
 from app.models.user import User
 from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist
 from app.services.spotify_service import SpotifyService
+from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
 from app.core.config import settings
 
-# ======> Robô 1: O Rastreador Diário
-# 1) Roda a cada 1 hora cravada.
-# 2) Vai varrer o banco, pegar o token de quem está ativo e buscar músicas novas.
+# ======> Robô 1: O Rastreador Diário (O Olheiro)
+# 1) Roda a cada 100 minutos.
+# 2) Salva as músicas e "planta a semente" dos artistas novos na tabela ArtistCache.
 # -------------------------------------------------------------------------------------- #
 async def robo_rastreador_hourly():
     logger.info("🤖 [RASTREADOR] Acordando para buscar novas músicas...")
@@ -34,7 +36,7 @@ async def robo_rastreador_hourly():
     spotify = SpotifyService()
     
     try:
-        # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
+        # 🚨 A BLINDAGEM DA AUTO-CURA
         usuarios_ativos = []
         for tentativa_db in range(3):
             try:
@@ -42,30 +44,27 @@ async def robo_rastreador_hourly():
                 break 
             except Exception as db_error:
                 if tentativa_db < 2:
-                    logger.warning(f"⚠️ [RASTREADOR] Neon dormindo ou conexão instável. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
+                    logger.warning(f"⚠️ [RASTREADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3...")
                     await asyncio.sleep(5) 
                 else:
-                    logger.error(f"❌ [RASTREADOR] Falha crítica: Banco não acordou. Erro: {db_error}")
+                    logger.error(f"❌ [RASTREADOR] Banco não acordou: {db_error}")
                     return
 
-        # 2. Se chegamos aqui, a Neon está acordada!
         for user in usuarios_ativos:
             try:
-                # 3. Descobre qual foi a última música salva para esse usuário
                 ultima_musica = db.query(MonthlyHistory).filter(MonthlyHistory.user_id == user.id)\
                                   .order_by(MonthlyHistory.played_at.desc()).first()
                 
                 after_ts = int(ultima_musica.played_at.timestamp() * 1000) if ultima_musica else None
                 faixas_recentes = []
 
-                # 🚨 SISTEMA DE TENTATIVAS (SPOTIFY + TOKEN)
                 for tentativa in range(2):
                     try:
                         faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
                         break 
                     except ValueError as e:
                         if str(e) == "TOKEN_EXPIRADO" and tentativa == 0:
-                            logger.warning(f"⚠️ [RASTREADOR] Token do {user.display_name} expirou. Renovando...")
+                            logger.warning(f"⚠️ [RASTREADOR] Renovando token do {user.display_name}...")
                             novos_tokens = await spotify.atualizar_token(
                                 user.refresh_token, 
                                 settings.SPOTIFY_CLIENT_ID, 
@@ -78,16 +77,37 @@ async def robo_rastreador_hourly():
                         else:
                             raise e
 
-                # 4. Processamento das músicas encontradas
+                # 4. Processamento das músicas e sementes de artistas
                 musicas_adicionadas_agora = set()
+                artistas_adicionados_agora = set() # 🚨 A NOSSA NOVA TRAVA DE SEGURANÇA
                 
                 for item in faixas_recentes:
                     track_data = item['track']
                     track_id = track_data['id']
                     
-                    # Verifica se a música já existe no nosso Dicionário (Cache)
+                    # 🚨 [PLANTANDO SEMENTES] Verifica cada artista da música
+                    for art_item in track_data.get('artists', []):
+                        artista_id = art_item.get('id')
+                        
+                        # Só processa se tiver ID e se a gente JÁ NÃO TIVER botado no carrinho agora mesmo
+                        if artista_id and artista_id not in artistas_adicionados_agora:
+                            
+                            # Verifica se já existe no banco (de rodadas anteriores)
+                            artista_existe = db.query(ArtistCache).filter(ArtistCache.spotify_id == artista_id).first()
+                            
+                            if not artista_existe:
+                                novo_artista_vazio = ArtistCache(
+                                    spotify_id=artista_id,
+                                    name=art_item['name'],
+                                    profile_image_url=None
+                                )
+                                db.add(novo_artista_vazio)
+                                # 🚨 Salva na memória curta pra não repetir na próxima música da fila!
+                                artistas_adicionados_agora.add(artista_id) 
+                                logger.info(f"🌱 [SEMENTE] Novo artista detectado: {art_item['name']}")
+
+                    # Cache da Música (continua igual...)
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
-                    
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
                         capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
@@ -101,11 +121,10 @@ async def robo_rastreador_hourly():
                         )
                         db.add(novo_cache)
                         musicas_adicionadas_agora.add(track_id) 
-                        logger.info(f"📦 [CACHE] Nova música catalogada: {track_data['name']}")
+                        logger.info(f"📦 [CACHE] Música catalogada: {track_data['name']}")
                     
-                    # Salva o play no histórico mensal
+                    # Histórico (continua igual...)
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
-                    
                     novo_historico = MonthlyHistory(
                         user_id=user.id,
                         spotify_track_id=track_id,
@@ -113,7 +132,6 @@ async def robo_rastreador_hourly():
                     )
                     db.add(novo_historico)
 
-                # Salva tudo o que foi feito para este usuário no banco definitivamente!
                 db.commit()
                 if faixas_recentes:
                     logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {user.display_name}")
@@ -122,22 +140,19 @@ async def robo_rastreador_hourly():
                 logger.error(f"❌ [RASTREADOR] Erro no usuário {user.display_name}: {ex}")
                 db.rollback() 
 
-            await asyncio.sleep(35) # Pausa pequena entre usuários para não sobrecarregar
+            await asyncio.sleep(35) 
     finally:
         db.close()
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
 
 
 # ======> Robô 2: O Agregador Mensal (O Rollup)
-# 1) Roda todo dia 1º de cada mês, às 03:00 da manhã.
-# 2) Faz as contas, salva os Top 200, Top 15 Artistas e apaga o histórico do mês passado.
 # -------------------------------------------------------------------------------------- #
 async def robo_agregador_mensal():
-    logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal e calculando as métricas...")
+    logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal...")
     db = SessionLocal()
     
     try:
-        # 1. Descobrir qual é o mês que acabou de passar
         hoje = datetime.datetime.now(datetime.timezone.utc)
         primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
@@ -146,31 +161,18 @@ async def robo_agregador_mensal():
         else:
             mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
 
-        # 🚨 A BLINDAGEM DA AUTO-CURA (WAKE-UP CALL)
-        somas_por_usuario = []
-        for tentativa_db in range(3):
-            try:
-                somas_por_usuario = db.query(
-                    MonthlyHistory.user_id,
-                    func.sum(TrackCache.duration_ms).label('total_ms'),
-                    func.count(func.distinct(TrackCache.artist_name)).label('total_artistas') 
-                ).join(
-                    TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
-                ).filter(
-                    MonthlyHistory.played_at < primeiro_dia_atual
-                ).group_by(
-                    MonthlyHistory.user_id
-                ).all()
-                break 
-            except Exception as db_error:
-                if tentativa_db < 2:
-                    logger.warning(f"⚠️ [AGREGADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3. Aguardando 5s...")
-                    await asyncio.sleep(5)
-                else:
-                    logger.error(f"❌ [AGREGADOR] Falha crítica: O banco não acordou. Erro: {db_error}")
-                    return 
+        somas_por_usuario = db.query(
+            MonthlyHistory.user_id,
+            func.sum(TrackCache.duration_ms).label('total_ms'),
+            func.count(func.distinct(TrackCache.artist_name)).label('total_artistas') 
+        ).join(
+            TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyHistory.played_at < primeiro_dia_atual
+        ).group_by(
+            MonthlyHistory.user_id
+        ).all()
 
-        # 3. Salva os minutos E artistas calculados na tabela MinutesListened
         for user_id, total_ms, total_artistas in somas_por_usuario:
             minutos_totais = int(total_ms / 60000)
             novo_fechamento = MinutesListened(
@@ -180,105 +182,133 @@ async def robo_agregador_mensal():
                 total_unique_artists=total_artistas 
             )
             db.add(novo_fechamento)
-            logger.info(f"📊 [FECHAMENTO] Usuário {user_id} ouviu {minutos_totais} min e {total_artistas} artistas em {mes_ref}.")
 
-        # 4. A MÁGICA DO TOP 200 (GROUP BY + COUNT + LIMIT)
         usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(
             MonthlyHistory.played_at < primeiro_dia_atual
         ).distinct().all()
 
         for (u_id,) in usuarios_com_historico:
+            # Top 200 Músicas
             ranking_musicas = db.query(
                 MonthlyHistory.spotify_track_id,
                 func.count(MonthlyHistory.id).label('play_count')
             ).filter(
                 MonthlyHistory.user_id == u_id,
                 MonthlyHistory.played_at < primeiro_dia_atual
-            ).group_by(
-                MonthlyHistory.spotify_track_id
-            ).order_by(
-                func.count(MonthlyHistory.id).desc()
-            ).limit(200).all()
+            ).group_by(MonthlyHistory.spotify_track_id).order_by(func.count(MonthlyHistory.id).desc()).limit(200).all()
 
             for rank, (track_id, play_count) in enumerate(ranking_musicas, start=1):
-                novo_top = TopTwoHundred(
-                    user_id=u_id,
-                    mes_referencia=mes_ref,
-                    spotify_track_id=track_id,
-                    play_count=play_count,
-                    rank_position=rank
-                )
-                db.add(novo_top)
-            
-            logger.info(f"🏆 [TOP 200] Ranking gerado com sucesso para o usuário {u_id}.")
+                db.add(TopTwoHundred(user_id=u_id, mes_referencia=mes_ref, spotify_track_id=track_id, play_count=play_count, rank_position=rank))
 
-            # -------------------------------------------------------------------------
-            # 4.5 A MÁGICA DO TOP 15 ARTISTAS (GROUP BY ARTIST_NAME + SUM DURATION)
-            # -------------------------------------------------------------------------
+            # Top 15 Artistas (Usando capa do álbum como backup caso a foto do Genius falhe)
             ranking_artistas = db.query(
                 TrackCache.artist_name,
                 func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
-                func.max(TrackCache.album_cover_url).label('capa_album_exemplo') # A NOSSA SALVAÇÃO AQUI!
+                func.max(TrackCache.album_cover_url).label('capa_album_exemplo')
             ).join(
                 MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
             ).filter(
-                MonthlyHistory.user_id == u_id,
-                MonthlyHistory.played_at < primeiro_dia_atual
-            ).group_by(
-                TrackCache.artist_name
-            ).order_by(
-                func.sum(TrackCache.duration_ms).desc()
-            ).limit(15).all()
+                MonthlyHistory.user_id == u_id, MonthlyHistory.played_at < primeiro_dia_atual
+            ).group_by(TrackCache.artist_name).order_by(func.sum(TrackCache.duration_ms).desc()).limit(15).all()
 
             for rank_artista, (artist_name, tempo_total_ms, capa_url) in enumerate(ranking_artistas, start=1):
-                minutos_artista = int(tempo_total_ms / 60000)
-                
-                novo_top_artista = MonthlyTopArtist(
-                    user_id=u_id,
-                    mes_referencia=mes_ref,
-                    artist_spotify_id=artist_name, # Usamos o nome como ID único aqui
-                    artist_name=artist_name,
-                    artist_image_url=capa_url,
-                    minutes_listened=minutos_artista,
-                    rank_position=rank_artista
-                )
-                db.add(novo_top_artista)
-                
-            logger.info(f"🎤 [TOP ARTISTAS] Top 15 Artistas gerado para o usuário {u_id}.")
+                db.add(MonthlyTopArtist(
+                    user_id=u_id, mes_referencia=mes_ref, artist_spotify_id=artist_name,
+                    artist_name=artist_name, artist_image_url=capa_url, 
+                    minutes_listened=int(tempo_total_ms / 60000), rank_position=rank_artista
+                ))
 
-        # 5. A PURGA (Limpeza da tabela quente)
-        linhas_deletadas = db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
-        
-        # Só comitamos no final!
+        db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
         db.commit()
-        logger.info(f"✅ [AGREGADOR] Faxina concluída! {linhas_deletadas} plays antigos apagados do sistema.")
+        logger.info("✅ [AGREGADOR] Faxina concluída!")
 
     except Exception as e:
-        logger.error(f"❌ [AGREGADOR] Erro no fechamento mensal: {e}")
+        logger.error(f"❌ [AGREGADOR] Erro: {e}")
         db.rollback()
-    
     finally:
         db.close()
+
+
+# 🚨 [NOVO] Robô 3: O Faxineiro de Artistas (A Fila do Genius)
+# 1) Roda todo dia às 04:00 da manhã.
+# 2) Pega quem está sem foto OU com foto vencida (> 15 dias).
+# 3) Processa em fila lenta para o Genius não bloquear.
+# -------------------------------------------------------------------------------------- #
+async def robo_faxineiro_artistas():
+    logger.info("🧹 [FAXINEIRO] Iniciando manutenção de fotos via Genius...")
+    db = SessionLocal()
+    genius = GeniusService()
+
+    try:
+        # Data limite para considerar foto "velha"
+        limite_vencimento = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=15)
+
+        # Busca a FILA: artistas sem foto OU com foto desatualizada
+        fila_artistas = db.query(ArtistCache).filter(
+            (ArtistCache.profile_image_url.is_(None)) | (ArtistCache.last_updated_at < limite_vencimento)
+        ).all()
+
+        if not fila_artistas:
+            logger.info("✅ [FAXINEIRO] Tudo limpo! Nenhuma foto para atualizar.")
+            return
+
+        logger.info(f"🔄 [FAXINEIRO] Fila de trabalho montada: {len(fila_artistas)} artistas.")
+
+        for artista in fila_artistas:
+            try:
+                # Busca no Genius pelo nome do artista
+                nova_foto = await genius.buscar_foto_artista(artista.name)
+
+                if nova_foto:
+                    artista.profile_image_url = nova_foto
+                    db.commit()
+                    logger.info(f"✨ [FAXINEIRO] Foto atualizada: {artista.name}")
+                else:
+                    logger.warning(f"⚠️ [FAXINEIRO] Foto não encontrada para {artista.name}.")
+
+            except Exception as e:
+                logger.error(f"❌ [FAXINEIRO] Falha no artista {artista.name}: {e}")
+                db.rollback()
+
+            # 🚨 O respiro do robô (1.5s entre cada artista para evitar bloqueios)
+            await asyncio.sleep(1.5)
+
+    except Exception as e:
+        logger.error(f"❌ [FAXINEIRO] Erro crítico na faxina: {e}")
+    finally:
+        db.close()
+        logger.info("🎉 [FAXINEIRO] Turno de madrugada encerrado.")
 
 
 # ======> Função de Ignição
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
+    # Robô 1: De 100 em 100 min (Rastreador + Olheiro)
     scheduler.add_job(
         robo_rastreador_hourly,
         trigger=IntervalTrigger(minutes=100),
         id="rastreador_spotify",
-        name="Busca histórico a cada hora",
+        name="Busca histórico e planta sementes",
         replace_existing=True
     )
 
+    # Robô 2: Todo dia 1º (Calcula as métricas)
     scheduler.add_job(
         robo_agregador_mensal,
         trigger=CronTrigger(day=1, hour=3, minute=0),
         id="agregador_mensal",
-        name="Consolida dados no dia 1 de cada mês",
+        name="Consolida dados mensais",
+        replace_existing=True
+    )
+
+    # 🚨 Robô 3: Todo dia às 4 da manhã (Faxineiro do Genius)
+    scheduler.add_job(
+        robo_faxineiro_artistas,
+        trigger=CronTrigger(hour=4, minute=0),
+        id="faxineiro_artistas",
+        name="Atualiza fotos de artistas via Genius",
         replace_existing=True
     )
 
     scheduler.start()
-    logger.info("Central de Robôs do Tunify iniciada com sucesso (Modo Catálogo Desativado por regras do Spotify)!")
+    logger.info("Central de Robôs do Tunify iniciada com Integração Genius! 🚀")
