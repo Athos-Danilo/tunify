@@ -1,0 +1,275 @@
+/*--- Importa as variáveis e mixins globais ---*/
+@import '../../../styles.scss';
+
+/*---------------------------------------- CONTAINER PRINCIPAL ----------------------------------------*/
+
+.login-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  background-color: var(--azul-muito-escuro-dk);
+  position: relative;
+  overflow: hidden;
+
+  /* Grid de fundo para manter a identidade visual do Tunify */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+      linear-gradient(var(--azul-escuro-dk) 1px, transparent 1px),
+      linear-gradient(90deg, var(--azul-escuro-dk) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Brilho radial ao fundo para dar um destaque no centro */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(2, 133, 255, 0.08) 0%, transparent 60%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/*---------------------------------------- CARD DE LOGIN (O VIDRO) ----------------------------------------*/
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(11, 17, 32, 0.65); /* Fundo escuro semi-transparente */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+
+  @include tela-media {
+    padding: 3rem;
+  }
+}
+
+/*---------------------------------------- CABEÇALHO (LOGO) ----------------------------------------*/
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.login-subtitle {
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--cinza-claro-dk);
+  margin: 1rem 0 0 0;
+  letter-spacing: 0.5px;
+}
+
+/*---------------------------------------- FORMULÁRIO ----------------------------------------*/
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-family: var(--fonte-principal, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--branco-azulado-dk);
+    letter-spacing: 0.5px;
+  }
+
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-family: var(--fonte-principal, sans-serif);
+    font-size: 1rem;
+    color: var(--branco-dk);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    outline: none;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    &:focus {
+      background: rgba(2, 133, 255, 0.05);
+      border-color: var(--azul-dk);
+      box-shadow: 0 0 0 4px rgba(2, 133, 255, 0.15);
+    }
+  }
+}
+
+/*---------- Botão de Ação Principal ----------*/
+
+.btn-entrar {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 16px;
+  background-color: var(--azul-dk);
+  color: var(--branco-dk);
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(2, 133, 255, 0.3);
+
+  &:hover {
+    background-color: #0074e8; /* Um azul levemente mais escuro pro hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 133, 255, 0.4);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+/*---------------------------------------- RODAPÉ (VOLTAR) ----------------------------------------*/
+
+.login-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.link-voltar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--fonte-principal, sans-serif);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--cinza-claro-dk);
+  text-decoration: none;
+  transition: all 0.3s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    color: var(--branco-dk);
+
+    svg {
+      transform: translateX(-4px); /* A setinha dá um pulinho pra esquerda */
+    }
+  }
+}
+
+/*---------------------------------------- ANIMAÇÕES ----------------------------------------*/
+
+.animacao-surgir {
+  animation: surgirSuave 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+  opacity: 0;
+}
+
+@keyframes surgirSuave {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/*==========================================================================
+   MODO CLARO (LIGHT THEME)
+  ==========================================================================*/
+
+.tema-claro.login-container {
+  background-color: var(--branco-lt);
+
+  &::before {
+    background-image: 
+      linear-gradient(var(--cinza-claro-lt) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cinza-claro-lt) 1px, transparent 1px);
+    opacity: 0.5;
+  }
+
+  &::after {
+    background: radial-gradient(circle, rgba(2, 133, 255, 0.05) 0%, transparent 60%);
+  }
+}
+
+.tema-claro .login-card {
+  background: rgba(255, 255, 255, 0.85); /* Fundo claro translúcido */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); /* Sombra mais leve */
+}
+
+.tema-claro .login-subtitle {
+  color: var(--cinza-escuro-lt);
+}
+
+.tema-claro .input-group label {
+  color: var(--preto-lt);
+}
+
+.tema-claro .input-group input {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--preto-lt);
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.3);
+  }
+
+  &:focus {
+    background: rgba(2, 133, 255, 0.05);
+    border-color: var(--azul-lt);
+    box-shadow: 0 0 0 4px rgba(2, 133, 255, 0.15);
+  }
+}
+
+/* O botão principal eu não mudo o fundo porque a sua marca é azul, mas mudo o hover */
+.tema-claro .btn-entrar {
+  box-shadow: 0 4px 15px rgba(2, 133, 255, 0.2);
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(2, 133, 255, 0.35);
+  }
+}
+
+.tema-claro .link-voltar {
+  color: var(--cinza-escuro-lt);
+
+  &:hover {
+    color: var(--azul-lt);
+  }
+}

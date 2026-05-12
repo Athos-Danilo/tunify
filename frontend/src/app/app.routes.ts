@@ -40,10 +40,17 @@ export const routes: Routes = [
   // 🚨 AQUI: '/configuracoes' abre a nossa nova tela do Modo de Contenção
   { path: 'configuracoes', component: ConfiguracoesComponent },
 
+  { 
+    path: 'login', 
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) 
+  },
+
   // ---------------------------------------------------------
   // 🚧 SEGURANÇA (O Wildcard) - SEMPRE POR ÚLTIMO!
   // ---------------------------------------------------------
   
   // Se o usuário digitar qualquer link que não exista, joga ele pra Home
-  { path: '**', redirectTo: '' } 
+  { path: '**', redirectTo: '' }
+
+
 ];

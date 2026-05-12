@@ -1,0 +1,36 @@
+<main class="login-container" [ngClass]="{'tema-claro': !modoEscuro}">
+  
+  <div class="login-card animacao-surgir">
+    
+    <div class="login-header">
+      <app-logo tamanho="grande" [animado]="true"></app-logo>
+      <p class="login-subtitle">Acesso por credenciais</p>
+    </div>
+
+    <form class="login-form">
+      <div class="input-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+
+      <div class="input-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button type="button" class="btn-entrar">Entrar no Tunify</button>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/" class="link-voltar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Voltar para a Home
+      </a>
+    </div>
+
+  </div>
+
+</main>

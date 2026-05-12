@@ -153,9 +153,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     window.scrollTo(0, 0);
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
 
+    // 🚨 LENDO O TEMA SALVO
+    const temaSalvo = localStorage.getItem('tunify_tema');
+    if (temaSalvo === 'claro') {
+      this.modoEscuro = false;
+    }
+
     this.iniciarSimulacaoSkips();
     this.iniciarCarrosselCards(); 
   }
+
+  // ======> Seletor de Tema (Light/Dark).
+  alternarTema() {
+    this.modoEscuro = !this.modoEscuro; 
+    
+    // SALVANDO A ESCOLHA NO NAVEGADOR
+    localStorage.setItem('tunify_tema', this.modoEscuro ? 'escuro' : 'claro');
+    
+    this.renderizarFundo();
+  }
+
 
   // ======> Ciclo de Vida: Pós-Renderização (ngAfterViewInit).
   // 1) Renderiza o Canvas de fundo e a onda fluida;
@@ -258,14 +275,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges(); 
   }
 
-  // ======> Seletor de Tema (Light/Dark).
-  // 1) Inverte o booleano principal e re-desenha a tela de fundo inteira.
-  // ------------------------------------------------------------------------------ //
-  alternarTema() {
-    this.modoEscuro = !this.modoEscuro; 
-    this.renderizarFundo();
-  }
-
+ 
   // ======> Pintor do Fundo (FinisherHeader Canvas).
   // 1) Busca se já existe um Canvas antigo rodando na div pai;
   // 2) Destrói o antigo caso exista;
