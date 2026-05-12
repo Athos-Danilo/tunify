@@ -8,6 +8,7 @@ import { RouterOutlet } from '@angular/router';
 import { LogoComponent } from '../../components/logo.component';
 import { RouterModule } from '@angular/router'; 
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 
@@ -137,7 +138,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // 2) renderer: Ferramenta segura para injetar/remover classes e estilos no DOM;
   // 3) el: Referência nativa do componente para buscar elementos HTML.
   // ------------------------------------------------------------------------------ //
-  constructor(private cdr: ChangeDetectorRef, private renderer: Renderer2, private el: ElementRef) {}
+  constructor(private cdr: ChangeDetectorRef, private renderer: Renderer2, private el: ElementRef, private router: Router) {}
 
   // ======> Ciclo de Vida: Nascimento (ngOnInit).
   // 1) Mata a memória de scroll do navegador (para não descer a tela no F5);
@@ -324,6 +325,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // ------------------------------------------------------------------------------ //
   fazerLogin() {
     window.location.href = `${environment.apiUrl}/auth/login`;
+  }
+
+  entrarComSenha() {
+    this.router.navigate(['/login']);
   }
 
   // ======> Motor da Onda Fluida (Canvas Nativo).
