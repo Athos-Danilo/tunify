@@ -1,36 +1,122 @@
 <main class="login-container" [ngClass]="{'tema-claro': !modoEscuro}">
   
-  <div class="login-card animacao-surgir">
+  <div class="bento-master-wrapper animacao-surgir">
+
+    <div class="login-left">
+      <div class="login-card"> <div class="login-header">
+          <app-logo tamanho="grande" [animado]="true"></app-logo>
+        </div>
+
+        <div class="roleta-container-login">
+          <span class="texto-fixo">Decodificando a sua</span>
+          <div class="roleta-palavras">
+            <span class="palavra-destaque azul">Vibe</span>
+            <span class="palavra-destaque verde">Frequência</span>
+            <span class="palavra-destaque roxo">Playlist</span>
+            <span class="palavra-destaque azul">Vibe</span>
+          </div>
+        </div>
     
-    <div class="login-header">
-      <app-logo tamanho="grande" [animado]="true"></app-logo>
-      <p class="login-subtitle">Acesso por credenciais</p>
+        <form class="login-form" (ngSubmit)="entrarNoSistema()">
+          <div class="alerta-erro" *ngIf="mensagemErro">
+            {{ mensagemErro }}
+          </div>
+    
+          <div class="input-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="seu@email.com" autocomplete="email">
+          </div>
+    
+          <div class="input-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" [(ngModel)]="senha" placeholder="••••••••" autocomplete="current-password">
+          </div>
+    
+          <button type="submit" class="btn-entrar" [disabled]="carregando">
+            {{ carregando ? 'Autenticando...' : 'Entrar no Tunify' }}
+          </button>
+        </form>
+    
+        <div class="login-footer">
+          <a routerLink="/" class="link-voltar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Voltar para a Home
+          </a>
+        </div>
+      </div>
     </div>
 
-    <form class="login-form">
-      <div class="input-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+    <div class="login-right">
+      <div class="grid-anki-login"> <div class="card-anki-wrap vibe-foco">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Foco</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #02d3ff;">20%</span></div>
+              <div class="dado-linha"><span class="dado-label">Acústica</span><span class="dado-valor" style="color: #02d3ff;">90%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">80</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-anki-wrap vibe-treino">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Treino</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #ff5f56;">98%</span></div>
+              <div class="dado-linha"><span class="dado-label">Acústica</span><span class="dado-valor" style="color: #ff5f56;">15%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">140</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-anki-wrap vibe-estrada">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Estrada</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #ffb400;">65%</span></div>
+              <div class="dado-linha"><span class="dado-label">Acústica</span><span class="dado-valor" style="color: #ffb400;">50%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">110</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-anki-wrap vibe-relax">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Relax</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #1db954;">10%</span></div>
+              <div class="dado-linha"><span class="dado-label">Acústica</span><span class="dado-valor" style="color: #1db954;">95%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">50</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-anki-wrap vibe-descoberta">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Descoberta</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #00fa9a;">75%</span></div>
+              <div class="dado-linha"><span class="dado-label">Sintetiz.</span><span class="dado-valor" style="color: #00fa9a;">85%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">120</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-anki-wrap vibe-festa">
+          <div class="anki-front"><div class="anki-front-aura"></div> <h4>Festa</h4></div>
+          <div class="anki-back">
+            <div class="ficha-tecnica">
+              <div class="dado-linha"><span class="dado-label">Energia</span><span class="dado-valor" style="color: #d500f9;">90%</span></div>
+              <div class="dado-linha"><span class="dado-label">Dança</span><span class="dado-valor" style="color: #d500f9;">95%</span></div>
+              <div class="dado-bpm"><span class="bpm-label">BPM</span><span class="bpm-valor">128</span></div>
+            </div>
+          </div>
+        </div>
+
       </div>
-
-      <div class="input-group">
-        <label for="senha">Senha</label>
-        <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
-      </div>
-
-      <button type="button" class="btn-entrar">Entrar no Tunify</button>
-    </form>
-
-    <div class="login-footer">
-      <a routerLink="/" class="link-voltar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        Voltar para a Home
-      </a>
     </div>
 
-  </div>
-
-</main>
+  </div> </main>
