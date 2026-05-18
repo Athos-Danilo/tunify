@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router'; 
 import { FormsModule } from '@angular/forms'; 
 import { LogoComponent } from '../../components/logo.component';
+import { AuthService } from '../../core/services/auth.service';
 
 interface TrackData {
   spotify_id: string;
@@ -44,7 +45,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   ];
 
   // 🚨 Injetamos o ChangeDetectorRef aqui
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private router: Router, 
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     const temaSalvo = localStorage.getItem('tunify_tema');
@@ -84,11 +89,54 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   entrarNoSistema() {
     this.mensagemErro = '';
-    if (!this.email || !this.senha) { this.mensagemErro = 'Preencha todos os campos, boy!'; return; }
+    
+    if (!this.email || !this.senha) { 
+      this.mensagemErro = 'Preencha todos os campos, boy!'; 
+      return; 
+    }
+
     this.carregando = true;
-    setTimeout(() => {
-      this.carregando = false;
-      this.mensagemErro = 'A API do backend ainda não está conectada kkkk!';
-    }, 1500);
+    
+    // 🚨 1. Monta o pacote de dados pro FastAPI
+    // CUIDADO: Se o seu Pydantic Model no Python estiver esperando "password" em vez de "senha", troque a chave aqui!
+    const dadosLogin = {
+      email: this.email,
+      senha: this.senha 
+    };
+
+    // 🚨 2. Chama o método que você criou no auth.service.ts
+    this.authService.loginLocal(dadosLogin).subscribe({
+      next: (resposta) => {
+        this.carregando = false;
+        console.log('Login efetuado com sucesso!', resposta);
+        
+        // 🚨 3. Usa a sua própria função pra guardar o passaporte no navegador!
+        // Confirme se o FastAPI está retornando "access_token" e "usuario" nesses mesmos nomes
+        const token = resposta.access_token || resposta.token; 
+        const usuario = resposta.usuario || { email: this.email };
+        
+        this.authService.salvarSessao(token, usuario);
+        
+        // 4. Redireciona o usuário para a Home ou Dashboard
+        this.router.navigate(['/dashboard']);
+      },
+      error: (erro) => {
+        this.carregando = false;
+        console.error('Deu erro na API:', erro);
+        
+        // 5. Tratamento de erros brabo
+        if (erro.status === 401 || erro.status === 404) {
+          this.mensagemErro = 'Eita! E-mail ou senha incorretos.';
+        } else if (erro.status === 0) {
+          this.mensagemErro = 'Backend desligado ou bloqueado por CORS! 🚨';
+        } else {
+          // Tenta pegar a mensagem de erro exata do FastAPI (detail)
+          this.mensagemErro = erro.error?.detail || 'Deu ruim no servidor. Tente novamente.';
+        }
+        
+        // Dá a marretada no Angular pra ele mostrar o erro na tela na mesma hora
+        this.cdr.detectChanges(); 
+      }
+    });
   }
 }

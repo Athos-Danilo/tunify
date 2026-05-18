@@ -9,48 +9,42 @@ import { ContatoComponent } from './pages/contato/contato.component';
 // O Porteiro e a Área VIP
 import { CallbackComponent } from './pages/callback/callback';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
-
-// 🚨 AQUI: Importação da nossa nova tela de configurações
 import { ConfiguracoesComponent } from './pages/configuracoes/configuracoes.component';
 
+// 🚨 IMPORTA O SEU GUARD AQUI (Verifique se o caminho da pasta está correto!)
+import { authGuard } from './core/guards/auth.guard'; 
+
 export const routes: Routes = [
+  // ÁREA PÚBLICA 
+  { path: '', component: HomeComponent },
+  { path: 'privacidade', component: PrivacidadeComponent },
+  { path: 'termos', component: TermosComponent },
+  { path: 'contato', component: ContatoComponent },
 
-  // ÁREA PÚBLICA (Qualquer um acessa)
-  { path: '', component: HomeComponent }, // O caminho vazio '/' abre a Landing Page
-
-  // Páginas do Rodapé
-  { path: 'privacidade', component: PrivacidadeComponent }, // '/privacidade' abre a política
-  { path: 'termos', component: TermosComponent }, // '/termos' abre os termos
-  { path: 'contato', component: ContatoComponent }, // '/contato' abre os contatos
-
-  // ---------------------------------------------------------
-  // 🔑 AUTENTICAÇÃO (A Ponte Invisível)
-  // ---------------------------------------------------------
-  
-  // '/callback' abre o Porteiro invisível que suga o token da URL
+  // AUTENTICAÇÃO
   { path: 'callback', component: CallbackComponent },
-
-  // ---------------------------------------------------------
-  // 🎧 ÁREA VIP (Logado com o Spotify)
-  // ---------------------------------------------------------
   
-  // '/dashboard' abre a tela oficial do Vibe Architect ( Área VIP)
-  { path: 'dashboard', component: DashboardComponent },
-  
-  // 🚨 AQUI: '/configuracoes' abre a nossa nova tela do Modo de Contenção
-  { path: 'configuracoes', component: ConfiguracoesComponent },
-
   { 
     path: 'login', 
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) 
   },
 
   // ---------------------------------------------------------
+  // 🎧 ÁREA VIP (Protegida pelo authGuard)
+  // ---------------------------------------------------------
+  { 
+    path: 'dashboard', 
+    component: DashboardComponent,
+    canActivate: [authGuard] // 🚨 TRANCA O DASHBOARD
+  },
+  { 
+    path: 'configuracoes', 
+    component: ConfiguracoesComponent,
+    canActivate: [authGuard] // 🚨 TRANCA AS CONFIGURAÇÕES
+  },
+
+  // ---------------------------------------------------------
   // 🚧 SEGURANÇA (O Wildcard) - SEMPRE POR ÚLTIMO!
   // ---------------------------------------------------------
-  
-  // Se o usuário digitar qualquer link que não exista, joga ele pra Home
   { path: '**', redirectTo: '' }
-
-
 ];
