@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SpotifyService } from '../../core/services/spotify.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PlayerService } from '../../core/services/player.service';
 
 import { HeaderComponent } from '../../components/header/header.component';
 import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.component';
@@ -52,6 +53,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private spotifyService = inject(SpotifyService);
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
+  private playerService = inject(PlayerService);
 
   ngOnInit() {
     // 🚨 1. Pega os dados do usuário da nossa gaveta nova do login!
@@ -59,12 +61,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     
     if (userInfoString) {
       const usuario = JSON.parse(userInfoString);
-      // Se não tiver display_name, usa o próprio email como nome
-      this.nomeUsuario = usuario.display_name || usuario.email; 
+      // Se não tiver display_name, usa o nome ou o próprio email
+      this.nomeUsuario = usuario.display_name || usuario.nome || usuario.email; 
       this.emailUsuario = usuario.email;
-    }
 
-    // 🚨 REMOVEMOS O LEÃO DE CHÁCARA DAQUI! O app.routes.ts vai fazer esse trabalho.
+      // 🚨 3. LIGANDO A CAIXINHA DE SOM!
+      // Ele tenta pegar o token do Spotify de dentro do objeto do usuário.
+      // (Adicionei um fallback para 'spotify_token' solto no localStorage caso o callback salve assim)
+      const tokenSpotify = usuario.spotify_token || localStorage.getItem('spotify_token');
+      
+      if (tokenSpotify) {
+        this.playerService.iniciarPlayer(tokenSpotify);
+      } else {
+        console.warn('⚠️ [AVISO] Token do Spotify não encontrado. O Player não vai ligar.');
+      }
+    }
 
     // Só dispara as requisições se a gente conseguiu o e-mail
     if (this.emailUsuario) {
