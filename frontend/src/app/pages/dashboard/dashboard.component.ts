@@ -10,7 +10,6 @@ import { MinutesListenedComponent } from '../../components/minutes-listened/minu
 import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.component';
 import { TopArtistasComponent } from '../../components/top-artistas/top-artistas.component';
 
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -38,7 +37,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   emailUsuario: string | null = '';
 
   minutosTotais: number = 0;
-
   modoEscuro = true;
 
   dadosDemograficos: any = {
@@ -56,46 +54,52 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
-    this.nomeUsuario = localStorage.getItem('usuario_nome');
-    this.emailUsuario = localStorage.getItem('usuario_email');
-
-    // Leão de chácara
-    if (!localStorage.getItem('spotify_token') || !this.emailUsuario) {
-      this.router.navigate(['/']);
-      return;
+    // 🚨 1. Pega os dados do usuário da nossa gaveta nova do login!
+    const userInfoString = localStorage.getItem('tunify_user_info');
+    
+    if (userInfoString) {
+      const usuario = JSON.parse(userInfoString);
+      // Se não tiver display_name, usa o próprio email como nome
+      this.nomeUsuario = usuario.display_name || usuario.email; 
+      this.emailUsuario = usuario.email;
     }
 
-    // Chamada 1: Resumo do Perfil (Spotify API)
-    this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
-      next: (resumoReal) => {
-        this.nomeUsuario = resumoReal.dono_da_conta;
-        this.dadosDemograficos = {
-          carregando: false,
-          foto_perfil: resumoReal.foto_perfil,
-          tipo_conta: resumoReal.tipo_conta,
-          total_playlists: resumoReal.total_playlists,
-          seguidores: resumoReal.seguidores,
-          seguindo: resumoReal.seguindo
-        };
-        this.cdr.detectChanges();
-      },
-      error: (erro) => {
-        console.error('[ERRO] Falha ao buscar perfil:', erro);
-        this.dadosDemograficos.carregando = false;
-        this.cdr.detectChanges();
-      }
-    });
+    // 🚨 REMOVEMOS O LEÃO DE CHÁCARA DAQUI! O app.routes.ts vai fazer esse trabalho.
 
-    // Chamada 2: Minutos Ouvidos (Nosso Backend / PostgreSQL)
-    this.dashboardService.obterMinutosOuvidos(this.emailUsuario).subscribe({
-      next: (res) => {
-        this.minutosTotais = res.total_minutos;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('[ERRO] Falha ao buscar minutos:', err);
-      }
-    });
+    // Só dispara as requisições se a gente conseguiu o e-mail
+    if (this.emailUsuario) {
+      // Chamada 1: Resumo do Perfil (Spotify API)
+      this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
+        next: (resumoReal) => {
+          this.nomeUsuario = resumoReal.dono_da_conta;
+          this.dadosDemograficos = {
+            carregando: false,
+            foto_perfil: resumoReal.foto_perfil,
+            tipo_conta: resumoReal.tipo_conta,
+            total_playlists: resumoReal.total_playlists,
+            seguidores: resumoReal.seguidores,
+            seguindo: resumoReal.seguindo
+          };
+          this.cdr.detectChanges();
+        },
+        error: (erro) => {
+          console.error('[ERRO] Falha ao buscar perfil:', erro);
+          this.dadosDemograficos.carregando = false;
+          this.cdr.detectChanges();
+        }
+      });
+
+      // Chamada 2: Minutos Ouvidos (Nosso Backend / PostgreSQL)
+      this.dashboardService.obterMinutosOuvidos(this.emailUsuario).subscribe({
+        next: (res) => {
+          this.minutosTotais = res.total_minutos;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('[ERRO] Falha ao buscar minutos:', err);
+        }
+      });
+    }
   }
 
   alternarTema() {
@@ -151,7 +155,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    // --- BOKEH PARTICLES (Cinematic Dust) ---
     const numParticles = Math.floor((width * height) / 12000);
 
     for (let i = 0; i < numParticles; i++) {
@@ -168,26 +171,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    // --- AMBIENT GLOW ORBS (Fluid Gradients) ---
     this.orbs = [
       {
         baseX: width * 0.7, baseY: height * 0.3,
         r: Math.max(width, height) * 0.45,
-        colorLight: '180, 210, 240', // Azul pastel (parecido com a paleta original)
+        colorLight: '180, 210, 240',
         colorDark: '0, 123, 255',
         speedX: 0.00015, speedY: 0.0002, phaseX: 0, phaseY: 1
       },
       {
         baseX: width * 0.3, baseY: height * 0.7,
         r: Math.max(width, height) * 0.5,
-        colorLight: '180, 230, 200', // Verde pastel sutil (mesmo tom de luz do azul)
+        colorLight: '180, 230, 200',
         colorDark: '29, 185, 84',
         speedX: 0.0002, speedY: 0.00015, phaseX: 2, phaseY: 3
       },
       {
         baseX: width * 0.5, baseY: height * 0.5,
         r: Math.max(width, height) * 0.6,
-        colorLight: '200, 205, 215', // Cinza sutil para balancear
+        colorLight: '200, 205, 215',
         colorDark: '138, 43, 226',
         speedX: 0.0001, speedY: 0.0001, phaseX: 4, phaseY: 5
       }
@@ -204,8 +206,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const isLight = !this.modoEscuro;
     const time = Date.now();
 
-    // --- RENDER ORBS (PREMIUM FLUID BACKGROUND) ---
-    // Usando multiply no claro para efeito de tinta aquarela realista
     this.ctx.globalCompositeOperation = isLight ? 'multiply' : 'screen';
 
     const mouseX = this.mouse.x !== -1000 ? this.mouse.x : width / 2;
@@ -220,7 +220,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       const grad = this.ctx.createRadialGradient(x, y, 0, x, y, orb.r);
       const color = isLight ? orb.colorLight : orb.colorDark;
 
-      // Opacidade alta (0.8) para as cores pastéis ganharem corpo no modo claro
       const baseOpacity = isLight ? 0.8 : 0.25;
       grad.addColorStop(0, `rgba(${color}, ${baseOpacity})`);
       grad.addColorStop(0.5, `rgba(${color}, ${baseOpacity * 0.6})`);
@@ -234,7 +233,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.ctx.globalCompositeOperation = 'source-over';
 
-    // --- RENDER BOKEH PARTICLES (DEPTH & DUST) ---
     const parallaxX = (mouseX - width / 2) * -0.05;
     const parallaxY = (mouseY - height / 2) * -0.05;
 
@@ -259,7 +257,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
 
       if (isLight) {
-        // Partículas bem vibrantes e com muita opacidade para ganharem vida
         const lightAlpha = Math.min(1, currentOpacity * 1.5 + 0.3);
         this.ctx.fillStyle = `rgba(2, 133, 255, ${lightAlpha})`;
       } else {

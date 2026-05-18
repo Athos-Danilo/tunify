@@ -43,10 +43,20 @@ export class TopMusicasComponent implements OnInit {
   }
 
   buscarDadosDoBackend() {
-    const emailLogado = localStorage.getItem('usuario_email'); 
+    // 🚨 1. Pega o pacote inteiro do usuário que salvamos no login
+    const userInfoString = localStorage.getItem('tunify_user_info'); 
+
+    if (!userInfoString) {
+      console.error('Nenhum usuário logado encontrado!');
+      return;
+    }
+
+    // 🚨 2. Transforma o texto de volta em objeto e pega o email
+    const usuario = JSON.parse(userInfoString);
+    const emailLogado = usuario.email;
 
     if (!emailLogado) {
-      console.error('Nenhum usuário logado encontrado!');
+      console.error('O objeto do usuário não tem um e-mail!');
       return;
     }
 
@@ -60,7 +70,6 @@ export class TopMusicasComponent implements OnInit {
           artista: item.artista,
           capa: item.capa_url,
           reproducoes: item.total_plays,
-          // Como o backend ainda não calcula histórico de subida/descida, colocamos 'nova' por enquanto
           tendencia: 'nova' 
         }));
         

@@ -1,0 +1,106 @@
+<main class="login-container" [ngClass]="{'tema-claro': !modoEscuro}">
+  <div class="bento-master-wrapper animacao-surgir">
+
+    <div class="login-left">
+      <div class="login-card"> 
+        <div class="login-header">
+          <app-logo tamanho="grande" [animado]="false"></app-logo>
+        </div>
+        <div class="roleta-container-login">
+          <span class="texto-fixo">Decodificando a sua</span>
+          <div class="roleta-palavras">
+            <span class="palavra-destaque azul">Vibe</span>
+            <span class="palavra-destaque verde">Frequência</span>
+            <span class="palavra-destaque roxo">Playlist</span>
+            <span class="palavra-destaque azul">Vibe</span>
+          </div>
+        </div>
+        <form class="login-form" (ngSubmit)="entrarNoSistema()">
+          <div class="alerta-erro" *ngIf="mensagemErro">{{ mensagemErro }}</div>
+          <div class="input-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <div class="input-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" [(ngModel)]="senha" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-entrar" [disabled]="carregando">
+            {{ carregando ? 'Autenticando...' : 'Entrar no Tunify' }}
+          </button>
+        </form>
+        <div class="login-footer">
+          <a routerLink="/" class="link-voltar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Voltar para a Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <div class="painel-extracao-dados">
+        
+        <div class="emissor-dados">
+          <div class="caixa-som">
+            <div class="cone-grande"></div>
+            <div class="cone-pequeno"></div>
+            <div class="malha-conic"></div>
+          </div>
+          
+          <ng-container *ngIf="mostrarScanner">
+            <div class="nota-viajante nv1">♪</div>
+            <div class="nota-viajante nv2">♫</div>
+            <div class="nota-viajante nv3">♬</div>
+            <div class="nota-viajante nv4">♪</div>
+            <div class="nota-viajante nv5">♫</div>
+            <div class="nota-viajante nv6">♬</div>
+          </ng-container>
+        </div>
+
+        <div class="portal-energia"></div>
+
+        <div class="area-pilulas">
+          <div *ngIf="mostrarScanner && musicaAtual" class="pilulas-container">
+            
+            <div class="pilula p1 cor-azul">
+              <span class="label">Faixa:</span>
+              <span class="valor">{{ musicaAtual.name }}</span>
+            </div>
+            
+            <div class="pilula p2 cor-verde">
+              <span class="label">Artista:</span>
+              <span class="valor">{{ musicaAtual.artist_name }}</span>
+            </div>
+            
+            <div class="pilula p3 cor-laranja">
+              <span class="label">Popularidade:</span>
+              <span class="valor">{{ musicaAtual.popularity }}%</span>
+            </div>
+            
+            <div class="pilula p4 cor-roxo">
+              <span class="label">Energia:</span>
+              <span class="valor">{{ (musicaAtual.audio_features.energy * 100) | number:'1.0-0' }}%</span>
+            </div>
+            
+            <div class="pilula p5 cor-rosa">
+              <span class="label">BPM:</span>
+              <span class="valor">{{ musicaAtual.audio_features.tempo | number:'1.0-0' }}</span>
+            </div>
+            
+            <div class="pilula p6 cor-ciano">
+              <span class="label">Gênero:</span>
+              <span class="valor">{{ musicaAtual.genres[0] || 'Geral' }}</span>
+            </div>
+
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+  </div> 
+</main>

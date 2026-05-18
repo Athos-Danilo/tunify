@@ -1,0 +1,201 @@
+/*--- Importa as variáveis e mixins globais ---*/
+@import '../../../styles.scss';
+
+/*---------------------------------------- CONTAINER PRINCIPAL E VINIL ----------------------------------------*/
+
+.login-container {
+  width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center;
+  padding: 1.5rem; box-sizing: border-box; background-color: var(--azul-muito-escuro-dk); position: relative; overflow: hidden;
+
+  &::before {
+    content: ''; position: absolute; 
+    /* 🚨 AUMENTADO PARA 300% PARA NUNCA MOSTRAR AS BORDAS GIRANDO */
+    top: -100%; left: -100%; width: 300%; height: 300%;
+    background-image: repeating-radial-gradient(circle at center, transparent 0, transparent 8px, rgba(255, 255, 255, 0.02) 9px, rgba(255, 255, 255, 0.02) 10px),
+      conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(2, 133, 255, 0.08) 45deg, transparent 90deg, transparent 180deg, rgba(255, 255, 255, 0.03) 225deg, transparent 270deg);
+    z-index: 0; pointer-events: none; animation: girarVinilBg 25s linear infinite;
+  }
+  &::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(2, 133, 255, 0.08) 0%, transparent 70%);
+    transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
+  }
+}
+@keyframes girarVinilBg { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/*---------------------------------------- A CÁPSULA MESTRE ----------------------------------------*/
+
+.bento-master-wrapper {
+  display: flex; flex-direction: column; width: 100%; max-width: 420px;
+  background: rgba(11, 17, 32, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 24px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  z-index: 5; margin: 0 auto;
+
+  @include tela-grande { flex-direction: row; max-width: 1000px; padding: 3.5rem; gap: 4rem; }
+}
+
+.login-left { width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; @include tela-grande { width: 400px; } }
+.login-right { display: none; @include tela-grande { width: auto; display: flex; justify-content: center; align-items: center; z-index: 5; } }
+
+/*---------------------------------------- CARD ESQUERDO E ROLETA ----------------------------------------*/
+
+.login-card { width: 100%; padding: 2.5rem 2rem; box-sizing: border-box; @include tela-grande { padding: 0; } }
+.login-header { display: flex; justify-content: center; margin-bottom: 2rem; }
+.roleta-container-login { display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; text-align: center; }
+.texto-fixo { font-family: var(--fonte-principal, sans-serif); font-size: 0.95rem; font-weight: 300; color: var(--cinza-claro-dk); margin-bottom: 2px; }
+.roleta-container-login .roleta-palavras { height: 2.8rem; overflow: hidden; display: flex; flex-direction: column; }
+.roleta-container-login .palavra-destaque {
+  font-family: var(--fonte-especial, sans-serif); font-size: 2.4rem; font-weight: 800; font-style: italic; line-height: 2.8rem; height: 2.8rem;
+  animation: girarRoletaMini 8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+.palavra-destaque.azul { color: var(--azul-dk); } .palavra-destaque.verde { color: var(--verde-spotify-dk); } .palavra-destaque.roxo { color: #d500f9; }
+@keyframes girarRoletaMini { 0%, 25% { transform: translateY(0); } 33%, 58% { transform: translateY(-2.8rem); } 66%, 91% { transform: translateY(-5.6rem); } 100% { transform: translateY(-8.4rem); } }
+
+/*---------------------------------------- FORMULÁRIO ----------------------------------------*/
+
+.login-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.input-group {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  label { font-family: var(--fonte-principal, sans-serif); font-size: 0.85rem; font-weight: 600; color: var(--branco-azulado-dk); }
+  input {
+    width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+    font-family: var(--fonte-principal, sans-serif); font-size: 1rem; color: var(--branco-dk); box-sizing: border-box; transition: all 0.3s ease; outline: none;
+    &::placeholder { color: rgba(255, 255, 255, 0.2); }
+    &:focus { background: rgba(2, 133, 255, 0.05); border-color: var(--azul-dk); box-shadow: 0 0 0 4px rgba(2, 133, 255, 0.15); }
+  }
+}
+.alerta-erro { background-color: rgba(255, 95, 86, 0.15); border: 1px solid rgba(255, 95, 86, 0.3); color: #ff5f56; padding: 12px; border-radius: 8px; font-family: var(--fonte-principal); font-size: 0.85rem; font-weight: 500; text-align: center; }
+.btn-entrar {
+  width: 100%; margin-top: 1rem; padding: 16px; background-color: var(--azul-dk); color: var(--branco-dk); font-family: var(--fonte-principal); font-size: 1.05rem; font-weight: 700; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(2, 133, 255, 0.3);
+  &:hover { background-color: #0074e8; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 133, 255, 0.4); }
+}
+.login-footer { margin-top: 2rem; text-align: center; }
+.link-voltar { display: inline-flex; align-items: center; gap: 8px; font-family: var(--fonte-principal); font-size: 0.9rem; font-weight: 500; color: var(--cinza-claro-dk); text-decoration: none; transition: all 0.3s ease; svg { width: 18px; height: 18px; transition: transform 0.3s ease; } &:hover { color: var(--branco-dk); svg { transform: translateX(-4px); } } }
+
+/*---------------------------------------- O PORTAL DE EXTRAÇÃO (LADO DIREITO) ----------------------------------------*/
+
+.painel-extracao-dados {
+  width: 500px; display: flex; flex-direction: row; align-items: center; gap: 6rem; position: relative;
+}
+
+/* ================= Emissor de Dados (Caixa de Som) ================= */
+.emissor-dados { position: relative; width: 80px; height: 200px; display: flex; justify-content: center; align-items: center; z-index: 5; }
+
+.caixa-som {
+  width: 80px; height: 120px; background: #111; border-radius: 12px; border: 2px solid #333;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+  padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+  &::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(45deg, rgba(50,50,50,0.1) 0px, rgba(50,50,50,0.1) 1px, transparent 1px, transparent 4px);
+    pointer-events: none; z-index: 1;
+  }
+  .cone-grande, .cone-pequeno {
+    border-radius: 50%; border: 2px solid #555; background: radial-gradient(circle, #222 30%, #111 60%);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8); position: relative; z-index: 2;
+  }
+  .cone-grande { width: 50px; height: 50px; } .cone-pequeno { width: 30px; height: 30px; }
+}
+
+/* ================= NOTAS VIAJANTES ================= */
+.nota-viajante {
+  position: absolute; font-family: Arial, sans-serif; font-weight: bold; opacity: 0; z-index: 4; left: 60px; 
+  animation: driftNotaParaPortal 2s linear forwards; 
+}
+.nv1 { animation-delay: 0.0s; font-size: 1.2rem; color: #ff3333; top: 15%; text-shadow: 0 0 8px #ff3333; }
+.nv2 { animation-delay: 0.5s; font-size: 1.8rem; color: #ff9933; top: 35%; text-shadow: 0 0 8px #ff9933; }
+.nv3 { animation-delay: 1.0s; font-size: 1.5rem; color: #ffff33; top: 55%; text-shadow: 0 0 8px #ffff33; }
+.nv4 { animation-delay: 1.5s; font-size: 1.2rem; color: #33ff33; top: 75%; text-shadow: 0 0 8px #33ff33; }
+.nv5 { animation-delay: 2.0s; font-size: 1.8rem; color: #33ffff; top: 25%; text-shadow: 0 0 8px #33ffff; }
+.nv6 { animation-delay: 2.5s; font-size: 1.5rem; color: #d500f9; top: 65%; text-shadow: 0 0 8px #d500f9; }
+
+@keyframes driftNotaParaPortal {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  85% { transform: translate(140px, 5px) rotate(15deg); opacity: 1; }
+  95% { transform: translate(150px, 0) rotate(10deg); opacity: 0; }
+  100% { transform: translate(150px, 0) rotate(0deg); opacity: 0; } 
+}
+
+/* ================= O Portal ================= */
+.portal-energia {
+  width: 4px; height: 280px; border-radius: 4px;
+  background: linear-gradient(to bottom, transparent, var(--azul-dk), var(--verde-spotify-dk), transparent);
+  box-shadow: 0 0 15px var(--azul-dk), 0 0 30px rgba(2, 133, 255, 0.4); z-index: 10;
+  animation: pulsarPortal 2s ease-in-out infinite alternate;
+}
+@keyframes pulsarPortal { 0% { opacity: 0.6; filter: blur(1px); } 100% { opacity: 1; filter: blur(0px); box-shadow: 0 0 25px var(--azul-dk), 0 0 50px rgba(2, 133, 255, 0.6); } }
+
+/* ================= A Área das Pílulas ================= */
+.area-pilulas { flex: 1; min-height: 280px; display: flex; align-items: center; justify-content: flex-start; padding-bottom: 10px; }
+.pilulas-container { display: flex; flex-direction: column; gap: 0.8rem; width: 220px; }
+
+.pilula {
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 50px;
+  font-family: var(--fonte-principal, sans-serif); font-size: 0.85rem; 
+  background: rgba(255,255,255,0.05); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); color: var(--branco-dk);
+  white-space: nowrap; overflow: hidden;
+  
+  opacity: 0; transform: translateX(-50px);
+  animation: cicloDeVidaPilula 6.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.pilula .label { color: rgba(255,255,255,0.6); text-transform: uppercase; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.5px; }
+.pilula .valor { font-weight: 500; color: #fff; }
+
+.p1 { animation-delay: 2.0s; } 
+.p2 { animation-delay: 2.5s; } 
+.p3 { animation-delay: 3.0s; } 
+.p4 { animation-delay: 3.5s; } 
+.p5 { animation-delay: 4.0s; } 
+.p6 { animation-delay: 4.5s; } 
+
+.cor-azul { --cor-bg: rgba(2, 133, 255, 0.15); --cor-borda: rgba(2, 133, 255, 0.5); }
+.cor-verde { --cor-bg: rgba(29, 185, 84, 0.15); --cor-borda: rgba(29, 185, 84, 0.5); }
+.cor-laranja { --cor-bg: rgba(255, 153, 51, 0.15); --cor-borda: rgba(255, 153, 51, 0.5); }
+.cor-roxo { --cor-bg: rgba(213, 0, 249, 0.15); --cor-borda: rgba(213, 0, 249, 0.5); }
+.cor-rosa { --cor-bg: rgba(255, 94, 98, 0.15); --cor-borda: rgba(255, 94, 98, 0.5); }
+.cor-ciano { --cor-bg: rgba(0, 250, 154, 0.15); --cor-borda: rgba(0, 250, 154, 0.5); }
+
+@keyframes cicloDeVidaPilula {
+  0% { opacity: 0; transform: translateX(-60px) scale(0.9); background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+  10%, 60% { opacity: 1; transform: translateX(0px) scale(1); background: var(--cor-bg); border-color: var(--cor-borda); }
+  /* 🚨 UNIFICAÇÃO COM O VERDE SPOTIFY! */
+  70%, 88% { opacity: 1; transform: translateX(0px) scale(1); background: var(--verde-spotify-dk); border-color: var(--verde-spotify-dk); box-shadow: 0 5px 15px rgba(29, 185, 84, 0.3); } 
+  95% { opacity: 0.5; transform: translateX(100px) scale(0.9); }
+  100% { opacity: 0; transform: translateX(150px) scale(0.8); }
+}
+
+/*---------------------------------------- ANIMAÇÕES DE ENTRADA ----------------------------------------*/
+.animacao-surgir { animation: surgirSuave 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; opacity: 0; }
+@keyframes surgirSuave { 0% { opacity: 0; transform: translateY(30px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+
+/*==========================================================================
+   MODO CLARO (LIGHT THEME)
+  ==========================================================================*/
+
+.tema-claro.login-container {
+  background-color: var(--branco-escuro-lt);
+  &::before {
+    /* 🚨 300% NO TEMA CLARO TAMBÉM */
+    top: -100%; left: -100%; width: 300%; height: 300%;
+    background-image: repeating-radial-gradient(circle at center, transparent 0, transparent 8px, rgba(0, 0, 0, 0.1) 9px, rgba(0, 0, 0, 0.1) 10px),
+      conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(2, 133, 255, 0.05) 45deg, transparent 90deg, transparent 180deg, rgba(0, 0, 0, 0.04) 225deg, transparent 270deg);
+  }
+  &::after { background: radial-gradient(circle, rgba(2, 133, 255, 0.05) 0%, transparent 60%); }
+}
+
+.tema-claro .bento-master-wrapper { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); }
+.tema-claro .login-card { background: transparent; border: none; box-shadow: none; }
+.tema-claro .texto-fixo { color: var(--cinza-escuro-lt); }
+.tema-claro .input-group label { color: var(--preto-lt); }
+.tema-claro .input-group input { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 0, 0, 0.1); color: var(--preto-lt); &::placeholder { color: rgba(0, 0, 0, 0.3); } &:focus { background: rgba(2, 133, 255, 0.05); border-color: var(--azul-lt); box-shadow: 0 0 0 4px rgba(2, 133, 255, 0.15); } }
+.tema-claro .btn-entrar { box-shadow: 0 4px 15px rgba(2, 133, 255, 0.2); &:hover { box-shadow: 0 6px 20px rgba(2, 133, 255, 0.35); } }
+.tema-claro .link-voltar { color: var(--cinza-escuro-lt); &:hover { color: var(--azul-lt); } }
+
+.tema-claro .caixa-som { background: #eee; border-color: #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.1); &::before { background: repeating-linear-gradient(45deg, rgba(200,200,200,0.1) 0px, rgba(200,200,200,0.1) 1px, transparent 1px, transparent 4px); } .cone-grande, .cone-pequeno { border-color: #999; background: radial-gradient(circle, #f0f0f0 30%, #e0e0e0 60%); box-shadow: inset 0 0 10px rgba(0,0,0,0.1); } }
+.tema-claro .portal-energia { box-shadow: 0 0 15px var(--azul-lt), 0 0 30px rgba(2, 133, 255, 0.3); }
+
+.tema-claro .pilula { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); color: var(--preto-lt); }
+.tema-claro .pilula .label { color: var(--cinza-escuro-lt); }
+.tema-claro .pilula .valor { color: var(--preto-lt); }

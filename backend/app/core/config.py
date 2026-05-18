@@ -26,6 +26,9 @@ class Settings:
     SPOTIFY_CLIENT_SECRET: str = os.getenv("SPOTIFY_CLIENT_SECRET")
     SPOTIFY_REDIRECT_URI: str = os.getenv("SPOTIFY_REDIRECT_URI")
     
+    # Chave de acesso da API do Genius.
+    GENIUS_ACCESS_TOKEN: str = os.getenv("GENIUS_ACCESS_TOKEN")
+    
     # Chave de conexão com o Banco de Dados PostgreSQL.
     DATABASE_URL: str = os.getenv("DATABASE_URL")
 
@@ -37,6 +40,11 @@ class Settings:
         if not self.SPOTIFY_CLIENT_ID:
             print("[ERRO CRÍTICO] SPOTIFY_CLIENT_ID não encontrado no arquivo .env!")
             raise ValueError("ERRO: O servidor não pode ligar sem a chave do Spotify.")
+            
+        # Se a chave do Genius estiver vazia, avisa no terminal.
+        if not self.GENIUS_ACCESS_TOKEN:
+            print("[ERRO CRÍTICO] GENIUS_ACCESS_TOKEN não encontrado no arquivo .env!")
+            raise ValueError("ERRO: O servidor não pode ligar sem a chave do Genius.")
             
         # Se a chave do banco estiver vazia, trava tudo e avisa no terminal.
         if not self.DATABASE_URL:
