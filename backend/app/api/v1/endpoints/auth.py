@@ -64,7 +64,14 @@ def login_spotify():
             "user-library-read",
             "streaming",
             "user-follow-read",
-            "user-read-recently-played"
+            "user-read-recently-played",
+            "user-read-playback-state",
+            "user-modify-playback-state",
+            "user-library-modify",
+            "user-follow-modify",
+            "user-read-currently-playing",
+            "user-read-playback-position",
+            "ugc-image-upload"
         ]
         
         # Parâmetros obrigatórios exigidos pela documentação do Spotify.
