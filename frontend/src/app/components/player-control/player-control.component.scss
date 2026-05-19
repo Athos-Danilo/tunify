@@ -1,180 +1,213 @@
+@use '../../../assets/mixins' as *;
+
 .tunify-player {
+  // ==========================================
+  // 📱 MODO MOBILE (Padrão - Mobile First)
+  // ==========================================
   position: fixed;
-  bottom: 20px;
+  // 🚨 A MÁGICA DO POSICIONAMENTO: Fica exatamente acima do seu nav-bottom
+  bottom: 95px; 
   left: 50%;
   transform: translateX(-50%);
-  width: 95%;
-  max-width: 1400px;
-  height: 90px;
+  width: 92%;
+  height: 60px; // Altura compacta
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  
-  // Fundo escuro azulado elegante da sua referência
-  background: #0a0e17; 
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 15px;
+  overflow: hidden; // Impede que a barrinha de progresso vaze nas bordas arredondadas
+
+  // 🥂 GLASSMORPHISM (Destaque Camaleão pra não sumir no scroll)
+  background: linear-gradient(to bottom, rgba(11, 17, 32, 0.95) 20%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  z-index: 1000;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 9998; // Fica 1 abaixo do menu do celular (9999)
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+
+  // Tema Claro Mobile
+  :host-context(.tema-claro) & {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  // 🚨 BARRA DE PROGRESSO DO CELULAR (Fininha no rodapé)
+  .mobile-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+
+    :host-context(.tema-claro) & { background: rgba(0, 0, 0, 0.1); }
+
+    .fill {
+      height: 100%;
+      background: var(--verde-spotify-dk, #1DB954);
+      transition: width 0.1s linear;
+    }
+  }
+
+  // Classe matadora: some com o que não precisamos no celular
+  .desktop-only {
+    display: none !important;
+  }
 
   .track-info {
     display: flex;
     align-items: center;
-    gap: 15px;
-    width: 30%;
+    gap: 12px;
+    width: 75%; // Ocupa a maior parte no mobile
 
     .album-art {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
       object-fit: cover;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     .details {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      h4 { margin: 0; font-size: 15px; color: #fff; font-weight: 600; }
-      p { margin: 0; font-size: 13px; color: #a0aec0; }
+      gap: 2px;
+      overflow: hidden; // Prepara pro letreiro
+
+      h4 {
+        margin: 0; font-size: 13px; color: var(--branco-dk, #fff); font-weight: 600;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); }
+      }
+
+      .sub-details {
+        display: flex; align-items: center; gap: 5px;
+        
+        .mini-device { font-size: 10px; color: var(--verde-spotify-dk, #1DB954); }
+
+        p {
+          margin: 0; font-size: 11px; color: var(--cinza-claro-dk, #a0aec0);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+        }
+      }
     }
 
     .add-icon {
-      color: #1DB954; // Verde Spotify
-      font-size: 22px;
-      margin-left: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      &:hover { transform: scale(1.1); }
+      color: var(--cinza-claro-dk, #a0aec0); font-size: 18px; margin-left: 5px; cursor: pointer;
+      :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
     }
   }
 
   .controls-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    width: 40%;
-
+    width: auto;
     .buttons {
-      display: flex;
-      align-items: center;
-      gap: 25px;
-
-      i {
-        font-size: 18px;
-        color: #a0aec0;
-        cursor: pointer;
-        transition: 0.2s;
-        &:hover { color: #fff; }
-      }
-
-      // O BOTÃO DE PLAY QUE ESTAVA GIGANTE E BRANCO
       .play-btn {
-        width: 42px;
-        height: 42px;
-        background: #1DB954; // Verde oficial
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-        box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
+        background: transparent; // No celular não tem bola verde!
+        width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
+        color: var(--branco-dk, #fff);
+        :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); }
 
-        i {
-          color: #000 !important; // Ícone preto dentro do botão verde
-          font-size: 18px;
-          margin-left: 2px; // Pequeno ajuste pra centralizar o Play visualmente
-        }
-        
-        .fa-pause { margin-left: 0; } // O pause não precisa do ajuste
-
-        &:hover {
-          transform: scale(1.05);
-          background: #1ed760; // Verde mais claro no hover
-        }
+        i { font-size: 20px; margin: 0; }
+        &:hover { transform: scale(1.1); }
       }
-    }
-
-    .progress-container {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        .time { font-size: 12px; color: #a0aec0; width: 35px; text-align: center; font-variant-numeric: tabular-nums; }
-        
-        .progress-bar {
-            flex: 1;
-            height: 6px;
-            background: #2a2d36; // Fundo cinza da barra
-            border-radius: 3px;
-            position: relative;
-            cursor: pointer;
-
-            .fill {
-                height: 100%;
-                // DEGRADÊ LINDO DA SUA REFERÊNCIA (Azul pra Verde)
-                background: linear-gradient(90deg, #007bff, #1DB954);
-                border-radius: 3px;
-                transition: width 0.1s linear;
-                position: relative;
-
-                // A bolinha branca no final da barra (aparece no hover da barra)
-                &::after {
-                    content: '';
-                    position: absolute;
-                    right: -4px;
-                    top: 50%;
-                    transform: translateY(-50%) scale(0);
-                    width: 12px;
-                    height: 12px;
-                    background: #fff;
-                    border-radius: 50%;
-                    transition: transform 0.1s;
-                }
-            }
-
-            &:hover .fill::after {
-                transform: translateY(-50%) scale(1);
-            }
-        }
     }
   }
 
-  .volume-actions {
-    width: 30%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 15px;
+  // ==========================================
+  // 🖥️ MODO DESKTOP E TABLET (Telas Maiores)
+  // ==========================================
+  @include tela-media {
+    bottom: 0; // Cola no fundo da tela
+    width: 100%;
+    max-width: none; // Ocupa a tela toda horizontalmente
+    height: 90px;
+    border-radius: 0; // Perde as bordas redondas
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0 20px;
     
-    i {
-      color: #a0aec0;
-      font-size: 16px;
-      cursor: pointer;
-      &:hover { color: #fff; }
+    // Fundo com efeito de vidro um pouco diferente do celular
+    background: rgba(11, 17, 32, 0.4); 
+    backdrop-filter: blur(16px); 
+    -webkit-backdrop-filter: blur(16px);
+
+    :host-context(.tema-claro) & {
+      background: var(--branco-lt, #f8fafc);
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
 
-    .volume-bar {
-      width: 80px;
-      height: 6px;
-      background: #2a2d36;
-      border-radius: 3px;
-      cursor: pointer;
+    // Inverte a lógica de exibição
+    .mobile-progress-bar { display: none; }
+    .desktop-only { display: flex !important; }
 
-      .volume-fill {
-        width: 50%;
-        height: 100%;
-        background: #a0aec0;
-        border-radius: 3px;
+    .track-info {
+      width: 30%;
+      .album-art { width: 60px; height: 60px; border-radius: 8px; }
+      .details {
+        h4 { font-size: 15px; }
+        .sub-details .mini-device { display: none; } // Some o ícone verde de device
+        .sub-details p { font-size: 13px; }
       }
-      
-      &:hover .volume-fill {
-        background: #1DB954;
+      .add-icon { color: var(--verde-spotify-dk, #1DB954); font-size: 22px; }
+    }
+
+    .controls-center {
+      display: flex; flex-direction: column; align-items: center; gap: 12px; width: 40%;
+
+      .buttons {
+        display: flex; align-items: center; gap: 25px;
+
+        i {
+          font-size: 18px; color: var(--cinza-claro-dk, #a0aec0); cursor: pointer; transition: 0.2s;
+          &:hover { color: var(--branco-dk, #fff); }
+          :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); &:hover{ color: var(--preto-lt, #0f172a); } }
+        }
+
+        // A BOLA VERDE VOLTA PRO PC
+        .play-btn {
+          width: 42px; height: 42px; background: var(--verde-spotify-dk, #1DB954); border-radius: 50%;
+          box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3); color: #000;
+          :host-context(.tema-claro) & { color: #000; }
+          i { font-size: 18px; margin-left: 2px; }
+          .fa-pause { margin-left: 0; }
+          &:hover { transform: scale(1.05); background: #1ed760; }
+        }
+      }
+
+      .progress-container {
+        width: 100%; display: flex; align-items: center; gap: 10px;
+        .time { font-size: 12px; color: var(--cinza-claro-dk, #a0aec0); width: 35px; text-align: center; font-variant-numeric: tabular-nums; }
+        
+        .progress-bar {
+          flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; cursor: pointer;
+          :host-context(.tema-claro) & { background: rgba(0,0,0,0.1); }
+
+          .fill {
+            height: 100%; background: linear-gradient(90deg, var(--cor-azul, #007bff), var(--verde-spotify-dk, #1DB954)); border-radius: 3px; transition: width 0.1s linear; position: relative;
+            &::after { content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%) scale(0); width: 12px; height: 12px; background: #fff; border-radius: 50%; transition: transform 0.1s; }
+          }
+          &:hover .fill::after { transform: translateY(-50%) scale(1); }
+        }
       }
     }
+
+    .volume-actions {
+      width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;
+      i { color: var(--cinza-claro-dk, #a0aec0); font-size: 16px; cursor: pointer; &:hover { color: var(--branco-dk, #fff); } }
+      .volume-bar {
+        width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer;
+        .volume-fill { width: 50%; height: 100%; background: var(--cinza-claro-dk, #a0aec0); border-radius: 3px; }
+        &:hover .volume-fill { background: var(--verde-spotify-dk, #1DB954); }
+      }
+    }
+  }
+
+  @include tela-grande {
+    // Fundo opaco e sem vidro no PC
+    background: var(--azul-muito-escuro-dk, #0a0e17);
+    backdrop-filter: none; 
+    -webkit-backdrop-filter: none;
   }
 }

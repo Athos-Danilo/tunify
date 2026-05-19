@@ -1,27 +1,34 @@
 <div class="tunify-player">
+    <div class="mobile-progress-bar">
+        <div class="fill" [style.width.%]="progress"></div>
+    </div>
+
     <div class="track-info">
         <img [src]="albumCover" class="album-art" alt="Capa do Álbum">
         <div class="details">
             <h4>{{ trackName }}</h4>
-            <p>{{ artistName }}</p>
+            <div class="sub-details">
+                <i class="fa-solid fa-computer mini-device"></i>
+                <p>{{ artistName }}</p>
+            </div>
         </div>
-        <i class="fa-regular fa-square-plus add-icon"></i>
+        <i class="fa-regular fa-heart add-icon"></i>
     </div>
 
     <div class="controls-center">
         <div class="buttons">
-            <i class="fa-solid fa-shuffle"></i>
-            <i class="fa-solid fa-backward-step" (click)="previous()"></i>
+            <i class="fa-solid fa-shuffle desktop-only"></i>
+            <i class="fa-solid fa-backward-step desktop-only" (click)="previous()"></i>
             
             <div class="play-btn" (click)="togglePlay()">
                 <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
             </div>
 
-            <i class="fa-solid fa-forward-step" (click)="next()"></i>
-            <i class="fa-solid fa-repeat"></i>
+            <i class="fa-solid fa-forward-step desktop-only" (click)="next()"></i>
+            <i class="fa-solid fa-repeat desktop-only"></i>
         </div>
 
-        <div class="progress-container">
+        <div class="progress-container desktop-only">
             <span class="time">{{ currentTime }}</span>
             <div class="progress-bar">
                 <div class="fill" [style.width.%]="progress"></div>
@@ -30,8 +37,12 @@
         </div>
     </div>
 
-    <div class="volume-actions">
-        <i class="fa-solid fa-music"></i> <i class="fa-solid fa-list-ul"></i> <i class="fa-solid fa-computer"></i> <i class="fa-solid fa-volume-high"></i> <div class="volume-bar">
+    <div class="volume-actions desktop-only">
+        <i class="fa-solid fa-music"></i> 
+        <i class="fa-solid fa-list-ul"></i> 
+        <i class="fa-solid fa-computer"></i> 
+        <i class="fa-solid fa-volume-high"></i> 
+        <div class="volume-bar">
             <div class="volume-fill"></div>
         </div>
     </div>
