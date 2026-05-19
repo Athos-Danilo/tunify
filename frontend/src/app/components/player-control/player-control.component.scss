@@ -9,7 +9,7 @@
   bottom: 95px; 
   left: 50%;
   transform: translateX(-50%);
-  width: 92%;
+  width: 76%;
   height: 60px; // Altura compacta
   display: flex;
   align-items: center;
@@ -17,8 +17,8 @@
   padding: 0 15px;
   overflow: hidden; // Impede que a barrinha de progresso vaze nas bordas arredondadas
 
-  // 🥂 GLASSMORPHISM (Destaque Camaleão pra não sumir no scroll)
-  background: linear-gradient(to bottom, rgba(11, 17, 32, 0.95) 20%, transparent);
+  // 🚨 Mistura a cor do álbum (esquerda) com o azul original 0.95 (direita)
+  background: linear-gradient(90deg, rgba(var(--album-color), 0.25) 0%, rgba(11, 17, 32, 0.85) 60%, rgba(11, 17, 32, 0.95) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -28,7 +28,7 @@
 
   // Tema Claro Mobile
   :host-context(.tema-claro) & {
-    background: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.15) 0%, rgba(255, 255, 255, 0.85) 60%, rgba(255, 255, 255, 0.95) 100%);
     border-color: rgba(0, 0, 0, 0.08);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
@@ -46,7 +46,7 @@
 
     .fill {
       height: 100%;
-      background: var(--verde-spotify-dk, #1DB954);
+      background: linear-gradient(90deg, var(--cor-azul, #007bff), var(--verde-spotify-dk, #1DB954));
       transition: width 0.1s linear;
     }
   }
@@ -129,12 +129,12 @@
     padding: 0 20px;
     
     // Fundo com efeito de vidro um pouco diferente do celular
-    background: rgba(11, 17, 32, 0.4); 
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.2) 0%, rgba(11, 17, 32, 0.4) 50%, rgba(11, 17, 32, 0.6) 100%);
     backdrop-filter: blur(16px); 
     -webkit-backdrop-filter: blur(16px);
 
     :host-context(.tema-claro) & {
-      background: var(--branco-lt, #f8fafc);
+      background: linear-gradient(90deg, rgba(var(--album-color), 0.1) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.9) 100%);
       border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
 
@@ -186,6 +186,7 @@
 
           .fill {
             height: 100%; background: linear-gradient(90deg, var(--cor-azul, #007bff), var(--verde-spotify-dk, #1DB954)); border-radius: 3px; transition: width 0.1s linear; position: relative;
+
             &::after { content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%) scale(0); width: 12px; height: 12px; background: #fff; border-radius: 50%; transition: transform 0.1s; }
           }
           &:hover .fill::after { transform: translateY(-50%) scale(1); }
@@ -206,7 +207,7 @@
 
   @include tela-grande {
     // Fundo opaco e sem vidro no PC
-    background: var(--azul-muito-escuro-dk, #0a0e17);
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.15) 0%, var(--azul-muito-escuro-dk, #0a0e17) 60%);
     backdrop-filter: none; 
     -webkit-backdrop-filter: none;
   }
