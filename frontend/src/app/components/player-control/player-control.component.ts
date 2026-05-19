@@ -31,11 +31,30 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
 
   albumColorRGB: string = '11, 17, 32'; 
 
+  // 🚨 Variáveis para o Swipe (Arrastar no celular)
+  private touchStartX: number = 0;
+  private touchEndX: number = 0;
+  private readonly SWIPE_THRESHOLD: number = 50; // Distância mínima (em pixels) para considerar um arrasto
+  
+  // 🚨 O que o HTML vai ler pra mover as coisas:
+  swipeTransform: string = 'translateX(0px)';
+  swipeTransition: string = 'transform 0.3s ease, opacity 0.3s ease';
+  swipeOpacity: number = 1;
+
+  // 🚨 Guarda as músicas que vêm antes e depois na fila
+  private nextTrackCache: any = null;
+  private prevTrackCache: any = null;
+
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
       if (!state) return;
 
       const track = state.track_window.current_track;
+
+      // 🚨 PEGANDO A FILA AQUI! (Salva a primeira música da lista de próximas e anteriores)
+      this.nextTrackCache = state.track_window.next_tracks.length > 0 ? state.track_window.next_tracks[0] : null;
+      this.prevTrackCache = state.track_window.previous_tracks.length > 0 ? state.track_window.previous_tracks[0] : null;
+
       const novaCapa = track.album.images[0].url;
 
       if (this.albumCover !== novaCapa) {
@@ -133,5 +152,89 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     const min = Math.floor(ms / 60000);
     const sec = ((ms % 60000) / 1000).toFixed(0);
     return min + ":" + (Number(sec) < 10 ? '0' : '') + sec;
+  }
+
+  // ==========================================
+  // 👆 MÁGICA DO SWIPE (Com Física em Tempo Real)
+  // ==========================================
+  onTouchStart(event: TouchEvent) {
+    if (window.innerWidth > 768) return;
+    this.touchStartX = event.touches[0].screenX;
+    this.swipeTransition = 'none'; // Desliga a animação pra "grudar" no dedo
+  }
+
+  onTouchMove(event: TouchEvent) {
+    if (window.innerWidth > 768) return;
+    const currentX = event.touches[0].screenX;
+    const deltaX = currentX - this.touchStartX;
+
+    // Movemos a capa e o texto, mas com 70% da força pra não sair voando da tela
+    const moveX = deltaX * 0.7;
+
+    this.swipeTransform = `translateX(${moveX}px)`;
+    // A mágica do Fade Out: quanto mais você arrasta, mais invisível fica
+    this.swipeOpacity = Math.max(0.1, 1 - Math.abs(deltaX) / 150);
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    if (window.innerWidth > 768) return;
+    const deltaX = event.changedTouches[0].screenX - this.touchStartX;
+
+    this.swipeTransition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
+
+    if (deltaX > this.SWIPE_THRESHOLD) {
+      // ➡️ Arrastou pra DIREITA (Música Anterior)
+      this.swipeTransform = 'translateX(100%)';
+      this.swipeOpacity = 0;
+      
+      // 🚨 INJETA A ILUSÃO AQUI!
+      this.aplicarIlusaoDeOtica(this.prevTrackCache);
+
+      setTimeout(() => {
+        this.previous(); // Manda o comando real pro Spotify
+        this.resetarPosicaoSwipe('esquerda'); 
+      }, 200);
+
+    } else if (deltaX < -this.SWIPE_THRESHOLD) {
+      // ⬅️ Arrastou pra ESQUERDA (Próxima Música)
+      this.swipeTransform = 'translateX(-100%)';
+      this.swipeOpacity = 0;
+
+      // 🚨 INJETA A ILUSÃO AQUI TAMBÉM!
+      this.aplicarIlusaoDeOtica(this.nextTrackCache);
+
+      setTimeout(() => {
+        this.next(); // Manda o comando real pro Spotify
+        this.resetarPosicaoSwipe('direita'); 
+      }, 200);
+
+    } else {
+      this.swipeTransform = 'translateX(0px)';
+      this.swipeOpacity = 1;
+    }
+  }
+
+  // Joga os elementos pro lado oposto invisíveis e traz pro meio com estilo
+  private resetarPosicaoSwipe(ladoOposto: 'esquerda' | 'direita') {
+    this.swipeTransition = 'none';
+    this.swipeTransform = ladoOposto === 'esquerda' ? 'translateX(-50%)' : 'translateX(50%)';
+
+    setTimeout(() => {
+      this.swipeTransition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
+      this.swipeTransform = 'translateX(0px)';
+      this.swipeOpacity = 1;
+      this.cdr.detectChanges();
+    }, 50);
+  }
+
+  // 🚨 O Truque de Mestre: Troca a tela antes da música tocar de verdade
+  private aplicarIlusaoDeOtica(trackFutura: any) {
+    if (!trackFutura) return;
+    this.trackName = trackFutura.name;
+    this.artistName = trackFutura.artists.map((a: any) => a.name).join(', ');
+    this.albumCover = trackFutura.album.images[0].url;
+    this.progress = 0; // Zera a barrinha
+    this.currentTime = '0:00';
+    this.extrairCorDaCapa(); // Já puxa a cor da música nova antecipadamente!
   }
 }

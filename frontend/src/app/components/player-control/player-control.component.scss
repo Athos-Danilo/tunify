@@ -57,10 +57,11 @@
   }
 
   .track-info {
+    will-change: transform, opacity;
     display: flex;
     align-items: center;
     gap: 12px;
-    width: 75%; // Ocupa a maior parte no mobile
+    width: 75%;
 
     .album-art {
       width: 42px;
@@ -73,7 +74,10 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      overflow: hidden; // Prepara pro letreiro
+      overflow: hidden;
+      
+      // 🚨 O flex: 1 empurra os ícones lá pro final, encostando no Play!
+      flex: 1; 
 
       h4 {
         margin: 0; font-size: 13px; color: var(--branco-dk, #fff); font-weight: 600;
@@ -83,9 +87,6 @@
 
       .sub-details {
         display: flex; align-items: center; gap: 5px;
-        
-        .mini-device { font-size: 10px; color: var(--verde-spotify-dk, #1DB954); }
-
         p {
           margin: 0; font-size: 11px; color: var(--cinza-claro-dk, #a0aec0);
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -94,9 +95,33 @@
       }
     }
 
-    .add-icon {
-      color: var(--cinza-claro-dk, #a0aec0); font-size: 18px; margin-left: 5px; cursor: pointer;
-      :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+    // 🚨 A MÁGICA DA ORGANIZAÇÃO E DO ÍCONE AZUL
+    .mobile-action-icons {
+      display: flex;
+      align-items: center;
+      gap: 15px; // Distância perfeita entre as barrinhas e o coração
+
+      .tunify-anim-icon {
+        width: 14px; // Tamanho ideal pra casar com os outros ícones
+        height: 14px;
+        display: flex;
+        
+        .bar { transform-origin: center; }
+        
+        // Se estiver pausado, a animação congela no lugar!
+        &.is-paused .bar { animation-play-state: paused; } 
+
+        .bar1 { animation: wave1 2.2s ease-in-out infinite; }
+        .bar2 { animation: wave2 1.8s ease-in-out infinite; }
+        .bar3 { animation: wave3 2.1s ease-in-out infinite; }
+        .bar4 { animation: wave4 2.5s ease-in-out infinite; }
+        .bar5 { animation: wave5 1.9s ease-in-out infinite; }
+      }
+
+      .add-icon {
+        color: var(--cinza-claro-dk, #a0aec0); font-size: 18px; margin-left: 0; cursor: pointer;
+        :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+      }
     }
   }
 
@@ -212,3 +237,12 @@
     -webkit-backdrop-filter: none;
   }
 }
+
+// ==========================================
+// 🎨 ANIMAÇÕES DO ÍCONE TUNIFY
+// ==========================================
+@keyframes wave1 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.4); } }
+@keyframes wave2 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+@keyframes wave3 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
+@keyframes wave4 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.7); } }
+@keyframes wave5 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.2); } }

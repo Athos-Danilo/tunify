@@ -1,18 +1,31 @@
-<div class="tunify-player" [style.--album-color]="albumColorRGB">
+<div class="tunify-player" [style.--album-color]="albumColorRGB" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd($event)">
     <div class="mobile-progress-bar">
         <div class="fill" [style.width.%]="progress"></div>
     </div>
 
-    <div class="track-info">
+    <div class="track-info" [style.transform]="swipeTransform" [style.transition]="swipeTransition" [style.opacity]="swipeOpacity">
+         
         <img [src]="albumCover" class="album-art" alt="Capa do Álbum" #albumImage crossOrigin="anonymous">
+        
         <div class="details">
             <h4>{{ trackName }}</h4>
             <div class="sub-details">
-                <i class="fa-solid fa-computer mini-device"></i>
                 <p>{{ artistName }}</p>
             </div>
         </div>
-        <i class="fa-regular fa-heart add-icon"></i>
+
+        <div class="mobile-action-icons">
+            
+            <svg class="tunify-anim-icon" [class.is-paused]="!isPlaying" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect class="bar bar1" x="0" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+                <rect class="bar bar2" x="11" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+                <rect class="bar bar3" x="22" y="0" width="6" height="50" rx="3" fill="#0285FF"/>
+                <rect class="bar bar4" x="33" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+                <rect class="bar bar5" x="44" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+            </svg>
+
+            <i class="fa-regular fa-heart add-icon"></i>
+        </div>
     </div>
 
     <div class="controls-center">
