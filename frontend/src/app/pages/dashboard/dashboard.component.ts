@@ -10,6 +10,7 @@ import { TopMusicasComponent } from '../../components/top-musicas/top-musicas.co
 import { MinutesListenedComponent } from '../../components/minutes-listened/minutes-listened.component';
 import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.component';
 import { TopArtistasComponent } from '../../components/top-artistas/top-artistas.component';
+import { PlayerControlComponent } from '../../components/player-control/player-control.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +21,8 @@ import { TopArtistasComponent } from '../../components/top-artistas/top-artistas
     TopMusicasComponent,
     MinutesListenedComponent,
     CardPerfilComponent,
-    TopArtistasComponent
+    TopArtistasComponent,
+    PlayerControlComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
