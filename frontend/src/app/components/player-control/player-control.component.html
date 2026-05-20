@@ -1,22 +1,42 @@
 <div class="tunify-player" [style.--album-color]="albumColorRGB" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd($event)">
+    
     <div class="mobile-progress-bar">
         <div class="fill" [style.width.%]="progress"></div>
     </div>
 
-    <div class="track-info" [style.transform]="swipeTransform" [style.transition]="swipeTransition" [style.opacity]="swipeOpacity">
+    <div class="track-info">
          
-        <img [src]="albumCover" class="album-art" alt="Capa do Álbum" #albumImage crossOrigin="anonymous">
-        
-        <div class="details">
-            <h4>{{ trackName }}</h4>
-            <div class="sub-details">
-                <p>{{ artistName }}</p>
-            </div>
-        </div>
+        <div class="track-details-slide" 
+             [style.transform]="swipeTransform" 
+             [style.transition]="swipeTransition" 
+             [style.opacity]="swipeOpacity">
 
-        <div class="mobile-action-icons">
+            <img [src]="albumCover" class="album-art" alt="Capa do Álbum" #albumImage crossOrigin="anonymous">
             
-            <svg class="tunify-anim-icon" [class.is-paused]="!isPlaying" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="details">
+                <div class="text-line" #trackContainer>
+                    <div class="text-wrapper" #trackContent [class.marquee-active]="isTrackOverflowing">
+                        <span class="track-title">{{ trackName }}</span>
+                        <ng-container *ngIf="isTrackOverflowing">
+                           <span class="ghost-space"></span>
+                           <span class="track-title">{{ trackName }}</span>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <div class="text-line" #artistContainer>
+                    <div class="text-wrapper" #artistContent [class.marquee-active]="isArtistOverflowing">
+                        <span class="track-artist">{{ artistName }}</span>
+                        <ng-container *ngIf="isArtistOverflowing">
+                           <span class="ghost-space"></span>
+                           <span class="track-artist">{{ artistName }}</span>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div> <div class="mobile-action-icons">
+            
+            <svg class="tunify-anim-icon" [class.is-playing]="isPlaying" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect class="bar bar1" x="0" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
                 <rect class="bar bar2" x="11" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
                 <rect class="bar bar3" x="22" y="0" width="6" height="50" rx="3" fill="#0285FF"/>
@@ -25,6 +45,10 @@
             </svg>
 
             <i class="fa-regular fa-heart add-icon"></i>
+
+            <div class="mobile-play-btn" (click)="togglePlay()">
+                <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+            </div>
         </div>
     </div>
 
@@ -33,7 +57,7 @@
             <i class="fa-solid fa-shuffle desktop-only"></i>
             <i class="fa-solid fa-backward-step desktop-only" (click)="previous()"></i>
             
-            <div class="play-btn" (click)="togglePlay()">
+            <div class="play-btn desktop-only" (click)="togglePlay()">
                 <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
             </div>
 

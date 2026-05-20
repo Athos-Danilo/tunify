@@ -1,5 +1,5 @@
-import * as ColorThief from 'colorthief';
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { FastAverageColor } from 'fast-average-color';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerService } from '../../core/services/player.service';
 
@@ -30,6 +30,15 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
   private progressTimer: any;     // O nosso cronômetro
 
   albumColorRGB: string = '11, 17, 32'; 
+
+  // 🚨 Variáveis do Letreiro Inteligente (Separadas em duas linhas!)
+  @ViewChild('trackContainer', { static: false }) trackContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('trackContent', { static: false }) trackContent!: ElementRef<HTMLDivElement>;
+  @ViewChild('artistContainer', { static: false }) artistContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('artistContent', { static: false }) artistContent!: ElementRef<HTMLDivElement>;
+
+  isTrackOverflowing: boolean = false;
+  isArtistOverflowing: boolean = false;
 
   // 🚨 Variáveis para o Swipe (Arrastar no celular)
   private touchStartX: number = 0;
@@ -64,6 +73,10 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
 
       this.trackName = track.name;
       this.artistName = track.artists.map((a: any) => a.name).join(', ');
+
+      // 🚨 Checa o tamanho do texto sempre que a música atualiza
+      setTimeout(() => this.verificarOverflowDeTexto(), 100);
+
       this.isPlaying = !state.paused;
       
       // 🚨 Sincroniza o relógio interno com a realidade do Spotify
@@ -125,12 +138,22 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
   extrairCorDaCapa() {
     try {
       const imgEl = this.albumImage.nativeElement;
+
       const processColor = () => {
-        // @ts-ignore
-        const colorThief = new ColorThief();
-        const color = colorThief.getColor(imgEl); 
-        this.albumColorRGB = `${color[0]}, ${color[1]}, ${color[2]}`; 
-        this.cdr.detectChanges();
+        const fac = new FastAverageColor();
+        
+        // A mágica acontece aqui de forma assíncrona pra não travar o celular
+        fac.getColorAsync(imgEl)
+          .then(color => {
+            // color.value retorna um array com [R, G, B, Alpha]
+            this.albumColorRGB = `${color.value[0]}, ${color.value[1]}, ${color.value[2]}`;
+            this.cdr.detectChanges();
+          })
+          .catch(err => {
+            console.warn("Erro na biblioteca de cor:", err);
+            this.albumColorRGB = '11, 17, 32'; // Cor padrão de fallback
+            this.cdr.detectChanges();
+          });
       };
 
       if (imgEl.complete) {
@@ -139,7 +162,7 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
         imgEl.addEventListener('load', processColor); 
       }
     } catch (error) {
-      console.warn("Erro ao extrair cor:", error);
+      console.warn("Erro geral ao extrair cor:", error);
       this.albumColorRGB = '11, 17, 32'; 
     }
   }
@@ -236,5 +259,21 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     this.progress = 0; // Zera a barrinha
     this.currentTime = '0:00';
     this.extrairCorDaCapa(); // Já puxa a cor da música nova antecipadamente!
+  }
+
+  // 🚨 Checa linha por linha independentemente!
+  verificarOverflowDeTexto() {
+    if (this.trackContainer && this.trackContent) {
+      const cWidth = this.trackContainer.nativeElement.clientWidth;
+      const tWidth = this.trackContent.nativeElement.scrollWidth;
+      this.isTrackOverflowing = tWidth > cWidth;
+    }
+    
+    if (this.artistContainer && this.artistContent) {
+      const cWidth = this.artistContainer.nativeElement.clientWidth;
+      const tWidth = this.artistContent.nativeElement.scrollWidth;
+      this.isArtistOverflowing = tWidth > cWidth;
+    }
+    this.cdr.detectChanges();
   }
 }

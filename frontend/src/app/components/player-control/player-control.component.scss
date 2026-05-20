@@ -22,7 +22,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 12px 12px 2px 2px;
   z-index: 9998; // Fica 1 abaixo do menu do celular (9999)
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 
@@ -57,70 +57,78 @@
   }
 
   .track-info {
-    will-change: transform, opacity;
     display: flex;
     align-items: center;
-    gap: 12px;
-    width: 75%;
+    gap: 12px; // Espaço entre os ícones e a caixa que desliza
+    width: 100%;
 
-    .album-art {
-      width: 42px;
-      height: 42px;
-      border-radius: 6px;
-      object-fit: cover;
-    }
-
-    .details {
+    // 🚨 A NOVA CAIXA FÍSICA
+    .track-details-slide {
+      will-change: transform, opacity;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-      overflow: hidden;
+      align-items: center;
+      gap: 12px; // Espaço entre a capa e os textos
       
-      // 🚨 O flex: 1 empurra os ícones lá pro final, encostando no Play!
-      flex: 1; 
+      flex: 1; // Estica para empurrar os ícones lá pro final!
+      min-width: 0; // Segredo absoluto pro texto não quebrar o layout
 
-      h4 {
-        margin: 0; font-size: 13px; color: var(--branco-dk, #fff); font-weight: 600;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); }
+      .album-art {
+        width: 42px;
+        height: 42px;
+        border-radius: 6px;
+        object-fit: cover;
       }
 
-      .sub-details {
-        display: flex; align-items: center; gap: 5px;
-        p {
-          margin: 0; font-size: 11px; color: var(--cinza-claro-dk, #a0aec0);
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+      .details {
+        flex: 1;
+        min-width: 0; // O segredo tem que estar aqui também!
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        
+        mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
+        -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
+
+        .text-line { width: 100%; overflow: hidden; }
+
+        .text-wrapper {
+          display: flex; align-items: center; white-space: nowrap; width: max-content;
+
+          &.marquee-active { animation: smartMarquee 20s linear infinite; }
+
+          .track-title { font-size: 13px; color: var(--branco-dk, #fff); font-weight: 600; :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); } }
+          .track-artist { font-size: 12px; color: var(--cinza-claro-dk, #a0aec0); :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); } }
+          .ghost-space { display: inline-block; width: 45px; } 
         }
       }
     }
 
-    // 🚨 A MÁGICA DA ORGANIZAÇÃO E DO ÍCONE AZUL
     .mobile-action-icons {
       display: flex;
       align-items: center;
-      gap: 15px; // Distância perfeita entre as barrinhas e o coração
+      gap: 15px;
+      margin-left: auto; // Mantém eles cravados na parede direita!
 
       .tunify-anim-icon {
-        width: 14px; // Tamanho ideal pra casar com os outros ícones
-        height: 14px;
-        display: flex;
+        width: 22px; height: 22px; display: flex;
+        .bar { transform-origin: center; transition: transform 0.2s ease; } 
         
-        .bar { transform-origin: center; }
-        
-        // Se estiver pausado, a animação congela no lugar!
-        &.is-paused .bar { animation-play-state: paused; } 
-
-        .bar1 { animation: wave1 2.2s ease-in-out infinite; }
-        .bar2 { animation: wave2 1.8s ease-in-out infinite; }
-        .bar3 { animation: wave3 2.1s ease-in-out infinite; }
-        .bar4 { animation: wave4 2.5s ease-in-out infinite; }
-        .bar5 { animation: wave5 1.9s ease-in-out infinite; }
+        &.is-playing {
+          .bar1 { animation: wave1 2.2s ease-in-out infinite; }
+          .bar2 { animation: wave2 1.8s ease-in-out infinite; }
+          .bar3 { animation: wave3 2.1s ease-in-out infinite; }
+          .bar4 { animation: wave4 2.5s ease-in-out infinite; }
+          .bar5 { animation: wave5 1.9s ease-in-out infinite; }
+        }
       }
 
-      .add-icon {
-        color: var(--cinza-claro-dk, #a0aec0); font-size: 18px; margin-left: 0; cursor: pointer;
-        :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+      .add-icon { color: #ffffff; font-weight: 400; font-size: 22px; cursor: pointer; :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); } }
+
+      .mobile-play-btn {
+        width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+        color: var(--branco-dk, #fff); :host-context(.tema-claro) & { color: var(--preto-lt, #0f172a); }
+        i { font-size: 20px; } 
       }
     }
   }
@@ -246,3 +254,12 @@
 @keyframes wave3 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
 @keyframes wave4 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.7); } }
 @keyframes wave5 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.2); } }
+
+// ==========================================
+// 🎨 ANIMAÇÃO DO LETREIRO INTELIGENTE
+// ==========================================
+@keyframes smartMarquee {
+  0% { transform: translateX(0); }
+  // Desliza exatamente 50% (o tamanho do primeiro texto + o espaço) pra criar o loop invisível!
+  100% { transform: translateX(calc(-50% - 17.5px)); } 
+}
