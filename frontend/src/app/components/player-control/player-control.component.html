@@ -7,6 +7,7 @@
     <div class="track-info">
          
         <div class="track-details-slide" 
+            (click)="abrirTelaCheia()"
              [style.transform]="swipeTransform" 
              [style.transition]="swipeTransition" 
              [style.opacity]="swipeOpacity">
@@ -82,5 +83,57 @@
         <div class="volume-bar">
             <div class="volume-fill"></div>
         </div>
+    </div>
+</div>
+
+
+<div class="full-screen-player" [class.is-open]="isFullScreenMobile" [style.--album-color]="albumColorRGB">
+    
+    <div class="fs-header">
+        <i class="fa-solid fa-chevron-down" (click)="fecharTelaCheia()"></i>
+        <span class="fs-context">TOCANDO DO SEU TUNIFY</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </div>
+
+    <div class="fs-stage">
+        <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
+    </div>
+
+    <div class="fs-details">
+        <div class="fs-titles">
+            <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
+            <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+        </div>
+        <i class="fa-regular fa-heart"></i>
+    </div>
+
+    <div class="fs-progress">
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" [style.width.%]="progress"></div>
+            <div class="progress-dot" [style.left.%]="progress"></div>
+        </div>
+        <div class="time-row">
+            <span>{{ currentTime }}</span>
+            <span>{{ duration }}</span>
+        </div>
+    </div>
+
+    <div class="fs-controls">
+        <i class="fa-solid fa-shuffle control-secundario"></i>
+        <i class="fa-solid fa-backward-step" (click)="previous()"></i>
+        
+        <div class="fs-play-btn" (click)="togglePlay()">
+            <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+        </div>
+        
+        <i class="fa-solid fa-forward-step" (click)="next()"></i>
+        <i class="fa-solid fa-repeat control-secundario"></i>
+    </div>
+
+    <div class="fs-footer">
+        <i class="fa-solid fa-computer"></i>
+        <div class="fs-footer-actions">
+            <i class="fa-solid fa-share-nodes"></i>
+            <i class="fa-solid fa-bars-staggered"></i> </div>
     </div>
 </div>

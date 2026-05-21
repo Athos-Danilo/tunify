@@ -263,3 +263,94 @@
   // Desliza exatamente 50% (o tamanho do primeiro texto + o espaço) pra criar o loop invisível!
   100% { transform: translateX(calc(-50% - 17.5px)); } 
 }
+
+
+// ==========================================
+// 📱 TELA CHEIA MOBILE OVERLAY
+// ==========================================
+.full-screen-player {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  
+  // 🚨 O Segredo 1: 100dvh (Dynamic Viewport Height) respeita a barra do navegador
+  height: 100dvh; 
+  
+  background: linear-gradient(180deg, rgba(var(--album-color), 0.8) 0%, #121212 50%, #121212 100%);
+  z-index: 10000; 
+  
+  // 🚨 O Segredo 2: Empilhamento de coluna vertical fluido
+  display: flex; 
+  flex-direction: column;
+  justify-content: space-between; // Distribui os blocos usando o espaço vazio
+  
+  padding: 20px 24px; // Diminuí o padding base pra dar mais respiro
+  box-sizing: border-box;
+  
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+
+  &.is-open { transform: translateY(0); }
+
+  @media (min-width: 769px) { display: none !important; }
+
+  .fs-header {
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 20px; // Bem menor pra não empurrar a capa pra baixo
+    i { font-size: 22px; color: #fff; cursor: pointer; }
+    .fs-context { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+  }
+
+  // 🚨 O Segredo 3: A capa precisa saber encolher pra não estourar a tela
+  .fs-stage {
+    flex: 1; 
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0; // Isso impede a imagem de ignorar os limites do Flexbox
+    
+    img { 
+      max-width: 100%; 
+      max-height: 100%; 
+      aspect-ratio: 1/1; 
+      object-fit: cover; 
+      border-radius: 8px; 
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
+    }
+  }
+
+  .fs-details {
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-top: 20px; margin-bottom: 15px; // Margens domadas
+    
+    .fs-titles {
+      flex: 1; overflow: hidden; min-width: 0;
+      h2 { font-size: 22px; color: #fff; font-weight: 700; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      p { font-size: 15px; color: rgba(255,255,255,0.7); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    }
+    i { font-size: 26px; color: #fff; margin-left: 20px; }
+  }
+
+  .fs-progress {
+    margin-bottom: 20px;
+    .progress-bar-bg {
+      width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative; margin-bottom: 8px;
+      .progress-bar-fill { height: 100%; background: #fff; border-radius: 2px; }
+      .progress-dot { position: absolute; top: 50%; width: 12px; height: 12px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    }
+    .time-row { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; }
+  }
+
+  .fs-controls {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    i { font-size: 32px; color: #fff; }
+    .control-secundario { font-size: 22px; color: rgba(255,255,255,0.6); }
+    .fs-play-btn { width: 65px; height: 65px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; i { color: #000; font-size: 26px; } }
+  }
+
+  .fs-footer {
+    display: flex; justify-content: space-between; align-items: center; 
+    padding-bottom: 10px; // Pouco padding aqui embaixo
+    i { font-size: 20px; color: rgba(255,255,255,0.7); }
+    .fs-footer-actions { display: flex; gap: 25px; }
+  }
+}

@@ -54,6 +54,20 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
   private nextTrackCache: any = null;
   private prevTrackCache: any = null;
 
+  // 🚨 Controle da Tela Cheia
+  isFullScreenMobile: boolean = false;
+
+  abrirTelaCheia() {
+    // Só abre se for tela de celular!
+    if (window.innerWidth <= 768) {
+      this.isFullScreenMobile = true;
+    }
+  }
+
+  fecharTelaCheia() {
+    this.isFullScreenMobile = false;
+  }
+
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
       if (!state) return;
