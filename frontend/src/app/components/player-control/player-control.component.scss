@@ -110,8 +110,15 @@
       gap: 15px;
       margin-left: auto; // Mantém eles cravados na parede direita!
 
+      // 🚨 SEGREDO 1: Impede que o letreiro gigante esmague os ícones quando a música for muito grande
+      flex-shrink: 0;
+
       .tunify-anim-icon {
         width: 22px; height: 22px; display: flex;
+
+        // 🚨 SEGREDO 2: A tesoura! Nada vaza pra fora desse quadrado de 22px. Fica preso na jaula!
+        overflow: hidden;
+        
         .bar { transform-origin: center; transition: transform 0.2s ease; } 
         
         &.is-playing {
@@ -272,85 +279,137 @@
   position: fixed;
   top: 0; left: 0;
   width: 100%;
-  
-  // 🚨 O Segredo 1: 100dvh (Dynamic Viewport Height) respeita a barra do navegador
   height: 100dvh; 
-  
-  background: linear-gradient(180deg, rgba(var(--album-color), 0.8) 0%, #121212 50%, #121212 100%);
   z-index: 10000; 
   
-  // 🚨 O Segredo 2: Empilhamento de coluna vertical fluido
+  // 🚨 O Segredo 1: Fundo base 100% sólido. Nada vaza por baixo!
+  background-color: #121212; 
+  
   display: flex; 
   flex-direction: column;
-  justify-content: space-between; // Distribui os blocos usando o espaço vazio
-  
-  padding: 20px 24px; // Diminuí o padding base pra dar mais respiro
+  padding: 40px 32px; 
   box-sizing: border-box;
-  
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform;
 
   &.is-open { transform: translateY(0); }
 
-  @media (min-width: 769px) { display: none !important; }
+  // 🚨 O Segredo 2: O Fundo Animado (Pulsante e 100% da cor da música)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1; // Joga pra trás de tudo
+    // Traz a cor RGB pura (sem opacidade no topo) e derrete pro fundo escuro
+    background: linear-gradient(180deg, rgb(var(--album-color)) 0%, #121212 65%, #121212 100%);
+    
+    // A mágica tecnológica acontecendo aqui (8 segundos, indo e voltando)
+    animation: pulsarBackground 8s ease-in-out infinite alternate;
+    will-change: opacity, filter, transform;
+  }
 
   .fs-header {
     display: flex; justify-content: space-between; align-items: center; 
-    margin-bottom: 20px; // Bem menor pra não empurrar a capa pra baixo
-    i { font-size: 22px; color: #fff; cursor: pointer; }
-    .fs-context { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+    margin-bottom: 40px;
+    i { font-size: 24px; color: #fff; cursor: pointer; }
+    .fs-context { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: rgba(255,255,255,0.8); }
   }
 
-  // 🚨 O Segredo 3: A capa precisa saber encolher pra não estourar a tela
   .fs-stage {
     flex: 1; 
     display: flex; align-items: center; justify-content: center;
-    min-height: 0; // Isso impede a imagem de ignorar os limites do Flexbox
+    min-height: 0;
+    padding: 20px 0; 
     
     img { 
-      max-width: 100%; 
+      // 🚨 O Segredo 3: Capa beeeem maior!
+      width: 95%; 
       max-height: 100%; 
       aspect-ratio: 1/1; 
       object-fit: cover; 
-      border-radius: 8px; 
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
+      border-radius: 12px; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
     }
   }
 
   .fs-details {
     display: flex; justify-content: space-between; align-items: center; 
-    margin-top: 20px; margin-bottom: 15px; // Margens domadas
+    margin-top: 40px; margin-bottom: 30px; 
     
     .fs-titles {
-      flex: 1; overflow: hidden; min-width: 0;
-      h2 { font-size: 22px; color: #fff; font-weight: 700; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      p { font-size: 15px; color: rgba(255,255,255,0.7); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      flex: 1; overflow: hidden;
+      h2 { font-size: 24px; color: #fff; font-weight: 700; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      p { font-size: 16px; color: rgba(255,255,255,0.7); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     }
-    i { font-size: 26px; color: #fff; margin-left: 20px; }
+    i { font-size: 28px; color: #fff; }
   }
 
   .fs-progress {
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     .progress-bar-bg {
-      width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative; margin-bottom: 8px;
-      .progress-bar-fill { height: 100%; background: #fff; border-radius: 2px; }
-      .progress-dot { position: absolute; top: 50%; width: 12px; height: 12px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+      width: 100%; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; position: relative; margin-bottom: 12px;
+      
+      .progress-bar-fill { 
+        height: 100%; 
+        // 🚨 O Segredo 4: Degradê da barra
+        background: linear-gradient(90deg, #0285FF 0%, #1DB954 100%); 
+        border-radius: 10px; 
+      }
+      
+      .progress-dot { 
+        position: absolute; top: 50%; width: 14px; height: 14px; background: #fff; 
+        border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
     }
-    .time-row { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; }
+    .time-row { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
   }
 
   .fs-controls {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-    i { font-size: 32px; color: #fff; }
-    .control-secundario { font-size: 22px; color: rgba(255,255,255,0.6); }
-    .fs-play-btn { width: 65px; height: 65px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; i { color: #000; font-size: 26px; } }
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 40px; 
+    i { font-size: 35px; color: #fff; cursor: pointer; }
+    .control-secundario { font-size: 24px; color: rgba(255,255,255,0.5); }
+    .fs-play-btn { 
+      width: 75px; height: 75px; background: #fff; border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      i { color: #000; font-size: 30px; } 
+    }
   }
 
   .fs-footer {
     display: flex; justify-content: space-between; align-items: center; 
-    padding-bottom: 10px; // Pouco padding aqui embaixo
-    i { font-size: 20px; color: rgba(255,255,255,0.7); }
-    .fs-footer-actions { display: flex; gap: 25px; }
+    padding-bottom: 20px;
+
+    .tunify-anim-icon-fs {
+      width: 24px; height: 24px; display: flex;
+      .bar { transform-origin: center; transition: 0.3s; }
+      
+      &.is-playing {
+        .bar1 { animation: wave1 2.2s ease-in-out infinite; }
+        .bar2 { animation: wave2 1.8s ease-in-out infinite; }
+        .bar3 { animation: wave3 2.1s ease-in-out infinite; }
+        .bar4 { animation: wave4 2.5s ease-in-out infinite; }
+        .bar5 { animation: wave5 1.9s ease-in-out infinite; }
+      }
+    }
+
+    i { font-size: 22px; color: rgba(255,255,255,0.7); cursor: pointer; }
+    .fs-footer-actions { display: flex; gap: 30px; }
+  }
+}
+
+// ==========================================
+// 🎨 ANIMAÇÃO DO FUNDO TECNOLÓGICO
+// ==========================================
+@keyframes pulsarBackground {
+  0% { 
+    opacity: 0.8; 
+    filter: brightness(0.9) saturate(0.9); 
+    transform: scale(1); 
+  }
+  100% { 
+    opacity: 1; 
+    filter: brightness(1.2) saturate(1.2); 
+    transform: scale(1.05); // Dá o efeito de zoom suave
   }
 }
