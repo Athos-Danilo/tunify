@@ -31,6 +31,7 @@
     "@angular/material": "~21.1.5",
     "@angular/platform-browser": "^21.1.0",
     "@angular/router": "^21.1.0",
+    "fast-average-color": "^9.5.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -39,6 +40,7 @@
     "@angular/cli": "^21.1.4",
     "@angular/compiler-cli": "^21.1.0",
     "@angular/material": "^21.1.5",
+    "@types/colorthief": "^2.6.1",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"

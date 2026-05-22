@@ -1,0 +1,145 @@
+<div class="tunify-player" [style.--album-color]="albumColorRGB" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd($event)">
+    
+    <div class="mobile-progress-bar">
+        <div class="fill" [style.width.%]="progress"></div>
+    </div>
+
+    <div class="track-info">
+         
+        <div class="track-details-slide" 
+            (click)="abrirTelaCheia()"
+             [style.transform]="swipeTransform" 
+             [style.transition]="swipeTransition" 
+             [style.opacity]="swipeOpacity">
+
+            <img [src]="albumCover" class="album-art" alt="Capa do Álbum" #albumImage crossOrigin="anonymous">
+            
+            <div class="details">
+                <div class="text-line" #trackContainer>
+                    <div class="text-wrapper" #trackContent [class.marquee-active]="isTrackOverflowing">
+                        <span class="track-title">{{ trackName }}</span>
+                        <ng-container *ngIf="isTrackOverflowing">
+                           <span class="ghost-space"></span>
+                           <span class="track-title">{{ trackName }}</span>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <div class="text-line" #artistContainer>
+                    <div class="text-wrapper" #artistContent [class.marquee-active]="isArtistOverflowing">
+                        <span class="track-artist">{{ artistName }}</span>
+                        <ng-container *ngIf="isArtistOverflowing">
+                           <span class="ghost-space"></span>
+                           <span class="track-artist">{{ artistName }}</span>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div> <div class="mobile-action-icons">
+            
+            <svg class="tunify-anim-icon" [class.is-playing]="isPlaying" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect class="bar bar1" x="0" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+                <rect class="bar bar2" x="11" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+                <rect class="bar bar3" x="22" y="0" width="6" height="50" rx="3" fill="#0285FF"/>
+                <rect class="bar bar4" x="33" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+                <rect class="bar bar5" x="44" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+            </svg>
+
+            <i class="fa-regular fa-heart add-icon"></i>
+
+            <div class="mobile-play-btn" (click)="togglePlay()">
+                <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-center">
+        <div class="buttons">
+            <i class="fa-solid fa-shuffle desktop-only"></i>
+            <i class="fa-solid fa-backward-step desktop-only" (click)="previous()"></i>
+            
+            <div class="play-btn desktop-only" (click)="togglePlay()">
+                <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+            </div>
+
+            <i class="fa-solid fa-forward-step desktop-only" (click)="next()"></i>
+            <i class="fa-solid fa-repeat desktop-only"></i>
+        </div>
+
+        <div class="progress-container desktop-only">
+            <span class="time">{{ currentTime }}</span>
+            <div class="progress-bar">
+                <div class="fill" [style.width.%]="progress"></div>
+            </div>
+            <span class="time">{{ duration }}</span>
+        </div>
+    </div>
+
+    <div class="volume-actions desktop-only">
+        <i class="fa-solid fa-music"></i> 
+        <i class="fa-solid fa-list-ul"></i> 
+        <i class="fa-solid fa-computer"></i> 
+        <i class="fa-solid fa-volume-high"></i> 
+        <div class="volume-bar">
+            <div class="volume-fill"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="full-screen-player" [class.is-open]="isFullScreenMobile" [style.--album-color]="albumColorRGB">
+    
+    <div class="fs-header">
+        <i class="fa-solid fa-chevron-down" (click)="fecharTelaCheia()"></i>
+        <span class="fs-context">TOCANDO DO SEU TUNIFY</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </div>
+
+    <div class="fs-stage">
+        <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
+    </div>
+
+    <div class="fs-details">
+        <div class="fs-titles">
+            <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
+            <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+        </div>
+        <i class="fa-regular fa-heart"></i>
+    </div>
+
+    <div class="fs-progress">
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" [style.width.%]="progress"></div>
+            <div class="progress-dot" [style.left.%]="progress"></div>
+        </div>
+        <div class="time-row">
+            <span>{{ currentTime }}</span>
+            <span>{{ duration }}</span>
+        </div>
+    </div>
+
+    <div class="fs-controls">
+        <i class="fa-solid fa-shuffle control-secundario thinner-icon"></i>
+        <i class="fa-solid fa-backward-step thinner-icon" (click)="previous()"></i>
+        
+        <div class="fs-play-btn" (click)="togglePlay()">
+            <i class="fa-solid" 
+               [ngClass]="isPlaying ? 'fa-pause' : 'fa-play play-adjust'"></i>
+        </div>
+        
+        <i class="fa-solid fa-forward-step thinner-icon" (click)="next()"></i>
+        <i class="fa-solid fa-repeat control-secundario thinner-icon"></i>
+    </div>
+
+    <div class="fs-footer">
+        
+        <i class="fa-solid fa-headphones fs-action-icon thinner-icon"></i>
+        
+        <div class="fs-lyrics-pill invite-pulse">
+            <i class="fa-solid fa-microphone-lines"></i>
+            <span>Letra</span>
+        </div>
+
+        <i class="fa-solid fa-arrow-up-from-bracket fs-action-icon thinner-icon"></i>
+    </div>
+</div>
