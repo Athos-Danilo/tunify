@@ -119,29 +119,27 @@
     </div>
 
     <div class="fs-controls">
-        <i class="fa-solid fa-shuffle control-secundario"></i>
-        <i class="fa-solid fa-backward-step" (click)="previous()"></i>
+        <i class="fa-solid fa-shuffle control-secundario thinner-icon"></i>
+        <i class="fa-solid fa-backward-step thinner-icon" (click)="previous()"></i>
         
         <div class="fs-play-btn" (click)="togglePlay()">
-            <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+            <i class="fa-solid" 
+               [ngClass]="isPlaying ? 'fa-pause' : 'fa-play play-adjust'"></i>
         </div>
         
-        <i class="fa-solid fa-forward-step" (click)="next()"></i>
-        <i class="fa-solid fa-repeat control-secundario"></i>
+        <i class="fa-solid fa-forward-step thinner-icon" (click)="next()"></i>
+        <i class="fa-solid fa-repeat control-secundario thinner-icon"></i>
     </div>
 
     <div class="fs-footer">
-        <svg class="tunify-anim-icon-fs" [class.is-playing]="isPlaying" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect class="bar bar1" x="0" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
-            <rect class="bar bar2" x="11" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
-            <rect class="bar bar3" x="22" y="0" width="6" height="50" rx="3" fill="#0285FF"/>
-            <rect class="bar bar4" x="33" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
-            <rect class="bar bar5" x="44" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
-        </svg>
-
-        <div class="fs-footer-actions">
-            <i class="fa-solid fa-share-nodes"></i>
-            <i class="fa-solid fa-bars-staggered"></i>
+        
+        <i class="fa-solid fa-headphones fs-action-icon thinner-icon"></i>
+        
+        <div class="fs-lyrics-pill invite-pulse">
+            <i class="fa-solid fa-microphone-lines"></i>
+            <span>Letra</span>
         </div>
+
+        <i class="fa-solid fa-arrow-up-from-bracket fs-action-icon thinner-icon"></i>
     </div>
 </div>

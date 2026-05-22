@@ -289,6 +289,7 @@
   flex-direction: column;
   padding: 40px 32px; 
   box-sizing: border-box;
+  overflow: hidden;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 
@@ -364,15 +365,43 @@
     .time-row { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
   }
 
+  // ... (o topo do seu .full-screen-player continua igual)
+
   .fs-controls {
     display: flex; justify-content: space-between; align-items: center; 
     margin-bottom: 40px; 
-    i { font-size: 35px; color: #fff; cursor: pointer; }
-    .control-secundario { font-size: 24px; color: rgba(255,255,255,0.5); }
+    
+    // 🚨 Emagrecendo os ícones
+    .thinner-icon {
+      font-size: 28px; // Reduzimos o tamanho base para tirar o peso
+      color: rgba(255,255,255,0.85); // Menos contraste = parece mais fino
+      transition: color 0.2s, transform 0.2s;
+      cursor: pointer;
+      &:active { transform: scale(0.9); color: #fff; }
+    }
+
+    .control-secundario { 
+      font-size: 22px; 
+      color: rgba(255,255,255,0.5); 
+    }
+    
     .fs-play-btn { 
       width: 75px; height: 75px; background: #fff; border-radius: 50%; 
       display: flex; align-items: center; justify-content: center; cursor: pointer;
-      i { color: #000; font-size: 30px; } 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      
+      i { 
+        color: #000; 
+        font-size: 28px; 
+        transition: transform 0.1s;
+      }
+      
+      // 🚨 O TRUQUE DE MESTRE: Empurra só o triângulo pra direita
+      .play-adjust {
+        transform: translateX(3px); 
+      }
+
+      &:active { transform: scale(0.95); }
     }
   }
 
@@ -380,23 +409,48 @@
     display: flex; justify-content: space-between; align-items: center; 
     padding-bottom: 20px;
 
-    .tunify-anim-icon-fs {
-      width: 24px; height: 24px; display: flex;
-      .bar { transform-origin: center; transition: 0.3s; }
-      
-      &.is-playing {
-        .bar1 { animation: wave1 2.2s ease-in-out infinite; }
-        .bar2 { animation: wave2 1.8s ease-in-out infinite; }
-        .bar3 { animation: wave3 2.1s ease-in-out infinite; }
-        .bar4 { animation: wave4 2.5s ease-in-out infinite; }
-        .bar5 { animation: wave5 1.9s ease-in-out infinite; }
-      }
+    .fs-action-icon {
+      font-size: 20px; 
+      color: rgba(255,255,255,0.6); 
+      cursor: pointer; 
     }
 
-    i { font-size: 22px; color: rgba(255,255,255,0.7); cursor: pointer; }
-    .fs-footer-actions { display: flex; gap: 30px; }
+    .fs-lyrics-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.15); 
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.95);
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+      
+      i { font-size: 16px; }
+      
+      &:active { 
+        background: rgba(255,255,255,0.3); 
+        transform: scale(0.95);
+      }
+    }
+    
+    // 🚨 Aplica a animação de convite (pulso suave)
+    .invite-pulse {
+      animation: pulseGlow 3s infinite;
+    }
   }
 }
+
+// ==========================================
+// 🎨 ANIMAÇÕES EXTRAS
+// ==========================================
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+// (Sua animação pulsarBackground continua aqui em baixo normalmente)
 
 // ==========================================
 // 🎨 ANIMAÇÃO DO FUNDO TECNOLÓGICO
