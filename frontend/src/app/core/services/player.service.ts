@@ -80,4 +80,14 @@ export class PlayerService {
   previousTrack() {
     if (this.player) this.player.previousTrack();
   }
+
+  // 🚨 [NOVO] O pedal de avançar/voltar a música na barra!
+  seek(positionMs: number) {
+    if (this.player) {
+      // Manda a ordem pro SDK do Spotify
+      this.player.seek(positionMs).then(() => {
+        console.log(`[TUNIFY] Pulou para o milissegundo: ${positionMs}`);
+      });
+    }
+  }
 }

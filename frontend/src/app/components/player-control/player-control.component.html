@@ -95,22 +95,46 @@
         <i class="fa-solid fa-ellipsis-vertical"></i>
     </div>
 
-    <div class="fs-stage">
-        <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
-    </div>
+    <div class="fs-swipe-container"
+         (touchstart)="onTouchStartFS($event)"
+         (touchmove)="onTouchMoveFS($event)"
+         (touchend)="onTouchEndFS($event)">
 
-    <div class="fs-details">
-        <div class="fs-titles">
-            <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
-            <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+        <div class="fs-swipe-content"
+             [style.transform]="fsSwipeTransform"
+             [style.transition]="fsSwipeTransition"
+             [style.opacity]="fsSwipeOpacity">
+             
+            <div class="fs-stage">
+                <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
+            </div>
+
+            <div class="fs-details">
+                <div class="fs-titles">
+                    <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
+                    <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+                </div>
+                <i class="fa-regular fa-heart"></i>
+            </div>
+
         </div>
-        <i class="fa-regular fa-heart"></i>
     </div>
 
     <div class="fs-progress">
         <div class="progress-bar-bg">
             <div class="progress-bar-fill" [style.width.%]="progress"></div>
             <div class="progress-dot" [style.left.%]="progress"></div>
+
+            <input type="range" 
+                   min="0" 
+                   max="100" 
+                   [value]="progress" 
+                   (mousedown)="onSeekStart()"
+                   (touchstart)="onSeekStart()"
+                   (input)="onSeek($event)" 
+                   (change)="onSeekEnd($event)"
+                   class="fs-ghost-slider">
+
         </div>
         <div class="time-row">
             <span>{{ currentTime }}</span>

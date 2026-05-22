@@ -61,11 +61,83 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     // Só abre se for tela de celular!
     if (window.innerWidth <= 768) {
       this.isFullScreenMobile = true;
+      // 🚨 TRAVA A TELA: Impede o site de rolar por trás do player
+      document.body.style.overflow = 'hidden';
     }
   }
 
   fecharTelaCheia() {
     this.isFullScreenMobile = false;
+    // 🚨 DESTRAVA A TELA: Devolve a rolagem normal pro dashboard
+    document.body.style.overflow = '';
+  }
+
+  // 🚨 VARIÁVEIS DA FÍSICA DO TELA CHEIA
+  fsStartX: number = 0;
+  fsStartY: number = 0;
+  fsCurrentX: number = 0;
+  fsCurrentY: number = 0;
+  fsSwipeTransform: string = 'translateX(0)';
+  fsSwipeTransition: string = '0.3s ease';
+  fsSwipeOpacity: number = 1;
+  fsIsDragging: boolean = false;
+
+  // 1. O Dedo encosta na tela
+  onTouchStartFS(event: TouchEvent) {
+    this.fsStartX = event.touches[0].clientX;
+    this.fsStartY = event.touches[0].clientY;
+    this.fsIsDragging = true;
+    this.fsSwipeTransition = 'none'; // Tira o delay para a capa grudar no dedo
+  }
+
+  // 2. O Dedo arrasta na tela
+  onTouchMoveFS(event: TouchEvent) {
+    if (!this.fsIsDragging) return;
+    this.fsCurrentX = event.touches[0].clientX;
+    this.fsCurrentY = event.touches[0].clientY;
+
+    const deltaX = this.fsCurrentX - this.fsStartX;
+    const deltaY = this.fsCurrentY - this.fsStartY;
+
+    // Se o usuário estiver arrastando para BAIXO, não move a capa pros lados
+    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 20) {
+      return; 
+    }
+
+    // Se for um movimento HORIZONTAL, a capa e texto escorregam acompanhando o dedo
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      this.fsSwipeTransform = `translateX(${deltaX}px)`;
+      this.fsSwipeOpacity = 1 - (Math.abs(deltaX) / window.innerWidth);
+    }
+  }
+
+  // 3. O Dedo solta a tela
+  onTouchEndFS(event: TouchEvent) {
+    if (!this.fsIsDragging) return;
+    this.fsIsDragging = false;
+    
+    // Devolve a suavidade para a capa voltar pro lugar
+    this.fsSwipeTransition = 'transform 0.3s ease, opacity 0.3s ease'; 
+
+    const deltaX = this.fsCurrentX - this.fsStartX;
+    const deltaY = this.fsCurrentY - this.fsStartY;
+
+    // GESTO: Arrastou bastante para BAIXO? Fecha o player!
+    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 70) {
+      this.fecharTelaCheia();
+    } 
+    // GESTO: Arrastou para a DIREITA? Música anterior!
+    else if (deltaX > 80) {
+      this.previous();
+    } 
+    // GESTO: Arrastou para a ESQUERDA? Próxima música!
+    else if (deltaX < -80) {
+      this.next();
+    }
+
+    // Efeito elástico: a capa sempre volta pro meio quando solta
+    this.fsSwipeTransform = 'translateX(0)';
+    this.fsSwipeOpacity = 1;
   }
 
   ngOnInit() {
@@ -94,11 +166,14 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.isPlaying = !state.paused;
       
       // 🚨 Sincroniza o relógio interno com a realidade do Spotify
-      this.durationMs = state.duration;
-      this.positionMs = state.position;
-      
-      this.duration = this.formatTime(this.durationMs);
-      this.atualizarProgressoVisual(); 
+      // SÓ SINCRONIZA SE NÃO ESTIVER ARRASTANDO, senão a bolinha pula!
+      if (!this.isDraggingProgress) {
+        this.durationMs = state.duration;
+        this.positionMs = state.position;
+        
+        this.duration = this.formatTime(this.durationMs);
+        this.atualizarProgressoVisual(); 
+      }
       
       // 🚨 Liga ou desliga o cronômetro baseado no play/pause
       this.gerenciarCronometro();
@@ -143,11 +218,15 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
 
   private atualizarProgressoVisual() {
     if (this.durationMs > 0) {
-      this.progress = (this.positionMs / this.durationMs) * 100;
-      this.currentTime = this.formatTime(this.positionMs);
+      // 🚨 A MORDAÇA ENTRA AQUI! 
+      // Só atualiza a barrinha e o texto do tempo se o dedo NÃO estiver na tela
+      if (!this.isDraggingProgress) {
+        this.progress = (this.positionMs / this.durationMs) * 100;
+        this.currentTime = this.formatTime(this.positionMs);
+      }
     }
   }
-  // ==========================================
+
 
   extrairCorDaCapa() {
     try {
@@ -289,5 +368,36 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.isArtistOverflowing = tWidth > cWidth;
     }
     this.cdr.detectChanges();
+  }
+
+  // 🚨 VARIÁVEL DE CONTROLE
+  isDraggingProgress: boolean = false;
+
+  // 1. O dedo tocou na barra: Pausa a atualização automática!
+  onSeekStart() {
+    this.isDraggingProgress = true;
+  }
+
+  // 2. O dedo está arrastando: Atualiza só a barrinha visualmente
+  onSeek(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.progress = Number(input.value); 
+  }
+
+  // 3. O dedo soltou a barra: Dá o comando pro Spotify!
+  onSeekEnd(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const novoProgresso = Number(input.value);
+
+    // 🚨 CÁLCULO EXATO DOS MILISSEGUNDOS!
+    const tempoDestinoMs = Math.round((novoProgresso / 100) * this.durationMs);
+    
+    // 🔗 Chama o serviço que acabamos de criar!
+    this.playerService.seek(tempoDestinoMs); 
+
+    // Dá meio segundo de folga pro Spotify processar antes de religar o cronômetro do seu app
+    setTimeout(() => {
+      this.isDraggingProgress = false;
+    }, 500);
   }
 }
