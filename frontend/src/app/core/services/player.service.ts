@@ -116,4 +116,20 @@ export class PlayerService {
       }
     }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
   }
+
+  // 🚨 Busca a Fila completa direto dos servidores do Spotify
+  async getQueue() {
+    if (!this.accessToken) return null;
+    try {
+      const response = await fetch('https://api.spotify.com/v1/me/player/queue', {
+        headers: { 'Authorization': `Bearer ${this.accessToken}` }
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.error('[TUNIFY] Erro ao buscar a fila:', err);
+    }
+    return null;
+  }
 }

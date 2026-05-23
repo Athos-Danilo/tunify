@@ -162,6 +162,35 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     this.playerService.setRepeatMode(newStateStr);
   }
 
+  // 🚨 VARIÁVEIS DA FILA (QUEUE)
+  isQueueOpen: boolean = false;
+  queueList: any[] = [];
+  currentQueueTrack: any = null;
+
+  // Função para abrir/fechar a aba e já carregar as músicas
+  async toggleFila() {
+    if (!this.isQueueOpen) {
+      // Abre a gaveta imediatamente para o usuário ver ação
+      this.isQueueOpen = true;
+      
+      // Busca os dados no Spotify
+      const filaData = await this.playerService.getQueue();
+      if (filaData) {
+        this.currentQueueTrack = filaData.currently_playing;
+        // Cortamos para as próximas 20 músicas para o celular não travar renderizando foto
+        this.queueList = filaData.queue.slice(0, 20); 
+      }
+    } else {
+      this.isQueueOpen = false;
+    }
+  }
+
+  // 🚨 Função auxiliar rápida para juntar os nomes dos artistas com vírgula
+  getArtistNames(track: any): string {
+    if (!track || !track.artists) return 'Desconhecido';
+    return track.artists.map((a: any) => a.name).join(', ');
+  }
+
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
       if (!state) return;

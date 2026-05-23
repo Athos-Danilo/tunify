@@ -549,3 +549,69 @@
       z-index: 2;
     }
   }
+
+  // ==========================================
+  // 🎶 A GAVETA DA FILA (BOTTOM SHEET)
+  // ==========================================
+  .queue-drawer {
+    position: absolute;
+    bottom: 0; left: 0; 
+    width: 100%;
+    height: 85dvh; // Sobe cobrindo 85% da tela, igual ao print!
+    background-color: #242424; // O cinza chique do Spotify
+    border-radius: 24px 24px 0 0;
+    z-index: 20000; // Fica por cima de tudo
+    display: flex; flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5); // Sombra profunda pra destacar
+    
+    // 🚨 A MÁGICA DA ANIMAÇÃO
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+    &.is-open {
+      transform: translateY(0);
+    }
+
+    .queue-header-drag {
+      width: 100%; height: 35px;
+      display: flex; justify-content: center; align-items: center;
+      cursor: pointer;
+      .drag-handle { 
+        width: 40px; height: 5px; 
+        background: rgba(255,255,255,0.3); 
+        border-radius: 3px; 
+      }
+    }
+
+    .queue-content {
+      padding: 0 24px 24px;
+      overflow-y: auto; // Permite rolar a lista!
+      flex: 1;
+
+      .queue-title { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 5px 0; }
+      
+      .queue-device { 
+        font-size: 13px; color: #1DB954; font-weight: 500; margin-bottom: 25px; 
+        display: flex; align-items: center; gap: 6px; 
+        i { font-size: 15px; }
+      }
+      
+      .queue-section-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 15px; margin-top: 15px; }
+
+      .queue-item {
+        display: flex; align-items: center; margin-bottom: 15px;
+        
+        img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+        
+        .item-info {
+          flex: 1; display: flex; flex-direction: column; overflow: hidden;
+          .item-name { font-size: 15px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;}
+          .item-artist { font-size: 13px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        }
+        
+        .item-drag-icon { color: rgba(255,255,255,0.4); font-size: 18px; margin-left: 10px; }
+        .equalizer-icon { font-size: 16px; margin-left: 10px; }
+        .active-green { color: #1DB954 !important; }
+      }
+    }
+  }

@@ -170,6 +170,39 @@
             <span>Letra</span>
         </div>
 
-        <i class="fa-solid fa-arrow-up-from-bracket fs-action-icon thinner-icon"></i>
+        <i class="fa-solid fa-list-ul fs-action-icon thinner-icon" (click)="toggleFila()"></i>
+    </div>
+
+    <div class="queue-drawer" [class.is-open]="isQueueOpen">
+        <div class="queue-header-drag" (click)="toggleFila()">
+            <div class="drag-handle"></div>
+        </div>
+
+        <div class="queue-content">
+            <h2 class="queue-title">Fila</h2>
+            <p class="queue-device">
+                <i class="fa-brands fa-spotify"></i> Tunify Web Player
+            </p>
+
+            <h3 class="queue-section-title">Tocando agora</h3>
+            <div class="queue-item current-playing" *ngIf="currentQueueTrack">
+                <img [src]="currentQueueTrack.album.images[0].url" alt="Capa">
+                <div class="item-info">
+                    <span class="item-name active-green">{{ currentQueueTrack.name }}</span>
+                    <span class="item-artist">{{ getArtistNames(currentQueueTrack) }}</span>
+                </div>
+                <i class="fa-solid fa-volume-high active-green equalizer-icon"></i>
+            </div>
+
+            <h3 class="queue-section-title">A seguir</h3>
+            <div class="queue-item" *ngFor="let track of queueList">
+                <img [src]="track.album.images[0].url" alt="Capa">
+                <div class="item-info">
+                    <span class="item-name">{{ track.name }}</span>
+                    <span class="item-artist">{{ getArtistNames(track) }}</span>
+                </div>
+                <i class="fa-solid fa-bars item-drag-icon"></i>
+            </div>
+        </div>
     </div>
 </div>
