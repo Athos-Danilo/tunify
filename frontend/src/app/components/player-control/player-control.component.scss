@@ -440,6 +440,12 @@
 
       &:active { transform: scale(0.95); }
     }
+
+    // 🚨 A cor verde clássica de ativação
+    .active-green {
+      color: #1DB954 !important; // O verde icônico do Spotify
+      opacity: 1 !important;     // Tira a transparência do ícone desativado
+    }
   }
 
   .fs-footer {
@@ -504,3 +510,42 @@
     transform: scale(1.05); // Dá o efeito de zoom suave
   }
 }
+
+// ==========================================
+  // 🎨 O ÍCONE DE REPETIÇÃO PREMIUM (NÍVEL APPLE/SPOTIFY)
+  // ==========================================
+  .repeat-icon-wrapper {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    i.fa-repeat {
+      font-size: inherit;
+      color: inherit;
+    }
+
+    // O número 1 minimalista e limpo
+    .repeat-track-number {
+      position: absolute;
+      top: 50%; 
+      left: 50%;
+      // O translateY(-1px) é o truque de ótica pra alinhar perfeitamente no FontAwesome
+      transform: translate(-50%, -50%) translateY(-1px); 
+      
+      font-size: 11px; // Tamanho ideal pra caber no buraco do ícone
+      font-weight: 900; // Bem gordinho pra dar leitura
+      
+      // 🚨 O SEGREDO: Fundo transparente e a cor herda o verde do pai!
+      color: inherit; 
+      background: transparent; 
+      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+  }

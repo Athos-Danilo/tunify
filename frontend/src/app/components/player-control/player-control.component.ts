@@ -140,6 +140,28 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     this.fsSwipeOpacity = 1;
   }
 
+  // 🚨 Variável que controla a UI da Repetição
+  repeatMode: number = 0; // 0 = off, 1 = context, 2 = track
+
+  // 🚨 NOVA FUNÇÃO PARA O CLIQUE
+  ciclarRepeat() {
+    let newStateStr: 'off' | 'context' | 'track' = 'off';
+    
+    // A lógica de ciclo: 0 vai pra 1, 1 vai pra 2, 2 volta pro 0.
+    if (this.repeatMode === 0) {
+      newStateStr = 'context';
+      this.repeatMode = 1; // Muda a UI instantaneamente (otimista)
+    } else if (this.repeatMode === 1) {
+      newStateStr = 'track';
+      this.repeatMode = 2;
+    } else {
+      newStateStr = 'off';
+      this.repeatMode = 0;
+    }
+
+    this.playerService.setRepeatMode(newStateStr);
+  }
+
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
       if (!state) return;
@@ -179,6 +201,12 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.gerenciarCronometro();
 
       this.cdr.detectChanges();
+
+      // Perto de onde você lê state.paused e a fila:
+      this.isPlaying = !state.paused;
+      
+      // 🚨 Sincroniza a repetição com a realidade vinda do Spotify
+      this.repeatMode = state.repeat_mode;
     });
   }
 
@@ -384,20 +412,32 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     this.progress = Number(input.value); 
   }
 
-  // 3. O dedo soltou a barra: Dá o comando pro Spotify!
-  onSeekEnd(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const novoProgresso = Number(input.value);
+  // 3. O dedo soltou a barra: Dá o comando definitivo!
+  onSeekEnd(event: any) {
+    // 🚨 TRAVA DE SEGURANÇA: Como colocamos (change) e (touchend), pode disparar duas vezes.
+    // Isso garante que o comando só rode uma vez por clique!
+    if (!this.isDraggingProgress) return; 
 
-    // 🚨 CÁLCULO EXATO DOS MILISSEGUNDOS!
+    // Pega o valor dependendo de como o evento foi disparado
+    let novoProgresso = this.progress; 
+    if (event && event.target && event.target.value) {
+      novoProgresso = Number(event.target.value);
+    }
+
     const tempoDestinoMs = Math.round((novoProgresso / 100) * this.durationMs);
-    
-    // 🔗 Chama o serviço que acabamos de criar!
+
+    // 🚨 ILUSÃO DE ÓTICA: Atualiza a interface local IMEDIATAMENTE!
+    // Assim o usuário não vê a barra piscar ou voltar enquanto a internet trabalha.
+    this.positionMs = tempoDestinoMs;
+    this.progress = novoProgresso;
+    this.currentTime = this.formatTime(this.positionMs);
+
+    // 🔗 Manda a ordem pro Spotify
     this.playerService.seek(tempoDestinoMs); 
 
-    // Dá meio segundo de folga pro Spotify processar antes de religar o cronômetro do seu app
+    // Dá um belo tempo (1.5 segundos) pro servidor do Spotify processar e devolver a resposta certa.
     setTimeout(() => {
       this.isDraggingProgress = false;
-    }, 500);
+    }, 1500); 
   }
 }

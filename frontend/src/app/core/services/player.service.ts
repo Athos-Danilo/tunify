@@ -16,13 +16,19 @@ export class PlayerService {
   private player: any;
   private deviceId: string = '';
 
-  // 🚨 [NOVO] O "Rádio" que transmite os dados da música atual para o HTML
+  // 🚨 1. GUARDANDO O TOKEN: Precisamos dele para falar com a API da Repetição
+  private accessToken: string = ''; 
+
+  // 🚨 O "Rádio" que transmite os dados da música atual para o HTML
   private playerStateSubject = new BehaviorSubject<any>(null);
   playerState$ = this.playerStateSubject.asObservable();
 
   constructor() { }
 
   iniciarPlayer(token: string) {
+    // 🚨 2. SALVANDO O TOKEN assim que o player é iniciado
+    this.accessToken = token;
+
     console.log('[INFO] Iniciando a construção da Caixinha de Som do Tunify...');
 
     const script = document.createElement('script');
@@ -81,7 +87,7 @@ export class PlayerService {
     if (this.player) this.player.previousTrack();
   }
 
-  // 🚨 [NOVO] O pedal de avançar/voltar a música na barra!
+  // O pedal de avançar/voltar a música na barra!
   seek(positionMs: number) {
     if (this.player) {
       // Manda a ordem pro SDK do Spotify
@@ -89,5 +95,25 @@ export class PlayerService {
         console.log(`[TUNIFY] Pulou para o milissegundo: ${positionMs}`);
       });
     }
+  }
+
+  // 🚨 3. O COMUNICADOR DA REPETIÇÃO: Chama a API direto
+  setRepeatMode(state: 'off' | 'context' | 'track') {
+    if (!this.accessToken) return;
+    
+    // Fazemos um PUT na API Web oficial do Spotify passando o estado desejado e o ID do nosso Tunify
+    fetch(`https://api.spotify.com/v1/me/player/repeat?state=${state}&device_id=${this.deviceId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`
+      }
+    }).then(response => {
+      // O Spotify geralmente responde com 204 (No Content) quando dá certo
+      if (response.ok || response.status === 204) {
+        console.log(`[TUNIFY] Repetição alterada com sucesso para: ${state}`);
+      } else {
+        console.warn(`[TUNIFY] A API retornou status ${response.status} ao tentar mudar a repetição.`);
+      }
+    }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
   }
 }
