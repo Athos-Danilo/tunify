@@ -117,6 +117,34 @@ export class PlayerService {
     }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
   }
 
+  // 🚨 NOVA FUNÇÃO: Busca a letra da música
+  async buscarLetra(musica: string, artista: string): Promise<string | null> {
+    try {
+      // Limpando os nomes para a URL (tirando espaços extras e caracteres estranhos)
+      const trackClean = encodeURIComponent(musica.split('-')[0].trim()); // Tira o "- Remix", etc.
+      const artistClean = encodeURIComponent(artista.split(',')[0].trim()); // Pega só o primeiro artista
+
+      // 🔗 AQUI VOCÊ PLUGA A SUA API!
+      // Se for usar a pública do lyrics.ovh (Ideal para testes puramente Front-end):
+      const url = `https://api.lyrics.ovh/v1/${artistClean}/${trackClean}`;
+      
+      // Se for usar o seu próprio backend Node.js/Java que faz o scraping do Genius:
+      // const url = `https://sua-api-no-render.com/lyrics?artist=${artistClean}&track=${trackClean}`;
+
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        // A lyrics.ovh retorna no campo 'lyrics'. Ajuste se a sua API retornar diferente!
+        return data.lyrics || null; 
+      }
+      return null;
+    } catch (err) {
+      console.error('[TUNIFY] Erro ao buscar letra:', err);
+      return null;
+    }
+  }
+
   // 🚨 Busca a Fila completa direto dos servidores do Spotify
   async getQueue() {
     if (!this.accessToken) return null;

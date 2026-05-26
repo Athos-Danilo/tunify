@@ -482,6 +482,78 @@
       animation: pulseGlow 3s infinite;
     }
   }
+
+  // ==========================================
+  // 🎤 A TELA DE LETRAS (GENIUS)
+  // ==========================================
+  .lyrics-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 30000; // Cobre absolutamente tudo
+    display: flex; flex-direction: column; // Empilhamento vertical estrito
+    
+    // A cor de fundo vira a cor do álbum!
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.5s ease;
+    transform: translateY(100%); // Escondido pra baixo
+    
+    &.is-open {
+      transform: translateY(0); // Sobe pra tela
+    }
+
+    .lyrics-header {
+      padding: 30px 20px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 15px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+      
+      .close-lyrics {
+        font-size: 24px; color: #fff; cursor: pointer;
+        padding: 10px;
+        &:active { transform: scale(0.9); }
+      }
+      
+      .lyrics-title {
+        font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);
+        text-align: center; max-width: 90%;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+    }
+
+    .lyrics-content {
+      flex: 1;
+      padding: 20px 30px 50px;
+      overflow-y: auto; // Só rola na vertical!
+      overflow-x: hidden; // Previne vazamento lateral
+      
+      .loading-spinner {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 50%; gap: 15px; color: rgba(255,255,255,0.7);
+        i { font-size: 30px; }
+      }
+
+      .lyrics-text {
+        font-size: 24px; 
+        line-height: 1.6;
+        font-weight: 700;
+        color: #fff;
+        white-space: pre-wrap; 
+        word-wrap: break-word; 
+        padding-bottom: 50px;
+
+        // 🚨 O Pincel Azul do Tunify
+        ::ng-deep .tunify-tag {
+          color: #0285FF; // O seu Azul Oficial
+          font-size: 18px; // Um pouco menor que a letra pra não gritar demais
+          font-weight: 800;
+          display: block; // Força a pular uma linha
+          margin-top: 30px; // Dá um respiro antes do refrão/verso
+          margin-bottom: 5px;
+          text-transform: uppercase; // Deixa tudo em CAIXA ALTA
+          letter-spacing: 1px; // Espaçamento chique de aplicativo gringo
+        }
+      }
+    }
+  }
 }
 
 // ==========================================

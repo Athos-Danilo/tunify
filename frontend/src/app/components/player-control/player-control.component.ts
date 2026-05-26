@@ -191,6 +191,52 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     return track.artists.map((a: any) => a.name).join(', ');
   }
 
+  // 🚨 Variáveis atualizadas
+  isLyricsOpen: boolean = false;
+  lyricsText: string = '';
+  formattedLyrics: string = ''; // <--- A novidade!
+  isLoadingLyrics: boolean = false;
+
+  // Função para abrir e buscar na API real
+  async abrirLetras() {
+    this.isLyricsOpen = true;
+    
+    // Se a música já carregou a letra, não gasta internet buscando de novo!
+    if (this.lyricsText) return; 
+
+    this.isLoadingLyrics = true;
+    
+    try {
+      // 🚨 CHAMA O SERVIÇO DE VERDADE
+      const letraReal = await this.playerService.buscarLetra(this.trackName, this.artistName);
+
+      if (letraReal) {
+        this.lyricsText = letraReal;
+        
+        // Aplica a nossa mágica azul do Tunify nas tags!
+        this.formattedLyrics = letraReal.replace(
+          /(\[.*?\])/g, 
+          '<span class="tunify-tag">$1</span>'
+        );
+      } else {
+        // Se a API não achar a música
+        this.lyricsText = 'Letra não encontrada para esta música.';
+        this.formattedLyrics = this.lyricsText;
+      }
+      
+    } catch (error) {
+      this.lyricsText = 'Erro ao conectar com o servidor de letras.';
+      this.formattedLyrics = this.lyricsText;
+    } finally {
+      // Tira o loading independentemente de dar certo ou errado
+      this.isLoadingLyrics = false;
+    }
+  }
+
+  fecharLetras() {
+    this.isLyricsOpen = false;
+  }
+
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
       if (!state) return;

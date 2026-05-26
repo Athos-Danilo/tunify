@@ -165,12 +165,29 @@
         
         <i class="fa-solid fa-headphones fs-action-icon thinner-icon"></i>
         
-        <div class="fs-lyrics-pill invite-pulse">
+        <div class="fs-lyrics-pill invite-pulse" (click)="abrirLetras()">
             <i class="fa-solid fa-microphone-lines"></i>
             <span>Letra</span>
         </div>
 
         <i class="fa-solid fa-list-ul fs-action-icon thinner-icon" (click)="toggleFila()"></i>
+    </div>
+
+    <div class="lyrics-screen" [class.is-open]="isLyricsOpen" [style.backgroundColor]="'rgb(' + albumColorRGB + ')'">
+        
+        <div class="lyrics-header">
+            <i class="fa-solid fa-chevron-down close-lyrics" (click)="fecharLetras()"></i>
+            <span class="lyrics-title">{{ trackName }}</span>
+        </div>
+
+        <div class="lyrics-content">
+            <div class="loading-spinner" *ngIf="isLoadingLyrics">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Buscando no Genius...</p>
+            </div>
+            
+            <div class="lyrics-text" *ngIf="!isLoadingLyrics && formattedLyrics" [innerHTML]="formattedLyrics"></div>
+        </div>
     </div>
 
     <div class="queue-drawer" [class.is-open]="isQueueOpen">
