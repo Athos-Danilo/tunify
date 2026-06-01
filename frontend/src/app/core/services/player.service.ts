@@ -16,13 +16,19 @@ export class PlayerService {
   private player: any;
   private deviceId: string = '';
 
-  // 🚨 [NOVO] O "Rádio" que transmite os dados da música atual para o HTML
+  // 🚨 1. GUARDANDO O TOKEN: Precisamos dele para falar com a API da Repetição
+  private accessToken: string = ''; 
+
+  // 🚨 O "Rádio" que transmite os dados da música atual para o HTML
   private playerStateSubject = new BehaviorSubject<any>(null);
   playerState$ = this.playerStateSubject.asObservable();
 
   constructor() { }
 
   iniciarPlayer(token: string) {
+    // 🚨 2. SALVANDO O TOKEN assim que o player é iniciado
+    this.accessToken = token;
+
     console.log('[INFO] Iniciando a construção da Caixinha de Som do Tunify...');
 
     const script = document.createElement('script');
@@ -79,5 +85,75 @@ export class PlayerService {
 
   previousTrack() {
     if (this.player) this.player.previousTrack();
+  }
+
+  // O pedal de avançar/voltar a música na barra!
+  seek(positionMs: number) {
+    if (this.player) {
+      // Manda a ordem pro SDK do Spotify
+      this.player.seek(positionMs).then(() => {
+        console.log(`[TUNIFY] Pulou para o milissegundo: ${positionMs}`);
+      });
+    }
+  }
+
+  // 🚨 3. O COMUNICADOR DA REPETIÇÃO: Chama a API direto
+  setRepeatMode(state: 'off' | 'context' | 'track') {
+    if (!this.accessToken) return;
+    
+    // Fazemos um PUT na API Web oficial do Spotify passando o estado desejado e o ID do nosso Tunify
+    fetch(`https://api.spotify.com/v1/me/player/repeat?state=${state}&device_id=${this.deviceId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`
+      }
+    }).then(response => {
+      // O Spotify geralmente responde com 204 (No Content) quando dá certo
+      if (response.ok || response.status === 204) {
+        console.log(`[TUNIFY] Repetição alterada com sucesso para: ${state}`);
+      } else {
+        console.warn(`[TUNIFY] A API retornou status ${response.status} ao tentar mudar a repetição.`);
+      }
+    }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
+  }
+
+  // 🚨 NOVA FUNÇÃO: Busca a letra na nossa PRÓPRIA API EM GO!
+  async buscarLetra(musica: string, artista: string): Promise<string | null> {
+    try {
+      // Limpando os nomes para a URL (tirando o "- Remix" e pegando só o primeiro artista)
+      const trackClean = encodeURIComponent(musica.split('-')[0].trim());
+      const artistClean = encodeURIComponent(artista.split(',')[0].trim());
+
+      // 🔗 Bate na porta 8080 onde o Go está rodando!
+      const url = `http://localhost:8080/lyrics?artist=${artistClean}&track=${trackClean}`;
+
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        // A nossa API devolve a letra dentro da propriedade "lyrics"
+        return data.lyrics || null; 
+      }
+      return null;
+    } catch (err) {
+      console.error('[TUNIFY] Erro ao buscar letra na nossa API em Go:', err);
+      return null;
+    }
+  }
+
+  // 🚨 Busca a Fila completa direto dos servidores do Spotify
+  async getQueue() {
+    if (!this.accessToken) return null;
+    try {
+      const response = await fetch('https://api.spotify.com/v1/me/player/queue', {
+        headers: { 'Authorization': `Bearer ${this.accessToken}` }
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (err) {
+      console.error('[TUNIFY] Erro ao buscar a fila:', err);
+    }
+    return null;
   }
 }

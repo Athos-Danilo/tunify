@@ -95,22 +95,47 @@
         <i class="fa-solid fa-ellipsis-vertical"></i>
     </div>
 
-    <div class="fs-stage">
-        <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
-    </div>
+    <div class="fs-swipe-container"
+         (touchstart)="onTouchStartFS($event)"
+         (touchmove)="onTouchMoveFS($event)"
+         (touchend)="onTouchEndFS($event)">
 
-    <div class="fs-details">
-        <div class="fs-titles">
-            <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
-            <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+        <div class="fs-swipe-content"
+             [style.transform]="fsSwipeTransform"
+             [style.transition]="fsSwipeTransition"
+             [style.opacity]="fsSwipeOpacity">
+             
+            <div class="fs-stage">
+                <img [src]="albumCover" alt="Capa Tela Cheia" crossOrigin="anonymous">
+            </div>
+
+            <div class="fs-details">
+                <div class="fs-titles">
+                    <h2 [class.marquee]="isTrackOverflowing">{{ trackName }}</h2>
+                    <p [class.marquee]="isArtistOverflowing">{{ artistName }}</p>
+                </div>
+                <i class="fa-regular fa-heart"></i>
+            </div>
+
         </div>
-        <i class="fa-regular fa-heart"></i>
     </div>
 
     <div class="fs-progress">
         <div class="progress-bar-bg">
             <div class="progress-bar-fill" [style.width.%]="progress"></div>
             <div class="progress-dot" [style.left.%]="progress"></div>
+
+            <input type="range" 
+                   min="0" 
+                   max="100" 
+                   [value]="progress" 
+                   (mousedown)="onSeekStart()"
+                   (touchstart)="onSeekStart()"
+                   (input)="onSeek($event)" 
+                   (change)="onSeekEnd($event)"
+                   (touchend)="onSeekEnd($event)"
+                   class="fs-ghost-slider">
+
         </div>
         <div class="time-row">
             <span>{{ currentTime }}</span>
@@ -128,18 +153,73 @@
         </div>
         
         <i class="fa-solid fa-forward-step thinner-icon" (click)="next()"></i>
-        <i class="fa-solid fa-repeat control-secundario thinner-icon"></i>
+        
+        <div class="control-secundario thinner-icon repeat-icon-wrapper" (click)="ciclarRepeat()"
+             [ngClass]="{'active-green': repeatMode !== 0}">
+            <i class="fa-solid fa-repeat"></i>
+            <span *ngIf="repeatMode === 2" class="repeat-track-number">1</span>
+        </div>
     </div>
 
     <div class="fs-footer">
         
         <i class="fa-solid fa-headphones fs-action-icon thinner-icon"></i>
         
-        <div class="fs-lyrics-pill invite-pulse">
+        <div class="fs-lyrics-pill invite-pulse" (click)="abrirLetras()">
             <i class="fa-solid fa-microphone-lines"></i>
             <span>Letra</span>
         </div>
 
-        <i class="fa-solid fa-arrow-up-from-bracket fs-action-icon thinner-icon"></i>
+        <i class="fa-solid fa-list-ul fs-action-icon thinner-icon" (click)="toggleFila()"></i>
+    </div>
+
+    <div class="lyrics-screen" [class.is-open]="isLyricsOpen" [style.backgroundColor]="'rgb(' + albumColorRGB + ')'">
+        
+        <div class="lyrics-header">
+            <i class="fa-solid fa-chevron-down close-lyrics" (click)="fecharLetras()"></i>
+            <span class="lyrics-title">{{ trackName }}</span>
+        </div>
+
+        <div class="lyrics-content">
+            <div class="loading-spinner" *ngIf="isLoadingLyrics">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Buscando no Genius...</p>
+            </div>
+            
+            <div class="lyrics-text" *ngIf="!isLoadingLyrics && formattedLyrics" [innerHTML]="formattedLyrics"></div>
+        </div>
+    </div>
+
+    <div class="queue-drawer" [class.is-open]="isQueueOpen">
+        <div class="queue-header-drag" (click)="toggleFila()">
+            <div class="drag-handle"></div>
+        </div>
+
+        <div class="queue-content">
+            <h2 class="queue-title">Fila</h2>
+            <p class="queue-device">
+                <i class="fa-brands fa-spotify"></i> Tunify Web Player
+            </p>
+
+            <h3 class="queue-section-title">Tocando agora</h3>
+            <div class="queue-item current-playing" *ngIf="currentQueueTrack">
+                <img [src]="currentQueueTrack.album.images[0].url" alt="Capa">
+                <div class="item-info">
+                    <span class="item-name active-green">{{ currentQueueTrack.name }}</span>
+                    <span class="item-artist">{{ getArtistNames(currentQueueTrack) }}</span>
+                </div>
+                <i class="fa-solid fa-volume-high active-green equalizer-icon"></i>
+            </div>
+
+            <h3 class="queue-section-title">A seguir</h3>
+            <div class="queue-item" *ngFor="let track of queueList">
+                <img [src]="track.album.images[0].url" alt="Capa">
+                <div class="item-info">
+                    <span class="item-name">{{ track.name }}</span>
+                    <span class="item-artist">{{ getArtistNames(track) }}</span>
+                </div>
+                <i class="fa-solid fa-bars item-drag-icon"></i>
+            </div>
+        </div>
     </div>
 </div>

@@ -291,7 +291,7 @@
   box-sizing: border-box;
   overflow: hidden;
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 
   &.is-open { transform: translateY(0); }
 
@@ -316,17 +316,39 @@
     .fs-context { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: rgba(255,255,255,0.8); }
   }
 
+  .fs-swipe-container {
+    flex: 1; // Ocupa todo o meio da tela
+    display: flex;
+    flex-direction: column;
+    min-height: 0; 
+    width: 100%;
+  }
+
+  .fs-swipe-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    will-change: transform, opacity; // Avisa o celular pra focar no desempenho disso
+  }
+
   .fs-stage {
     flex: 1; 
     display: flex; align-items: center; justify-content: center;
-    min-height: 0;
-    padding: 20px 0; 
+    
+    // 🚨 O SEGREDO DO FLEXBOX: min-height 0 impede que a div-mãe seja "empurrada"
+    min-height: 0; 
+    width: 100%;
+    padding: 10px 0; 
     
     img { 
-      // 🚨 O Segredo 3: Capa beeeem maior!
-      width: 95%; 
+      // 🚨 A MÁGICA DA PROPORÇÃO RESPONSIVA
+      max-width: 100%; 
       max-height: 100%; 
-      aspect-ratio: 1/1; 
+      width: auto;
+      height: auto;
+      aspect-ratio: 1 / 1; 
+      
       object-fit: cover; 
       border-radius: 12px; 
       box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
@@ -347,25 +369,40 @@
 
   .fs-progress {
     margin-bottom: 40px;
+    
     .progress-bar-bg {
       width: 100%; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; position: relative; margin-bottom: 12px;
       
       .progress-bar-fill { 
         height: 100%; 
-        // 🚨 O Segredo 4: Degradê da barra
         background: linear-gradient(90deg, #0285FF 0%, #1DB954 100%); 
         border-radius: 10px; 
+        transition: width 0.1s linear; // Deixa o rastro rápido ao arrastar
       }
       
       .progress-dot { 
         position: absolute; top: 50%; width: 14px; height: 14px; background: #fff; 
         border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        transition: left 0.1s linear;
+        pointer-events: none; // 🚨 Ignora o toque para não bloquear o input!
+      }
+
+      // 🚨 O SEGREDO DE ESTADO: Slider invisível e com área de toque gordinha
+      .fs-ghost-slider {
+        position: absolute;
+        top: -10px; // Margem para cima
+        left: 0;
+        width: 100%;
+        height: 25px; // Altura grande para o dedo não errar a barra
+        opacity: 0; // Invisibilidade total
+        cursor: pointer;
+        z-index: 10;
+        margin: 0;
       }
     }
     .time-row { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
   }
 
-  // ... (o topo do seu .full-screen-player continua igual)
 
   .fs-controls {
     display: flex; justify-content: space-between; align-items: center; 
@@ -403,6 +440,12 @@
 
       &:active { transform: scale(0.95); }
     }
+
+    // 🚨 A cor verde clássica de ativação
+    .active-green {
+      color: #1DB954 !important; // O verde icônico do Spotify
+      opacity: 1 !important;     // Tira a transparência do ícone desativado
+    }
   }
 
   .fs-footer {
@@ -439,6 +482,78 @@
       animation: pulseGlow 3s infinite;
     }
   }
+
+  // ==========================================
+  // 🎤 A TELA DE LETRAS (GENIUS)
+  // ==========================================
+  .lyrics-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 30000; // Cobre absolutamente tudo
+    display: flex; flex-direction: column; // Empilhamento vertical estrito
+    
+    // A cor de fundo vira a cor do álbum!
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.5s ease;
+    transform: translateY(100%); // Escondido pra baixo
+    
+    &.is-open {
+      transform: translateY(0); // Sobe pra tela
+    }
+
+    .lyrics-header {
+      padding: 30px 20px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 15px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+      
+      .close-lyrics {
+        font-size: 24px; color: #fff; cursor: pointer;
+        padding: 10px;
+        &:active { transform: scale(0.9); }
+      }
+      
+      .lyrics-title {
+        font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);
+        text-align: center; max-width: 90%;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+    }
+
+    .lyrics-content {
+      flex: 1;
+      padding: 20px 30px 50px;
+      overflow-y: auto; // Só rola na vertical!
+      overflow-x: hidden; // Previne vazamento lateral
+      
+      .loading-spinner {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        height: 50%; gap: 15px; color: rgba(255,255,255,0.7);
+        i { font-size: 30px; }
+      }
+
+      .lyrics-text {
+        font-size: 24px; 
+        line-height: 1.6;
+        font-weight: 700;
+        color: #fff;
+        white-space: pre-wrap; 
+        word-wrap: break-word; 
+        padding-bottom: 50px;
+
+        // 🚨 O Pincel Azul do Tunify
+        ::ng-deep .tunify-tag {
+          color: #0285FF; // O seu Azul Oficial
+          font-size: 18px; // Um pouco menor que a letra pra não gritar demais
+          font-weight: 800;
+          display: block; // Força a pular uma linha
+          margin-top: 30px; // Dá um respiro antes do refrão/verso
+          margin-bottom: 5px;
+          text-transform: uppercase; // Deixa tudo em CAIXA ALTA
+          letter-spacing: 1px; // Espaçamento chique de aplicativo gringo
+        }
+      }
+    }
+  }
 }
 
 // ==========================================
@@ -467,3 +582,108 @@
     transform: scale(1.05); // Dá o efeito de zoom suave
   }
 }
+
+// ==========================================
+  // 🎨 O ÍCONE DE REPETIÇÃO PREMIUM (NÍVEL APPLE/SPOTIFY)
+  // ==========================================
+  .repeat-icon-wrapper {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    i.fa-repeat {
+      font-size: inherit;
+      color: inherit;
+    }
+
+    // O número 1 minimalista e limpo
+    .repeat-track-number {
+      position: absolute;
+      top: 50%; 
+      left: 50%;
+      // O translateY(-1px) é o truque de ótica pra alinhar perfeitamente no FontAwesome
+      transform: translate(-50%, -50%) translateY(-1px); 
+      
+      font-size: 11px; // Tamanho ideal pra caber no buraco do ícone
+      font-weight: 900; // Bem gordinho pra dar leitura
+      
+      // 🚨 O SEGREDO: Fundo transparente e a cor herda o verde do pai!
+      color: inherit; 
+      background: transparent; 
+      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+  }
+
+  // ==========================================
+  // 🎶 A GAVETA DA FILA (BOTTOM SHEET)
+  // ==========================================
+  .queue-drawer {
+    position: absolute;
+    bottom: 0; left: 0; 
+    width: 100%;
+    height: 85dvh; // Sobe cobrindo 85% da tela, igual ao print!
+    background-color: #242424; // O cinza chique do Spotify
+    border-radius: 24px 24px 0 0;
+    z-index: 20000; // Fica por cima de tudo
+    display: flex; flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5); // Sombra profunda pra destacar
+    
+    // 🚨 A MÁGICA DA ANIMAÇÃO
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+    &.is-open {
+      transform: translateY(0);
+    }
+
+    .queue-header-drag {
+      width: 100%; height: 35px;
+      display: flex; justify-content: center; align-items: center;
+      cursor: pointer;
+      .drag-handle { 
+        width: 40px; height: 5px; 
+        background: rgba(255,255,255,0.3); 
+        border-radius: 3px; 
+      }
+    }
+
+    .queue-content {
+      padding: 0 24px 24px;
+      overflow-y: auto; // Permite rolar a lista!
+      flex: 1;
+
+      .queue-title { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 5px 0; }
+      
+      .queue-device { 
+        font-size: 13px; color: #1DB954; font-weight: 500; margin-bottom: 25px; 
+        display: flex; align-items: center; gap: 6px; 
+        i { font-size: 15px; }
+      }
+      
+      .queue-section-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 15px; margin-top: 15px; }
+
+      .queue-item {
+        display: flex; align-items: center; margin-bottom: 15px;
+        
+        img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+        
+        .item-info {
+          flex: 1; display: flex; flex-direction: column; overflow: hidden;
+          .item-name { font-size: 15px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;}
+          .item-artist { font-size: 13px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        }
+        
+        .item-drag-icon { color: rgba(255,255,255,0.4); font-size: 18px; margin-left: 10px; }
+        .equalizer-icon { font-size: 16px; margin-left: 10px; }
+        .active-green { color: #1DB954 !important; }
+      }
+    }
+  }

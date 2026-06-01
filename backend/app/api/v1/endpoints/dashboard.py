@@ -195,3 +195,24 @@ async def obter_top_artistas(email: str, db: Session = Depends(get_db)):
         "mes_referencia": mes_atual_str,
         "dados": resultado_formatado
     }
+
+
+# ======> Rota Administrativa Temporária
+# 1) Dispara o robô agregador mensal manualmente para reprocessar dados retroativos.
+# 2) Ideal para recuperar falhas de fechamento mensal como a de Maio/2026.
+# --------------------------------------------------------------------------- #
+@router.get("/admin/reprocessar-retroativo")
+async def reprocessar_retroativo(db: Session = Depends(get_db)):
+    from app.services.tasks import robo_agregador_mensal
+    try:
+        # Dispara o mesmo robô de fechamento
+        await robo_agregador_mensal()
+        return {
+            "status": "sucesso",
+            "mensagem": "Dados retroativos de Maio reprocessados e consolidados com sucesso! A tabela quente foi limpa."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao reprocessar os dados: {str(e)}"
+        )

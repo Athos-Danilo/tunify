@@ -61,11 +61,180 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
     // Só abre se for tela de celular!
     if (window.innerWidth <= 768) {
       this.isFullScreenMobile = true;
+      // 🚨 TRAVA A TELA: Impede o site de rolar por trás do player
+      document.body.style.overflow = 'hidden';
     }
   }
 
   fecharTelaCheia() {
     this.isFullScreenMobile = false;
+    // 🚨 DESTRAVA A TELA: Devolve a rolagem normal pro dashboard
+    document.body.style.overflow = '';
+  }
+
+  // 🚨 VARIÁVEIS DA FÍSICA DO TELA CHEIA
+  fsStartX: number = 0;
+  fsStartY: number = 0;
+  fsCurrentX: number = 0;
+  fsCurrentY: number = 0;
+  fsSwipeTransform: string = 'translateX(0)';
+  fsSwipeTransition: string = '0.3s ease';
+  fsSwipeOpacity: number = 1;
+  fsIsDragging: boolean = false;
+
+  // 1. O Dedo encosta na tela
+  onTouchStartFS(event: TouchEvent) {
+    this.fsStartX = event.touches[0].clientX;
+    this.fsStartY = event.touches[0].clientY;
+    this.fsIsDragging = true;
+    this.fsSwipeTransition = 'none'; // Tira o delay para a capa grudar no dedo
+  }
+
+  // 2. O Dedo arrasta na tela
+  onTouchMoveFS(event: TouchEvent) {
+    if (!this.fsIsDragging) return;
+    this.fsCurrentX = event.touches[0].clientX;
+    this.fsCurrentY = event.touches[0].clientY;
+
+    const deltaX = this.fsCurrentX - this.fsStartX;
+    const deltaY = this.fsCurrentY - this.fsStartY;
+
+    // Se o usuário estiver arrastando para BAIXO, não move a capa pros lados
+    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 20) {
+      return; 
+    }
+
+    // Se for um movimento HORIZONTAL, a capa e texto escorregam acompanhando o dedo
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      this.fsSwipeTransform = `translateX(${deltaX}px)`;
+      this.fsSwipeOpacity = 1 - (Math.abs(deltaX) / window.innerWidth);
+    }
+  }
+
+  // 3. O Dedo solta a tela
+  onTouchEndFS(event: TouchEvent) {
+    if (!this.fsIsDragging) return;
+    this.fsIsDragging = false;
+    
+    // Devolve a suavidade para a capa voltar pro lugar
+    this.fsSwipeTransition = 'transform 0.3s ease, opacity 0.3s ease'; 
+
+    const deltaX = this.fsCurrentX - this.fsStartX;
+    const deltaY = this.fsCurrentY - this.fsStartY;
+
+    // GESTO: Arrastou bastante para BAIXO? Fecha o player!
+    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 70) {
+      this.fecharTelaCheia();
+    } 
+    // GESTO: Arrastou para a DIREITA? Música anterior!
+    else if (deltaX > 80) {
+      this.previous();
+    } 
+    // GESTO: Arrastou para a ESQUERDA? Próxima música!
+    else if (deltaX < -80) {
+      this.next();
+    }
+
+    // Efeito elástico: a capa sempre volta pro meio quando solta
+    this.fsSwipeTransform = 'translateX(0)';
+    this.fsSwipeOpacity = 1;
+  }
+
+  // 🚨 Variável que controla a UI da Repetição
+  repeatMode: number = 0; // 0 = off, 1 = context, 2 = track
+
+  // 🚨 NOVA FUNÇÃO PARA O CLIQUE
+  ciclarRepeat() {
+    let newStateStr: 'off' | 'context' | 'track' = 'off';
+    
+    // A lógica de ciclo: 0 vai pra 1, 1 vai pra 2, 2 volta pro 0.
+    if (this.repeatMode === 0) {
+      newStateStr = 'context';
+      this.repeatMode = 1; // Muda a UI instantaneamente (otimista)
+    } else if (this.repeatMode === 1) {
+      newStateStr = 'track';
+      this.repeatMode = 2;
+    } else {
+      newStateStr = 'off';
+      this.repeatMode = 0;
+    }
+
+    this.playerService.setRepeatMode(newStateStr);
+  }
+
+  // 🚨 VARIÁVEIS DA FILA (QUEUE)
+  isQueueOpen: boolean = false;
+  queueList: any[] = [];
+  currentQueueTrack: any = null;
+
+  // Função para abrir/fechar a aba e já carregar as músicas
+  async toggleFila() {
+    if (!this.isQueueOpen) {
+      // Abre a gaveta imediatamente para o usuário ver ação
+      this.isQueueOpen = true;
+      
+      // Busca os dados no Spotify
+      const filaData = await this.playerService.getQueue();
+      if (filaData) {
+        this.currentQueueTrack = filaData.currently_playing;
+        // Cortamos para as próximas 20 músicas para o celular não travar renderizando foto
+        this.queueList = filaData.queue.slice(0, 20); 
+      }
+    } else {
+      this.isQueueOpen = false;
+    }
+  }
+
+  // 🚨 Função auxiliar rápida para juntar os nomes dos artistas com vírgula
+  getArtistNames(track: any): string {
+    if (!track || !track.artists) return 'Desconhecido';
+    return track.artists.map((a: any) => a.name).join(', ');
+  }
+
+  // 🚨 Variáveis atualizadas
+  isLyricsOpen: boolean = false;
+  lyricsText: string = '';
+  formattedLyrics: string = ''; // <--- A novidade!
+  isLoadingLyrics: boolean = false;
+
+  // Função para abrir e buscar na API real
+  async abrirLetras() {
+    this.isLyricsOpen = true;
+    
+    // Se a música já carregou a letra, não gasta internet buscando de novo!
+    if (this.lyricsText) return; 
+
+    this.isLoadingLyrics = true;
+    
+    try {
+      // 🚨 CHAMA O SERVIÇO DE VERDADE
+      const letraReal = await this.playerService.buscarLetra(this.trackName, this.artistName);
+
+      if (letraReal) {
+        this.lyricsText = letraReal;
+        
+        // Aplica a nossa mágica azul do Tunify nas tags!
+        this.formattedLyrics = letraReal.replace(
+          /(\[.*?\])/g, 
+          '<span class="tunify-tag">$1</span>'
+        );
+      } else {
+        // Se a API não achar a música
+        this.lyricsText = 'Letra não encontrada para esta música.';
+        this.formattedLyrics = this.lyricsText;
+      }
+      
+    } catch (error) {
+      this.lyricsText = 'Erro ao conectar com o servidor de letras.';
+      this.formattedLyrics = this.lyricsText;
+    } finally {
+      // Tira o loading independentemente de dar certo ou errado
+      this.isLoadingLyrics = false;
+    }
+  }
+
+  fecharLetras() {
+    this.isLyricsOpen = false;
   }
 
   ngOnInit() {
@@ -88,22 +257,36 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.trackName = track.name;
       this.artistName = track.artists.map((a: any) => a.name).join(', ');
 
+      // 🚨 ADICIONE ESTAS DUAS LINHAS AQUI! 
+      // Zera as letras antigas para o Angular buscar a nova quando o usuário pedir
+      this.lyricsText = '';
+      this.formattedLyrics = '';
+
       // 🚨 Checa o tamanho do texto sempre que a música atualiza
       setTimeout(() => this.verificarOverflowDeTexto(), 100);
 
       this.isPlaying = !state.paused;
       
       // 🚨 Sincroniza o relógio interno com a realidade do Spotify
-      this.durationMs = state.duration;
-      this.positionMs = state.position;
-      
-      this.duration = this.formatTime(this.durationMs);
-      this.atualizarProgressoVisual(); 
+      // SÓ SINCRONIZA SE NÃO ESTIVER ARRASTANDO, senão a bolinha pula!
+      if (!this.isDraggingProgress) {
+        this.durationMs = state.duration;
+        this.positionMs = state.position;
+        
+        this.duration = this.formatTime(this.durationMs);
+        this.atualizarProgressoVisual(); 
+      }
       
       // 🚨 Liga ou desliga o cronômetro baseado no play/pause
       this.gerenciarCronometro();
 
       this.cdr.detectChanges();
+
+      // Perto de onde você lê state.paused e a fila:
+      this.isPlaying = !state.paused;
+      
+      // 🚨 Sincroniza a repetição com a realidade vinda do Spotify
+      this.repeatMode = state.repeat_mode;
     });
   }
 
@@ -143,11 +326,15 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
 
   private atualizarProgressoVisual() {
     if (this.durationMs > 0) {
-      this.progress = (this.positionMs / this.durationMs) * 100;
-      this.currentTime = this.formatTime(this.positionMs);
+      // 🚨 A MORDAÇA ENTRA AQUI! 
+      // Só atualiza a barrinha e o texto do tempo se o dedo NÃO estiver na tela
+      if (!this.isDraggingProgress) {
+        this.progress = (this.positionMs / this.durationMs) * 100;
+        this.currentTime = this.formatTime(this.positionMs);
+      }
     }
   }
-  // ==========================================
+
 
   extrairCorDaCapa() {
     try {
@@ -289,5 +476,48 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.isArtistOverflowing = tWidth > cWidth;
     }
     this.cdr.detectChanges();
+  }
+
+  // 🚨 VARIÁVEL DE CONTROLE
+  isDraggingProgress: boolean = false;
+
+  // 1. O dedo tocou na barra: Pausa a atualização automática!
+  onSeekStart() {
+    this.isDraggingProgress = true;
+  }
+
+  // 2. O dedo está arrastando: Atualiza só a barrinha visualmente
+  onSeek(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.progress = Number(input.value); 
+  }
+
+  // 3. O dedo soltou a barra: Dá o comando definitivo!
+  onSeekEnd(event: any) {
+    // 🚨 TRAVA DE SEGURANÇA: Como colocamos (change) e (touchend), pode disparar duas vezes.
+    // Isso garante que o comando só rode uma vez por clique!
+    if (!this.isDraggingProgress) return; 
+
+    // Pega o valor dependendo de como o evento foi disparado
+    let novoProgresso = this.progress; 
+    if (event && event.target && event.target.value) {
+      novoProgresso = Number(event.target.value);
+    }
+
+    const tempoDestinoMs = Math.round((novoProgresso / 100) * this.durationMs);
+
+    // 🚨 ILUSÃO DE ÓTICA: Atualiza a interface local IMEDIATAMENTE!
+    // Assim o usuário não vê a barra piscar ou voltar enquanto a internet trabalha.
+    this.positionMs = tempoDestinoMs;
+    this.progress = novoProgresso;
+    this.currentTime = this.formatTime(this.positionMs);
+
+    // 🔗 Manda a ordem pro Spotify
+    this.playerService.seek(tempoDestinoMs); 
+
+    // Dá um belo tempo (1.5 segundos) pro servidor do Spotify processar e devolver a resposta certa.
+    setTimeout(() => {
+      this.isDraggingProgress = false;
+    }, 1500); 
   }
 }
