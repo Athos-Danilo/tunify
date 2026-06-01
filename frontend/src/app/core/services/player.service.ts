@@ -117,30 +117,26 @@ export class PlayerService {
     }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
   }
 
-  // 🚨 NOVA FUNÇÃO: Busca a letra da música
+  // 🚨 NOVA FUNÇÃO: Busca a letra na nossa PRÓPRIA API EM GO!
   async buscarLetra(musica: string, artista: string): Promise<string | null> {
     try {
-      // Limpando os nomes para a URL (tirando espaços extras e caracteres estranhos)
-      const trackClean = encodeURIComponent(musica.split('-')[0].trim()); // Tira o "- Remix", etc.
-      const artistClean = encodeURIComponent(artista.split(',')[0].trim()); // Pega só o primeiro artista
+      // Limpando os nomes para a URL (tirando o "- Remix" e pegando só o primeiro artista)
+      const trackClean = encodeURIComponent(musica.split('-')[0].trim());
+      const artistClean = encodeURIComponent(artista.split(',')[0].trim());
 
-      // 🔗 AQUI VOCÊ PLUGA A SUA API!
-      // Se for usar a pública do lyrics.ovh (Ideal para testes puramente Front-end):
-      const url = `https://api.lyrics.ovh/v1/${artistClean}/${trackClean}`;
-      
-      // Se for usar o seu próprio backend Node.js/Java que faz o scraping do Genius:
-      // const url = `https://sua-api-no-render.com/lyrics?artist=${artistClean}&track=${trackClean}`;
+      // 🔗 Bate na porta 8080 onde o Go está rodando!
+      const url = `http://localhost:8080/lyrics?artist=${artistClean}&track=${trackClean}`;
 
       const response = await fetch(url);
       
       if (response.ok) {
         const data = await response.json();
-        // A lyrics.ovh retorna no campo 'lyrics'. Ajuste se a sua API retornar diferente!
+        // A nossa API devolve a letra dentro da propriedade "lyrics"
         return data.lyrics || null; 
       }
       return null;
     } catch (err) {
-      console.error('[TUNIFY] Erro ao buscar letra:', err);
+      console.error('[TUNIFY] Erro ao buscar letra na nossa API em Go:', err);
       return null;
     }
   }

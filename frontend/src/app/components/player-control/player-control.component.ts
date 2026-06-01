@@ -257,6 +257,11 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
       this.trackName = track.name;
       this.artistName = track.artists.map((a: any) => a.name).join(', ');
 
+      // 🚨 ADICIONE ESTAS DUAS LINHAS AQUI! 
+      // Zera as letras antigas para o Angular buscar a nova quando o usuário pedir
+      this.lyricsText = '';
+      this.formattedLyrics = '';
+
       // 🚨 Checa o tamanho do texto sempre que a música atualiza
       setTimeout(() => this.verificarOverflowDeTexto(), 100);
 
