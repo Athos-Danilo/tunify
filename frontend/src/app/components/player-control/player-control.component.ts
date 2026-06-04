@@ -20,6 +20,7 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
   artistName: string = 'Tunify Player';
   albumCover: string = 'assets/default-cover.png';
   isPlaying: boolean = false;
+  hasSession: boolean = false;
   
   // 🚨 Variáveis novas para o cronômetro funcionar
   progress: number = 0;
@@ -239,7 +240,12 @@ export class PlayerControlComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.playerService.playerState$.subscribe((state: any) => {
-      if (!state) return;
+      if (!state) {
+        this.hasSession = false; // Esconde tudo se não tiver sessão
+        return;
+      }
+
+      this.hasSession = true; // 🚨 OPA! Chegou música, pode mostrar o player!
 
       const track = state.track_window.current_track;
 
