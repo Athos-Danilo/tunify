@@ -1,0 +1,52 @@
+<div class="tunify-player-desktop" [style.--album-color]="albumColorRGB">
+    
+    <div class="track-info">
+        <img [src]="albumCover" class="album-art" alt="Capa do Álbum" crossOrigin="anonymous">
+        <div class="details">
+            <h4 class="track-title">{{ trackName }}</h4>
+            <p class="track-artist">{{ artistName }}</p>
+        </div>
+        <i class="fa-regular fa-heart add-icon"></i>
+    </div>
+
+    <div class="controls-center">
+        <div class="buttons">
+            <i class="fa-solid fa-shuffle control-icon"></i>
+            <i class="fa-solid fa-backward-step control-icon" (click)="clicouPrevious()"></i>
+            
+            <div class="play-btn" (click)="clicouPlay()">
+                <i class="fa-solid" [ngClass]="isPlaying ? 'fa-pause' : 'fa-play'"></i>
+            </div>
+
+            <i class="fa-solid fa-forward-step control-icon" (click)="clicouNext()"></i>
+            
+            <div class="control-icon repeat-icon-wrapper" (click)="ciclarRepeat()" [ngClass]="{'active-green': repeatMode !== 0}">
+                <i class="fa-solid fa-repeat"></i>
+                <span *ngIf="repeatMode === 2" class="repeat-track-number">1</span>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <span class="time">{{ currentTime }}</span>
+            <div class="progress-bar">
+                <div class="fill" [style.width.%]="progress"></div>
+                <input type="range" min="0" max="100" [value]="progress" 
+                       (mousedown)="onSeekStart.emit()"
+                       (input)="onSeekVisual($event)" 
+                       (change)="onSeekEnd($event)"
+                       class="ghost-slider">
+            </div>
+            <span class="time">{{ duration }}</span>
+        </div>
+    </div>
+
+    <div class="volume-actions">
+        <i class="fa-solid fa-microphone-lines action-icon" (click)="abrirAbaLetras()"></i> 
+        <i class="fa-solid fa-list-ul action-icon"></i> 
+        <i class="fa-solid fa-computer action-icon"></i> 
+        <i class="fa-solid fa-volume-high action-icon"></i> 
+        <div class="volume-bar">
+            <div class="volume-fill"></div>
+        </div>
+    </div>
+</div>

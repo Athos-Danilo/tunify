@@ -90,3 +90,14 @@ body {
 
 // Importando a Tela de Carregamento.
 @import 'preloader';
+
+// Remove o quadrado azul padrão de toque nos celulares
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Impede que o usuário "selecione" o ícone como se fosse um texto se ele segurar o dedo
+button, i, svg, .play-btn, .mobile-play-btn, .fs-play-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -1,0 +1,171 @@
+@use '../../../assets/mixins' as *;
+
+.tunify-player-desktop {
+  position: fixed;
+  bottom: 0; 
+  left: 0;
+  width: 100%;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px; 
+  z-index: 9998;
+  box-sizing: border-box;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  
+  // FUNDO TEMA ESCURO (Padrão)
+  background: linear-gradient(90deg, rgba(var(--album-color), 0.2) 0%, rgba(11, 17, 32, 0.4) 50%, rgba(11, 17, 32, 0.6) 100%);
+  backdrop-filter: blur(16px); 
+  -webkit-backdrop-filter: blur(16px);
+
+  // ==========================================
+  // ☀️ MODO TEMA CLARO DESKTOP
+  // ==========================================
+  :host-context(.tema-claro) & {
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.1) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.9) 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+    // Ajuste dos Textos (Preto)
+    .track-info .details {
+      .track-title { color: var(--preto-lt, #0f172a); }
+      .track-artist { color: var(--cinza-escuro-lt, #4b5563); }
+    }
+
+    // Ajuste dos Ícones Secundários (Preto com Opacidade)
+    .controls-center .buttons .control-icon {
+      color: var(--cinza-escuro-lt, #4b5563);
+      &:hover { color: var(--preto-lt, #0f172a); }
+    }
+    
+    .active-green { color: var(--verde-spotify-dk, #1DB954) !important; opacity: 1 !important; }
+
+    // 🚨 Inverte o botão de Play (Bola preta com ícone branco)
+    .controls-center .buttons .play-btn {
+      background: #000; color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      &:hover { background: #222; }
+    }
+
+    // Barras de Progresso no Tema Claro
+    .progress-container {
+      .time { color: var(--cinza-escuro-lt, #4b5563); }
+      .progress-bar { 
+        background: rgba(0,0,0,0.1); // Fundo cinza opaco
+        .fill::after { background: #000; } // Bolinha de seek preta
+      }
+    }
+
+    // Volume no Tema Claro
+    .volume-actions {
+      .action-icon {
+        color: var(--cinza-escuro-lt, #4b5563);
+        &:hover { color: var(--preto-lt, #0f172a); }
+      }
+      .volume-bar { 
+        background: rgba(0,0,0,0.1); 
+        // Garante que o preenchimento fique visível (Preto/Cinza ou o verde clássico)
+        .volume-fill { background: var(--preto-lt, #0f172a); } 
+        &:hover .volume-fill { background: var(--verde-spotify-dk, #1DB954); }
+      }
+    }
+    
+    // Número 1 da Repetição
+    .repeat-track-number { color: inherit; }
+  }
+
+  // Ajustes de Tamanho Tela Grande
+  @include tela-grande {
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.15) 0%, var(--azul-muito-escuro-dk, #0a0e17) 60%);
+    backdrop-filter: none; 
+    -webkit-backdrop-filter: none;
+    
+    :host-context(.tema-claro) & {
+        background: linear-gradient(90deg, rgba(var(--album-color), 0.15) 0%, #fff 60%);
+    }
+  }
+
+  // ==========================================
+  // ESTILIZAÇÃO INTERNA (Estrutura Retida)
+  // ==========================================
+  .track-info {
+    display: flex; align-items: center; gap: 15px; width: 30%;
+    
+    .album-art { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+    
+    .details {
+      display: flex; flex-direction: column; justify-content: center;
+      .track-title { font-size: 14px; color: #fff; font-weight: 600; margin: 0 0 2px 0; }
+      .track-artist { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin: 0; }
+    }
+    
+    .add-icon { color: var(--verde-spotify-dk, #1DB954); font-size: 18px; cursor: pointer; }
+  }
+
+  .controls-center {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; width: 40%;
+
+    .buttons {
+      display: flex; align-items: center; gap: 25px;
+
+      .control-icon {
+        font-size: 16px; color: rgba(255, 255, 255, 0.7); cursor: pointer; transition: 0.2s;
+        &:hover { color: var(--branco-dk, #fff); }
+      }
+
+      .play-btn {
+        width: 38px; height: 38px; background: #fff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); color: #000; cursor: pointer;
+        
+        // 🚨 CORREÇÃO 1: Animação suave de transição (0.2s)
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), background 0.2s ease;
+        
+        i { font-size: 16px; margin-left: 2px; }
+        .fa-pause { margin-left: 0; }
+        &:hover { transform: scale(1.05); background: #f0f0f0; }
+      }
+      
+      .active-green { color: var(--verde-spotify-dk, #1DB954) !important; opacity: 1 !important; }
+    }
+
+    .progress-container {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      .time { font-size: 11px; color: rgba(255, 255, 255, 0.6); width: 35px; text-align: center; font-variant-numeric: tabular-nums; }
+      
+      .progress-bar {
+        flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative;
+        
+        .fill {
+          height: 100%; background: linear-gradient(90deg, var(--cor-azul, #007bff), var(--verde-spotify-dk, #1DB954)); 
+          border-radius: 2px; transition: width 0.1s linear; position: relative; pointer-events: none;
+          &::after { content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%) scale(0); width: 10px; height: 10px; background: #fff; border-radius: 50%; transition: transform 0.1s; }
+        }
+        
+        &:hover .fill::after { transform: translateY(-50%) scale(1); }
+
+        .ghost-slider {
+          position: absolute; top: -6px; left: 0; width: 100%; height: 16px; opacity: 0; cursor: pointer; margin: 0;
+        }
+      }
+    }
+  }
+
+  .volume-actions {
+    width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;
+    
+    .action-icon { color: rgba(255, 255, 255, 0.7); font-size: 14px; cursor: pointer; transition: 0.2s; &:hover { color: var(--branco-dk, #fff); } }
+    
+    .volume-bar {
+      width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer;
+      .volume-fill { width: 50%; height: 100%; background: #fff; border-radius: 2px; transition: background 0.2s; }
+      &:hover .volume-fill { background: var(--verde-spotify-dk, #1DB954); }
+    }
+  }
+
+  // REPETIÇÃO
+  .repeat-icon-wrapper {
+    position: relative; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+    .repeat-track-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(-1px); font-size: 8px; font-weight: 900; color: inherit; }
+  }
+}
