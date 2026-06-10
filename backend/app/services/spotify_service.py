@@ -10,7 +10,7 @@ import base64
 class SpotifyService:
     
     def __init__(self):
-        # A URL base oficial de todos os endpoints do Spotify
+        # 🚨 CORRIGIDO: A URL base oficial de todos os endpoints do Spotify
         self.base_url = "https://api.spotify.com/v1"
 
     # ======> Rota: Músicas Tocadas Recentemente
@@ -93,6 +93,7 @@ class SpotifyService:
     # 2) Essa função usa o refresh_token (que não morre) para pegar um novo access_token.
     # -------------------------------------------------------------------------------------- #
     async def atualizar_token(self, refresh_token: str, client_id: str, client_secret: str) -> dict:
+        # 🚨 CORRIGIDO: URL oficial para tokens do Spotify
         url = "https://accounts.spotify.com/api/token"
         
         # O Spotify exige que a gente mande os dados como "formulário" e não como JSON
@@ -104,7 +105,7 @@ class SpotifyService:
 
         # A autenticação secreta do nosso App
         auth_str = f"{client_id}:{client_secret}"
-        import base64
+        # 🚨 CORRIGIDO: O import base64 que vivia aqui foi deletado, usamos o lá do topo!
         b64_auth = base64.b64encode(auth_str.encode()).decode()
 
         headers = {
