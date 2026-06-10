@@ -12,6 +12,18 @@
     align-items: center;
     overflow: hidden;
     animation: preloaderExit 6s forwards;
+
+    body.tema-claro & {
+        background-color: var(--branco-azulado-lt);
+
+        .sound-waves {
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q100,0 200,50 T400,50 T600,50 T800,50" fill="none" stroke="%232c9fff" stroke-width="2" opacity="0.35"/></svg>');
+        }
+        
+        .sound-waves-2 {
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 Q25,10 50,50 T100,90 T150,10 T200,50 T250,90 T300,10 T350,50 T400,90 T450,10 T500,50 T550,90 T600,10 T650,50 T700,90 T750,10 T800,50" fill="none" stroke="%230285ff" stroke-width="1.5" opacity="0.15"/></svg>');
+        }
+    }
 }
 
 /*----- Circulo Azul -----*/

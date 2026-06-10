@@ -58,6 +58,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private playerService = inject(PlayerService);
 
   ngOnInit() {
+    // Carrega o tema do localStorage e sincroniza com o body
+    const temaSalvo = localStorage.getItem('tunify_tema');
+    if (temaSalvo === 'claro') {
+      this.modoEscuro = false;
+      document.body.classList.add('tema-claro');
+    } else {
+      this.modoEscuro = true;
+      document.body.classList.remove('tema-claro');
+    }
+
     // 🚨 1. Pega os dados do usuário da nossa gaveta nova do login!
     const userInfoString = localStorage.getItem('tunify_user_info');
     
@@ -117,6 +127,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   alternarTema() {
     this.modoEscuro = !this.modoEscuro;
+    localStorage.setItem('tunify_tema', this.modoEscuro ? 'escuro' : 'claro');
+    if (this.modoEscuro) {
+      document.body.classList.remove('tema-claro');
+    } else {
+      document.body.classList.add('tema-claro');
+    }
   }
 
   fazerLogout() {

@@ -157,6 +157,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const temaSalvo = localStorage.getItem('tunify_tema');
     if (temaSalvo === 'claro') {
       this.modoEscuro = false;
+      document.body.classList.add('tema-claro');
+    } else {
+      this.modoEscuro = true;
+      document.body.classList.remove('tema-claro');
     }
 
     this.iniciarSimulacaoSkips();
@@ -169,6 +173,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // SALVANDO A ESCOLHA NO NAVEGADOR
     localStorage.setItem('tunify_tema', this.modoEscuro ? 'escuro' : 'claro');
+    
+    if (this.modoEscuro) {
+      document.body.classList.remove('tema-claro');
+    } else {
+      document.body.classList.add('tema-claro');
+    }
     
     this.renderizarFundo();
   }
