@@ -47,8 +47,14 @@
 
     <ul class="card-stats-container slide slide-minimalista" [class.ativo]="activeSlide === 1">
       <li class="stat-row minimal-row">
-        <span class="stat-text destaque-minimalista">🎵 Última reprodução</span>
+        <span class="stat-text destaque-minimalista" *ngIf="ultimaMusica?.tocandoAgora; else tituloUltima">
+          Tocando Agora
+        </span>
+        <ng-template #tituloUltima>
+          <span class="stat-text destaque-minimalista">Última Reprodução</span>
+        </ng-template>
       </li>
+      
       <li class="stat-row minimal-row">
         <span class="stat-text valor-minimalista" *ngIf="ultimaMusica; else semMusica">
           {{ ultimaMusica.nome }} • {{ ultimaMusica.artista }}
@@ -61,7 +67,7 @@
 
     <ul class="card-stats-container slide slide-minimalista" [class.ativo]="activeSlide === 2">
       <li class="stat-row minimal-row">
-        <span class="stat-text destaque-minimalista">⏱️ Tempo no Tunify hoje</span>
+        <span class="stat-text destaque-minimalista">Minutos Ouvidos Até Agora</span>
       </li>
       <li class="stat-row minimal-row">
         <span class="stat-text valor-minimalista">{{ minutosOuvidosHoje }} min ouvidos</span>
