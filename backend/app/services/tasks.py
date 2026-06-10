@@ -77,6 +77,7 @@ async def robo_rastreador_hourly():
 
                 for tentativa in range(2):
                     try:
+                        # 🚨 Camada 1: Tentamos a busca otimizada com o cursor 'after'
                         faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
                         break 
                     except ValueError as e:
@@ -92,6 +93,31 @@ async def robo_rastreador_hourly():
                                 user.refresh_token = novos_tokens['refresh_token']
                             db.commit()
                         else:
+                            raise e
+                    except httpx.HTTPStatusError as e:
+                        # 🚨 Camada 2: A NOSSA CAMADA DE AUTO-CURA
+                        # Se o Spotify der erro 500 porque se perdeu com o nosso cursor 'after_ts', ativamos o Fallback.
+                        if e.response.status_code == 500 and after_ts is not None:
+                            logger.warning(f"⚠️ [RASTREADOR] Erro 500 do Spotify para {nome_usuario}. Ativando Auto-Cura (Fallback)...")
+                            # Fazemos a busca padrão geral (traz as últimas 50 sem filtro) que nunca falha com 500
+                            faixas_recentes_brutas = await spotify.get_recently_played(user.access_token)
+                            
+                            faixas_recentes = []
+                            # Filtramos manualmente no Python: mantemos apenas as músicas tocadas DEPOIS da nossa ultima_musica
+                            if ultima_musica:
+                                limite_data = ultima_musica.played_at
+                                for item in faixas_recentes_brutas:
+                                    item_played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
+                                    # Se a música do Spotify for mais recente que o último registro do banco, nós a guardamos
+                                    if item_played_at > limite_data:
+                                        faixas_recentes.append(item)
+                            else:
+                                faixas_recentes = faixas_recentes_brutas
+                                
+                            logger.info(f"🛡️ [AUTO-CURA] Filtro manual aplicado. Encontradas {len(faixas_recentes)} faixas novas.")
+                            break
+                        else:
+                            # Se for outro erro ou já estávamos tentando sem o 'after_ts', repassa o erro para abortar o usuário
                             raise e
 
                 # 4. Processamento das músicas e sementes de artistas
