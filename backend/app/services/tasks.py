@@ -34,26 +34,41 @@ from app.core.config import settings
 async def robo_rastreador_hourly():
     logger.info("🤖 [RASTREADOR] Acordando para buscar novas músicas...")
     
-    db = SessionLocal()
     spotify = SpotifyService()
     
-    try:
-        # 🚨 A BLINDAGEM DA AUTO-CURA
-        usuarios_ativos = []
-        for tentativa_db in range(3):
-            try:
-                usuarios_ativos = db.query(User).filter(User.refresh_token.isnot(None)).all()
-                break 
-            except Exception as db_error:
-                if tentativa_db < 2:
-                    logger.warning(f"⚠️ [RASTREADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3...")
-                    await asyncio.sleep(5) 
-                else:
-                    logger.error(f"❌ [RASTREADOR] Banco não acordou: {db_error}")
-                    return
+    # 🚨 A BLINDAGEM DA AUTO-CURA: Obtém os dados básicos dos usuários ativos
+    usuarios_ativos = []
+    for tentativa_db in range(3):
+        db_inicial = SessionLocal()
+        try:
+            usuarios_ativos = db_inicial.query(
+                User.id, 
+                User.display_name, 
+                User.email
+            ).filter(User.refresh_token.isnot(None)).all()
+            break 
+        except Exception as db_error:
+            if tentativa_db < 2:
+                logger.warning(f"⚠️ [RASTREADOR] Neon dormindo. Tentativa {tentativa_db + 1}/3...")
+                await asyncio.sleep(5) 
+            else:
+                logger.error(f"❌ [RASTREADOR] Banco não acordou: {db_error}")
+                return
+        finally:
+            db_inicial.close()
 
-        for user in usuarios_ativos:
+    try:
+        for user_id, user_display_name, user_email in usuarios_ativos:
+            nome_usuario = user_display_name or user_email or "Usuário"
+            
+            # Abre uma nova sessão dedicada a este usuário
+            db = SessionLocal()
             try:
+                # Carrega a instância do usuário nesta sessão
+                user = db.query(User).filter(User.id == user_id).first()
+                if not user:
+                    continue
+
                 ultima_musica = db.query(MonthlyHistory).filter(MonthlyHistory.user_id == user.id)\
                                       .order_by(MonthlyHistory.played_at.desc()).first()
                 
@@ -66,7 +81,7 @@ async def robo_rastreador_hourly():
                         break 
                     except ValueError as e:
                         if str(e) == "TOKEN_EXPIRADO" and tentativa == 0:
-                            logger.warning(f"⚠️ [RASTREADOR] Renovando token do {user.display_name}...")
+                            logger.warning(f"⚠️ [RASTREADOR] Renovando token do {nome_usuario}...")
                             novos_tokens = await spotify.atualizar_token(
                                 user.refresh_token, 
                                 settings.SPOTIFY_CLIENT_ID, 
@@ -108,7 +123,7 @@ async def robo_rastreador_hourly():
                                 artistas_adicionados_agora.add(artista_id) 
                                 logger.info(f"🌱 [SEMENTE] Novo artista detectado: {art_item['name']}")
 
-                    # Cache da Música (continua igual...)
+                    # Cache da Música
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
@@ -125,7 +140,7 @@ async def robo_rastreador_hourly():
                         musicas_adicionadas_agora.add(track_id) 
                         logger.info(f"📦 [CACHE] Música catalogada: {track_data['name']}")
                     
-                    # Histórico (continua igual...)
+                    # Histórico
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
                     novo_historico = MonthlyHistory(
                         user_id=user.id,
@@ -135,21 +150,18 @@ async def robo_rastreador_hourly():
                     db.add(novo_historico)
 
                 db.commit()
-                
-                # 🚨 ADICIONADO: Esvazia a memória RAM do SQLAlchemy após salvar as coisas deste usuário.
-                # Isso impede o acúmulo de objetos na memória durante o 'sleep' de 35 segundos abaixo.
-                db.expunge_all()
 
                 if faixas_recentes:
-                    logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {user.display_name}")
+                    logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {nome_usuario}")
 
             except Exception as ex:
-                logger.error(f"❌ [RASTREADOR] Erro no usuário {user.display_name}: {ex}")
+                logger.error(f"❌ [RASTREADOR] Erro no usuário {nome_usuario}: {ex}")
                 db.rollback() 
+            finally:
+                db.close() # Garante a liberação dos recursos da sessão deste usuário imediatamente
 
             await asyncio.sleep(35) 
     finally:
-        db.close()
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
 
 
