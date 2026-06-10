@@ -40,6 +40,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   emailUsuario: string | null = '';
 
   minutosTotais: number = 0;
+  ultimaMusica: any = null; 
+  minutosOuvidosHoje: number = 0;
   modoEscuro = true;
 
   dadosDemograficos: any = {
@@ -58,7 +60,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private playerService = inject(PlayerService);
 
   ngOnInit() {
-    // 🚨 1. Pega os dados do usuário da nossa gaveta nova do login!
+    // Carrega o tema do localStorage e sincroniza com o body
+    const temaSalvo = localStorage.getItem('tunify_tema');
+    if (temaSalvo === 'claro') {
+      this.modoEscuro = false;
+      document.body.classList.add('tema-claro');
+    } else {
+      this.modoEscuro = true;
+      document.body.classList.remove('tema-claro');
+    }
+
+    // 1. Pega os dados do usuário da nossa gaveta nova do login!
     const userInfoString = localStorage.getItem('tunify_user_info');
     
     if (userInfoString) {
@@ -67,13 +79,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.nomeUsuario = usuario.display_name || usuario.nome || usuario.email; 
       this.emailUsuario = usuario.email;
 
-      // 🚨 3. LIGANDO A CAIXINHA DE SOM!
-      // Ele tenta pegar o token do Spotify de dentro do objeto do usuário.
-      // (Adicionei um fallback para 'spotify_token' solto no localStorage caso o callback salve assim)
+      // 3. LIGANDO A CAIXINHA DE SOM!
       const tokenSpotify = usuario.spotify_token || localStorage.getItem('spotify_token');
       
       if (tokenSpotify) {
         this.playerService.iniciarPlayer(tokenSpotify);
+
+        // 🚨 [NOVO] CONSULTA EM TEMPO REAL AO SPOTIFY
+        this.spotifyService.obterMusicaAtualOuUltima(tokenSpotify).subscribe({
+          next: (musica) => {
+            if (musica) {
+              this.ultimaMusica = musica; 
+              this.cdr.detectChanges();
+            }
+          },
+          error: (err) => console.error('[ERRO] Falha ao buscar música ao vivo no Spotify:', err)
+        });
+
       } else {
         console.warn('⚠️ [AVISO] Token do Spotify não encontrado. O Player não vai ligar.');
       }
@@ -112,11 +134,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.error('[ERRO] Falha ao buscar minutos:', err);
         }
       });
+
+      // Chamada 3: Resumo de Hoje para o Card de Perfil
+      this.dashboardService.obterResumoHoje(this.emailUsuario).subscribe({
+        next: (res) => {
+          // 🚨 [AJUSTE] Pegamos APENAS os minutos do banco de dados agora. A música vem viva do Spotify!
+          this.minutosOuvidosHoje = res.minutos_ouvidos_hoje;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('[ERRO] Falha ao buscar resumo de hoje:', err);
+        }
+      });
     }
   }
 
   alternarTema() {
     this.modoEscuro = !this.modoEscuro;
+    localStorage.setItem('tunify_tema', this.modoEscuro ? 'escuro' : 'claro');
+    if (this.modoEscuro) {
+      document.body.classList.remove('tema-claro');
+    } else {
+      document.body.classList.add('tema-claro');
+    }
   }
 
   fazerLogout() {

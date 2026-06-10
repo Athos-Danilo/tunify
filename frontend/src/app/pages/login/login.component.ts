@@ -53,7 +53,13 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const temaSalvo = localStorage.getItem('tunify_tema');
-    if (temaSalvo === 'claro') { this.modoEscuro = false; }
+    if (temaSalvo === 'claro') {
+      this.modoEscuro = false;
+      document.body.classList.add('tema-claro');
+    } else {
+      this.modoEscuro = true;
+      document.body.classList.remove('tema-claro');
+    }
     this.iniciarCicloDeMusicas();
   }
 

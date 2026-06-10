@@ -1,11 +1,19 @@
 <article class="card-perfil">
+  <div class="ken-burns-bg"></div>
       
   <div class="card-image-container">
     <img [src]="dadosDemograficos.foto_perfil" alt="Foto de perfil de {{ nomeUsuario }}" class="profile-photo">
   </div>
 
   <div class="card-info-container">
-    <h2 class="profile-name">{{ nomeUsuario }}</h2>
+    <div class="profile-title-wrapper">
+      <h2 class="profile-name saudacao" [class.ativo]="exibirSaudacao">
+        {{ textoSaudacao }}
+      </h2>
+      <h2 class="profile-name estatico" [class.ativo]="exibirNome">
+        {{ nomeUsuario }}
+      </h2>
+    </div>
     
     <span class="account-badge" [ngClass]="{'premium-badge': dadosDemograficos.tipo_conta.includes('PREMIUM')}">
       {{ dadosDemograficos.tipo_conta }}
@@ -14,29 +22,57 @@
 
   <hr class="card-separador" aria-hidden="true">
 
-  <ul class="card-stats-container">
+  <div class="carrossel-wrapper">
     
-    <li class="stat-row">
-      <div class="stat-icon" aria-hidden="true">
-        <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt=""> 
-      </div>
-      <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
-    </li>
+    <ul class="card-stats-container slide" [class.ativo]="activeSlide === 0">
+      <li class="stat-row">
+        <div class="stat-icon" aria-hidden="true">
+          <img [src]="modoEscuro ? '/icones/playlist-branco.webp' : '/icones/playlist-preto.webp'" alt=""> 
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.total_playlists }} Playlists Públicas</span>
+      </li>
+      <li class="stat-row">
+        <div class="stat-icon" aria-hidden="true">
+          <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="">
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
+      </li>
+      <li class="stat-row">
+        <div class="stat-icon" aria-hidden="true">
+          <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="">
+        </div>
+        <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
+      </li>
+    </ul>
 
-    <li class="stat-row">
-      <div class="stat-icon" aria-hidden="true">
-        <img [src]="modoEscuro ? '/icones/seguidores-branco.webp' : '/icones/seguidores-preto.webp'" alt="">
-      </div>
-      <span class="stat-text">{{ dadosDemograficos.seguidores }} Seguidores</span>
-    </li>
+    <ul class="card-stats-container slide slide-minimalista" [class.ativo]="activeSlide === 1">
+      <li class="stat-row minimal-row">
+        <span class="stat-text destaque-minimalista" *ngIf="ultimaMusica?.tocandoAgora; else tituloUltima">
+          Tocando Agora
+        </span>
+        <ng-template #tituloUltima>
+          <span class="stat-text destaque-minimalista">Última Reprodução</span>
+        </ng-template>
+      </li>
+      
+      <li class="stat-row minimal-row">
+        <span class="stat-text valor-minimalista" *ngIf="ultimaMusica; else semMusica">
+          {{ ultimaMusica.nome }} • {{ ultimaMusica.artista }}
+        </span>
+        <ng-template #semMusica>
+          <span class="stat-text valor-minimalista">Nenhuma reprodução recente.</span>
+        </ng-template>
+      </li>
+    </ul>
 
-    <li class="stat-row">
-      <div class="stat-icon" aria-hidden="true">
-        <img [src]="modoEscuro ? '/icones/seguindo-branco.webp' : '/icones/seguindo-preto.webp'" alt="">
-      </div>
-      <span class="stat-text">{{ dadosDemograficos.seguindo }} Seguindo</span>
-    </li>
+    <ul class="card-stats-container slide slide-minimalista" [class.ativo]="activeSlide === 2">
+      <li class="stat-row minimal-row">
+        <span class="stat-text destaque-minimalista">Minutos Ouvidos Até Agora</span>
+      </li>
+      <li class="stat-row minimal-row">
+        <span class="stat-text valor-minimalista">{{ minutosOuvidosHoje }} min ouvidos</span>
+      </li>
+    </ul>
 
-  </ul>
-
+  </div>
 </article>

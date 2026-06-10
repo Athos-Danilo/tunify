@@ -215,4 +215,60 @@ async def reprocessar_retroativo(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao reprocessar os dados: {str(e)}"
-        )
+        )
+
+
+# ======> Rota: Resumo de Hoje (Para o Card de Perfil)
+# 1) Recebe o e-mail na URL.
+# 2) Busca a última música tocada (ordenando o histórico por data decrescente).
+# 3) Soma a duração das músicas tocadas apenas no dia de hoje.
+# --------------------------------------------------------------------------- #
+@router.get("/resumo_hoje/{email}")
+async def obter_resumo_hoje(email: str, db: Session = Depends(get_db)):
+    usuario = db.query(User).filter(User.email == email).first()
+    
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    # 1. BUSCAR A ÚLTIMA MÚSICA TOCADA
+    # Fazemos um JOIN com a tabela quente, ordenamos pela data de reprodução do mais novo pro mais velho (desc) e pegamos o primeiro (.first())
+    ultima_reproducao = db.query(
+        TrackCache.name,
+        TrackCache.artist_name
+    ).join(
+        MonthlyHistory, TrackCache.spotify_id == MonthlyHistory.spotify_track_id
+    ).filter(
+        MonthlyHistory.user_id == usuario.id
+    ).order_by(
+        desc(MonthlyHistory.played_at)
+    ).first()
+
+    ultima_musica_formatada = None
+    if ultima_reproducao:
+        ultima_musica_formatada = {
+            "nome": ultima_reproducao.name,
+            "artista": ultima_reproducao.artist_name
+        }
+
+    # 2. CALCULAR OS MINUTOS OUVIDOS APENAS HOJE
+    # Pegamos o momento exato de agora no fuso horário local do servidor/máquina e zeramos as horas/minutos
+    agora_local = datetime.datetime.now().astimezone()
+    inicio_de_hoje = agora_local.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    resultado_hoje = db.query(
+        func.sum(TrackCache.duration_ms).label('total_ms')
+    ).join(
+        MonthlyHistory, TrackCache.spotify_id == MonthlyHistory.spotify_track_id
+    ).filter(
+        MonthlyHistory.user_id == usuario.id,
+        MonthlyHistory.played_at >= inicio_de_hoje # 🚨 A MÁGICA AQUI: Só pega o que tocou de hoje de madrugada pra cá!
+    ).first()
+
+    total_ms = resultado_hoje.total_ms if resultado_hoje and resultado_hoje.total_ms else 0
+    minutos_hoje = int(total_ms / 60000)
+
+    # 3. EMPACOTAR E ENVIAR PARA O ANGULAR
+    return {
+        "ultima_musica": ultima_musica_formatada,
+        "minutos_ouvidos_hoje": minutos_hoje
+    }
