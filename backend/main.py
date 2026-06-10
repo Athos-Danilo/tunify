@@ -1,6 +1,8 @@
 # Ferramenta principal para criar a nossa API e o gerenciador de permissões de acesso (CORS).
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+# 🚨 ADICIONADO: Biblioteca nativa para gerenciar o ciclo de vida do servidor
+from contextlib import asynccontextmanager
 
 # Importa as configurações globais.
 from app.core.config import settings
@@ -19,20 +21,43 @@ from app.models.artist import ArtistCache
 
 
 # Robôs de Busca.
-from app.services.tasks import iniciar_robos
+# 🚨 AJUSTE: Importamos também o 'scheduler' para podermos desligá-lo com segurança no shutdown
+from app.services.tasks import iniciar_robos, scheduler
 
-# ======> Sincronização.
-# 1) O SQLAlchemy olha para todos os modelos importados acima;
-# 2) Verifica se cada tabela existe, se não existir, ele cria. 
-# --------------------------------------------------------------- #
-Base.metadata.create_all(bind=engine)
+
+# ======> Eventos de Inicialização e Ciclo de Vida (Lifespan).
+# 1) Executa comandos assim que o servidor é ligado;
+# 2) Aguarda o servidor rodar (yield);
+# 3) Executa a limpeza e desliga os robôs com educação quando o servidor para.
+# --------------------------------------------------------------------------- #
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ---- [STARTUP]: O que roda ao ligar o servidor ----
+    print("> Conectando ao Banco de Dados e verificando tabelas...")
+    
+    # Sincronização: O SQLAlchemy olha para todos os modelos importados e cria as tabelas se não existirem.
+    Base.metadata.create_all(bind=engine)
+    
+    print(f"> {settings.PROJECT_NAME} rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
+    print("> Banco de Dados conectado e tabelas verificadas com sucesso!")
+    
+    # Liga a nossa central de robôs!
+    iniciar_robos()
+    
+    yield # <--- O Servidor fica aqui respirando enquanto o app está online
+    
+    # ---- [SHUTDOWN]: O que roda ao desligar o servidor (ex: Re-deploy no Render) ----
+    print("> Desligando a central de robôs com segurança...")
+    if scheduler.running:
+        scheduler.shutdown()
+    print("> Central de Robôs desligada. Servidor encerrado com sucesso! 💤")
 
 
 # ======> Instância do FastAPI.
-# 1) Cria o servidor passando o nome do nosso projeto;
+# 1) Cria o servidor passando o nome do nosso projeto e o gerenciador de ciclo de vida;
 # 2) A partir daqui, a variável 'app' é o coração do backend.
 # -------------------------------------------------------------- #
-app = FastAPI(title=settings.PROJECT_NAME)
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 
 # ======> A Ponte com o Frontend (CORS).
@@ -62,18 +87,6 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(spotify.router, prefix="/api/v1/spotify", tags=["Spotify"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
-
-
-# ======> Eventos de Inicialização.
-# 1) Executa comandos assim que o servidor é ligado no terminal.
-# --------------------------------------------------------------------------- #
-@app.on_event("startup")
-async def startup_event():
-    print(f"> Tunify rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
-    print("> Banco de Dados conectado e tabelas verificadas!")
-    
-    # Liga a nossa central de robôs!
-    iniciar_robos()
 
 
 # ======> Rota Raiz.
