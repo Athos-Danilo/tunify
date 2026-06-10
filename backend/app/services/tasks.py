@@ -53,7 +53,7 @@ async def robo_rastreador_hourly():
         for user in usuarios_ativos:
             try:
                 ultima_musica = db.query(MonthlyHistory).filter(MonthlyHistory.user_id == user.id)\
-                                  .order_by(MonthlyHistory.played_at.desc()).first()
+                                      .order_by(MonthlyHistory.played_at.desc()).first()
                 
                 after_ts = int(ultima_musica.played_at.timestamp() * 1000) if ultima_musica else None
                 faixas_recentes = []
@@ -133,6 +133,11 @@ async def robo_rastreador_hourly():
                     db.add(novo_historico)
 
                 db.commit()
+                
+                # 🚨 ADICIONADO: Esvazia a memória RAM do SQLAlchemy após salvar as coisas deste usuário.
+                # Isso impede o acúmulo de objetos na memória durante o 'sleep' de 35 segundos abaixo.
+                db.expunge_all()
+
                 if faixas_recentes:
                     logger.info(f"✅ [RASTREADOR] +{len(faixas_recentes)} faixas salvas para {user.display_name}")
 
@@ -244,9 +249,10 @@ async def robo_faxineiro_artistas():
         limite_vencimento = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=15)
 
         # Busca a FILA: artistas sem foto OU com foto desatualizada
+        # 🚨 MODIFICADO: Trocamos o .all() por .limit(100).all() para proteger a memória RAM de um pico massivo.
         fila_artistas = db.query(ArtistCache).filter(
             (ArtistCache.profile_image_url.is_(None)) | (ArtistCache.last_updated_at < limite_vencimento)
-        ).all()
+        ).limit(100).all()
 
         if not fila_artistas:
             logger.info("✅ [FAXINEIRO] Tudo limpo! Nenhuma foto para atualizar.")
@@ -269,6 +275,10 @@ async def robo_faxineiro_artistas():
             except Exception as e:
                 logger.error(f"❌ [FAXINEIRO] Falha no artista {artista.name}: {e}")
                 db.rollback()
+
+            # 🚨 ADICIONADO: Desanexa o objeto processado da sessão atual do banco.
+            # Evita o vazamento de memória enquanto o robô tira o seu cochilo de 1.5 segundos.
+            db.expunge_all()
 
             # 🚨 O respiro do robô (1.5s entre cada artista para evitar bloqueios)
             await asyncio.sleep(1.5)
