@@ -6,6 +6,8 @@ from apscheduler.triggers.interval import IntervalTrigger
 # O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
 from sqlalchemy import func
 
+import httpx
+
 # Configuração básica de log para vermos os robôs trabalhando no terminal
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Tunify-Robots")
@@ -245,11 +247,7 @@ async def robo_faxineiro_artistas():
     genius = GeniusService()
 
     try:
-        # Data limite para considerar foto "velha"
         limite_vencimento = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=15)
-
-        # Busca a FILA: artistas sem foto OU com foto desatualizada
-        # 🚨 MODIFICADO: Trocamos o .all() por .limit(100).all() para proteger a memória RAM de um pico massivo.
         fila_artistas = db.query(ArtistCache).filter(
             (ArtistCache.profile_image_url.is_(None)) | (ArtistCache.last_updated_at < limite_vencimento)
         ).limit(100).all()
@@ -258,30 +256,28 @@ async def robo_faxineiro_artistas():
             logger.info("✅ [FAXINEIRO] Tudo limpo! Nenhuma foto para atualizar.")
             return
 
-        logger.info(f"🔄 [FAXINEIRO] Fila de trabalho montada: {len(fila_artistas)} artistas.")
+        logger.info(f"🔄 [FAXINEIRO] Fila de trabalho limitada: Processando {len(fila_artistas)} artistas hoje.")
 
-        for artista in fila_artistas:
-            try:
-                # Busca no Genius pelo nome do artista
-                nova_foto = await genius.buscar_foto_artista(artista.name)
+        # 🚨 A MÁGICA ACONTECE AQUI: O robô abre UMA única conexão de internet para a fila toda
+        async with httpx.AsyncClient() as client:
+            for artista in fila_artistas:
+                try:
+                    # Passamos o 'client' aberto para o serviço usar
+                    nova_foto = await genius.buscar_foto_artista(client, artista.name)
 
-                if nova_foto:
-                    artista.profile_image_url = nova_foto
-                    db.commit()
-                    logger.info(f"✨ [FAXINEIRO] Foto atualizada: {artista.name}")
-                else:
-                    logger.warning(f"⚠️ [FAXINEIRO] Foto não encontrada para {artista.name}.")
+                    if nova_foto:
+                        artista.profile_image_url = nova_foto
+                        db.commit()
+                        logger.info(f"✨ [FAXINEIRO] Foto atualizada: {artista.name}")
+                    else:
+                        logger.warning(f"⚠️ [FAXINEIRO] Foto não encontrada para {artista.name}.")
 
-            except Exception as e:
-                logger.error(f"❌ [FAXINEIRO] Falha no artista {artista.name}: {e}")
-                db.rollback()
+                except Exception as e:
+                    logger.error(f"❌ [FAXINEIRO] Falha no artista {artista.name}: {e}")
+                    db.rollback()
 
-            # 🚨 ADICIONADO: Desanexa o objeto processado da sessão atual do banco.
-            # Evita o vazamento de memória enquanto o robô tira o seu cochilo de 1.5 segundos.
-            db.expunge_all()
-
-            # 🚨 O respiro do robô (1.5s entre cada artista para evitar bloqueios)
-            await asyncio.sleep(1.5)
+                db.expunge_all()
+                await asyncio.sleep(1.5)
 
     except Exception as e:
         logger.error(f"❌ [FAXINEIRO] Erro crítico na faxina: {e}")
