@@ -15,7 +15,8 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
   display: grid;
   grid-template-columns: auto 1fr; 
-  grid-template-rows: auto auto; 
+  /* 🚨 MÁGICA DA FOTO: 1fr 1fr força as linhas a serem iguais, centralizando a foto perfeitamente! */
+  grid-template-rows: 1fr 1fr; 
   grid-template-areas: 
     "photo info" 
     "photo stats"; 
@@ -28,7 +29,7 @@
   border-radius: 30px; 
   position: relative;
   z-index: 2;
-  overflow: hidden; // 🚨 Adicionado para segurar o fundo Ken Burns
+  overflow: hidden;
 
   @include tela-media {
     display: flex; 
@@ -37,7 +38,6 @@
     grid-template-areas: none;
     grid-template-columns: none;
     grid-template-rows: none;
-    /* 👇 No tablet e PC, ele respeita essa largura máxima */
     max-width: 100%; 
     padding: 8px; 
     border-radius: 40px; 
@@ -56,16 +56,13 @@
     padding: 7px;
   }
 
-  /* 🚨 O Fundo Ken Burns Minimalista */
+  /* O Fundo Ken Burns */
   .ken-burns-bg {
     position: absolute;
     top: -5%; left: -5%;
     width: 110%; height: 110%;
     z-index: -1;
     border-radius: inherit;
-    /* Descomente abaixo se for usar uma foto de capa no futuro! */
-    /* background-image: url('URL_DA_CAPA'); */
-    /* background-size: cover; */
     animation: kenBurnsZoom 20s infinite alternate ease-in-out;
   }
 
@@ -82,6 +79,7 @@
     align-items: center; 
     width: 100%;
     margin-bottom: 0; 
+    align-self: center; /* 🚨 Garante que a foto fique cravada no centro */
     
     @include tela-media { grid-area: none; }
 
@@ -123,34 +121,28 @@
       align-self: center;
     }
 
-    @include tela-grande {
-      margin-top: 20px;
-    }
+    @include tela-grande { margin-top: 20px; }
 
-    /* 🚨 A NOVA ESTRUTURA BLINDADA COM GRID */
     .profile-title-wrapper {
       display: grid;
       grid-template-areas: "titulo";
       width: 100%;
-      height: 25px; // Mantemos a sua altura para não pular layout
+      height: 25px; 
       align-items: center;
       justify-items: center; 
 
       @include tela-media { 
-        justify-items: center; /* No PC: crava no centro matemático perfeito */
+        justify-items: center; 
         height: 35px; 
       }
-      @include tela-grande { 
-        height: 40px; 
-      }
+      @include tela-grande { height: 40px; }
 
-      /*--- Nome do Usuário ---*/
       .profile-name {
-        grid-area: titulo; /* 🚨 A MÁGICA: Os dois textos ocupam a mesma célula do grid! */
+        grid-area: titulo;
         font-size: 1.3rem; 
         font-weight: 500;
         color: var(--branco-dk);
-        margin: 0; /* Zeramos a margem para o grid alinhar perfeitamente */
+        margin: 0; 
         text-align: center;
         font-family: var(--fonte-especial);
         letter-spacing: -0.2px;
@@ -160,7 +152,6 @@
         transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
         pointer-events: none;
 
-        /* Classe que aciona o aparecimento */
         &.ativo {
           opacity: 1;
           transform: translateY(0);
@@ -178,7 +169,6 @@
           font-size: 1.8rem; 
           font-weight: 400;
           letter-spacing: -0.5px;
-          
           &.saudacao { 
             font-size: 1.8rem;
             font-weight: 400;
@@ -190,7 +180,6 @@
           font-size: 2rem;
           letter-spacing: 0; 
           font-weight: 500;
-
           &.saudacao { 
             font-size: 2rem; 
             letter-spacing: 0;
@@ -210,8 +199,8 @@
       font-size: 0.6rem; 
       padding: 3px 6px; 
       font-style: italic; 
-      margin-bottom: 15; 
-      margin-top: 15px;
+      margin-top: 5px; 
+      margin-bottom: 8px; 
 
       &.premium-badge {
         background-color: var(--verde-spotify-dk);
@@ -233,18 +222,16 @@
     }
   }
 
-  /*--- Linha Separadora ---*/
   .card-separador {
     display: none; 
     width: 80%;
     height: 1px;
     border: none; 
     background-color: rgba(255, 255, 255, 0.03);
-
     @include tela-media { display: block; }
   }
 
-  /* 🚨 Trava de espaço para o Carrossel */
+  /* Trava de espaço para o Carrossel */
   .carrossel-wrapper {
     grid-area: stats; 
     position: relative;
@@ -265,7 +252,6 @@
       margin: 15px auto;
     }
 
-    /*--- Lista de Estatísticas (Agora como Slides) ---*/
     .card-stats-container {
       position: absolute;
       top: 0; left: 0;
@@ -288,42 +274,12 @@
         pointer-events: auto;
       }
 
-      &.slide-minimalista {
-        justify-content: center; /* 🚨 AJUSTE 3: Centraliza o texto na caixa */
-        height: 100%;            /* 🚨 AJUSTE 3: Ocupa todo o espaço para distribuir a sobra */
-        gap: 2px;                /* Mantém o título colado na informação */
-        width: 100%;
-        
-        .minimal-row {
-          justify-content: center; 
-          @include tela-media { justify-content: center; text-align: center; }
-        }
-
-        .destaque-minimalista {
-          color: var(--verde-spotify-dk);
-          font-weight: 600;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          @include tela-media { font-size: 0.85rem; }
-        }
-
-        .valor-minimalista {
-          font-size: 0.9rem;
-          color: var(--branco-dk);
-          font-weight: 500;
-          @include tela-media { font-size: 1.1rem; }
-        }
-      }
-
       @include tela-media {
         gap: 6px; 
         align-items: center; 
       }
 
-      @include tela-grande {
-        gap: 7px; 
-      }
+      @include tela-grande { gap: 7px; }
 
       .stat-row {
         display: flex;
@@ -332,17 +288,9 @@
         width: 100%; 
         gap: 5px; 
 
-        @include tela-media {
-          justify-content: center; /* 🚨 AJUSTE: Força a centralização no modo absoluto do PC */
-          gap: 9px; 
-        }
-
-        @include tela-grande {
-          justify-content: center; /* 🚨 AJUSTE: Força a centralização no PC grande */
-          gap: 12px; 
-        }
+        @include tela-media { gap: 9px; }
+        @include tela-grande { gap: 12px; }
         
-        /*--- Ícones ---*/
         .stat-icon {
           display: flex;
           justify-content: center;
@@ -359,7 +307,6 @@
           }
         }
 
-        /*--- Informações ---*/
         .stat-text {
           color: var(--cinza-claro-dk);
           font-weight: 400;
@@ -369,6 +316,61 @@
 
           @include tela-media { font-size: 0.95rem; }
           @include tela-grande{ font-size: 1rem; }
+        }
+      }
+
+      /* REGRAS MINIMALISTAS */
+      &.slide-minimalista {
+        justify-content: center; 
+        height: 100%;            
+        gap: 4px; 
+        width: 100%;
+        
+        .minimal-row {
+          justify-content: center; 
+          @include tela-media { justify-content: center; text-align: center; gap: 6px; }
+        }
+
+        .stat-text.destaque-minimalista {
+          color: var(--branco-dk);
+          font-weight: 500;
+          font-size: 0.9rem; 
+          text-transform: none; 
+          letter-spacing: 0;
+          white-space: normal; 
+          @include tela-media { font-size: 1.1rem; } 
+        }
+
+        .stat-text.valor-minimalista {
+          font-size: 1.1rem; 
+          color: var(--branco-dk);
+          font-weight: 600;
+          text-align: center;
+          white-space: normal; 
+          line-height: 1.3;
+          display: block;
+
+          /* O Toque Premium (Azul + Fonte Correta) */
+          &.info-musica {
+            font-family: var(--fonte-principal); 
+            color: var(--azul-dk);               
+            font-weight: 700;
+          }
+
+          /* 🚨 O TRUQUE DO TEXTO LONGO (Acionado pelo Angular) */
+          &.texto-longo {
+            font-size: 0.85rem; /* Diminui no celular para não engolir o card */
+            line-height: 1.2;
+          }
+
+          @include tela-media { 
+            font-size: 1.4rem; 
+            line-height: 1.4;
+            
+            &.texto-longo {
+              font-size: 1.1rem; /* Diminui no PC também */
+            }
+          }
         }
       }
     }
@@ -381,12 +383,11 @@
   border: 1px solid rgb(191, 190, 190);
 
   .profile-name { color: var(--preto-lt); }
-  
+  .profile-name.saudacao { color: var(--azul-lt); } 
   .card-separador { background-color: rgba(0, 0, 0, 0.1); }
-
   .stat-row .stat-text { color: var(--preto-lt); }
 
-  // Ajustes de modo claro pro carrossel minimalista
-  .slide-minimalista .valor-minimalista { color: var(--preto-lt); }
-  .profile-name.saudacao { color: var(--azul-lt); } /* 🚨 AJUSTE DA COR: Azul no modo claro */
+  .slide-minimalista .stat-text.destaque-minimalista { color: var(--preto-lt); }
+  .slide-minimalista .stat-text.valor-minimalista { color: var(--preto-lt); }
+  .slide-minimalista .stat-text.valor-minimalista.info-musica { color: var(--azul-lt); } 
 }

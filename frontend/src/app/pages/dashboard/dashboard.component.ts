@@ -42,6 +42,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   minutosTotais: number = 0;
   ultimaMusica: any = null; 
   minutosOuvidosHoje: number = 0;
+
+  // 🚨 Variável para guardar e limpar o nosso cronômetro da música
+  private musicaTimeoutId: any;
+
   modoEscuro = true;
 
   dadosDemograficos: any = {
@@ -85,15 +89,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       if (tokenSpotify) {
         this.playerService.iniciarPlayer(tokenSpotify);
 
-        // 🚨 [NOVO] CONSULTA EM TEMPO REAL AO SPOTIFY
-        this.spotifyService.obterMusicaAtualOuUltima(tokenSpotify).subscribe({
-          next: (musica) => {
-            if (musica) {
-              this.ultimaMusica = musica; 
-              this.cdr.detectChanges();
-            }
-          },
-          error: (err) => console.error('[ERRO] Falha ao buscar música ao vivo no Spotify:', err)
+        this.monitorarMusicaAoVivo(tokenSpotify);
+
+        // 🚨 [NOVO] O OUVIDO DO DASHBOARD
+        // Se alguém clicar em "Pular" ou "Voltar" lá no componente do Player...
+        this.playerService.faixaModificada$.subscribe(() => {
+          console.log('🔄 Música alterada no Tunify! Recalculando o cronômetro...');
+          // Ele chama a função novamente. 
+          // Ela vai limpar o setTimeout antigo que tava perdido e criar um novo com a música certa!
+          this.monitorarMusicaAoVivo(tokenSpotify); 
         });
 
       } else {
@@ -165,6 +169,39 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
+  /**
+   * 🚨 A MÁGICA DO CRONÔMETRO INTELIGENTE!
+   */
+  monitorarMusicaAoVivo(token: string) {
+    this.spotifyService.obterMusicaAtualOuUltima(token).subscribe({
+      next: (musica) => {
+        if (musica) {
+          this.ultimaMusica = musica; 
+          this.cdr.detectChanges();
+
+          // Limpa qualquer cronômetro antigo para não encavalar
+          if (this.musicaTimeoutId) {
+            clearTimeout(this.musicaTimeoutId);
+          }
+
+          // Se a música está tocando, agenda a próxima checagem para o fim dela!
+          if (musica.tocandoAgora && musica.duration_ms && musica.progress_ms) {
+            const tempoRestanteMs = musica.duration_ms - musica.progress_ms;
+            
+            // Adicionamos 2000ms (2 segundos) de "gordura" para garantir que 
+            // quando perguntarmos de novo, o Spotify já virou a faixa no sistema deles.
+            const tempoParaProximaChecagem = tempoRestanteMs + 2000;
+
+            this.musicaTimeoutId = setTimeout(() => {
+              this.monitorarMusicaAoVivo(token); // Chama ela mesma quando a música acabar!
+            }, tempoParaProximaChecagem);
+          }
+        }
+      },
+      error: (err) => console.error('[ERRO] Falha ao buscar música ao vivo no Spotify:', err)
+    });
+  }
+
   ngAfterViewInit() {
     if (typeof window !== 'undefined') {
       this.ctx = this.radarCanvas.nativeElement.getContext('2d')!;
@@ -178,6 +215,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
+    }
+
+    // 🚨 Desliga o radar de música
+    if (this.musicaTimeoutId) {
+      clearTimeout(this.musicaTimeoutId);
     }
   }
 
