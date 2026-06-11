@@ -59,7 +59,7 @@
         <span class="stat-text valor-minimalista info-musica" 
               [ngClass]="{'texto-longo': (ultimaMusica.nome.length + ultimaMusica.artista.length) > 35}"
               *ngIf="ultimaMusica; else semMusica">
-          {{ ultimaMusica.nome }} • {{ ultimaMusica.artista }}
+          {{ ultimaMusica.nome }} <span class="ponto-separador">•</span> {{ ultimaMusica.artista }}
         </span>
         <ng-template #semMusica>
           <span class="stat-text valor-minimalista">Nenhuma Reprodução Recente.</span>
