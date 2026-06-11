@@ -34,28 +34,28 @@ export class SpotifyService {
   }
 
   /**
-   * 🚨 [NOVO] Busca a música atual. Se não tiver nada, busca a última tocada.
-   * Esta chamada vai direto para os servidores oficiais do Spotify!
+   * 🚨 [NOVO] Busca a música atual e traz os milissegundos para o nosso cronômetro!
    */
   obterMusicaAtualOuUltima(token: string): Observable<any> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-    // 1º TENTATIVA: O que está tocando agora no Spotify?
     return this.http.get<any>('https://api.spotify.com/v1/me/player/currently-playing', { headers }).pipe(
       switchMap(response => {
-        // Se a resposta vier com dados e a música estiver rolando
-        if (response && response.item) {
+        // Se tem uma resposta, tem um item, E o player está rodando agora!
+        if (response && response.item && response.is_playing) {
           return of({
             nome: response.item.name,
             artista: response.item.artists.map((a: any) => a.name).join(', '),
-            tocandoAgora: true // Marcador para o HTML saber que é ao vivo!
+            tocandoAgora: true,
+            // 🚨 Pegamos o tempo exato para a matemática do Dashboard!
+            progress_ms: response.progress_ms,
+            duration_ms: response.item.duration_ms 
           });
         }
-        // Se estiver pausado ou não retornar item, chama o histórico recente
+        // Se a música estiver pausada (is_playing == false) ou a resposta for vazia, puxa o histórico
         return this.buscarUltimaTocada(headers);
       }),
       catchError(() => {
-        // Se der erro de conexão na primeira tentativa, chama o histórico por segurança
         return this.buscarUltimaTocada(headers);
       })
     );

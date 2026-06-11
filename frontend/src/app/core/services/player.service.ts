@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs'; // 🚨 [NOVO] Importante para transmitir o status da música!
+import { BehaviorSubject, Subject } from 'rxjs'; // 🚨 [NOVO] Importamos o Subject (O Mensageiro)
 
 // Isso diz pro TypeScript: "Confia em mim, essa variável vai existir"
 declare var Spotify: any;
@@ -16,17 +16,20 @@ export class PlayerService {
   private player: any;
   private deviceId: string = '';
 
-  // 🚨 1. GUARDANDO O TOKEN: Precisamos dele para falar com a API da Repetição
+  // 1. GUARDANDO O TOKEN: Precisamos dele para falar com a API da Repetição
   private accessToken: string = ''; 
 
-  // 🚨 O "Rádio" que transmite os dados da música atual para o HTML
+  // O "Rádio" que transmite os dados da música atual para o HTML
   private playerStateSubject = new BehaviorSubject<any>(null);
   playerState$ = this.playerStateSubject.asObservable();
+
+  // 🚨 [NOVO] O MENSAGEIRO: Vai gritar pro Dashboard sempre que a faixa pular
+  public faixaModificada$ = new Subject<void>();
 
   constructor() { }
 
   iniciarPlayer(token: string) {
-    // 🚨 2. SALVANDO O TOKEN assim que o player é iniciado
+    // 2. SALVANDO O TOKEN assim que o player é iniciado
     this.accessToken = token;
 
     console.log('[INFO] Iniciando a construção da Caixinha de Som do Tunify...');
@@ -58,10 +61,14 @@ export class PlayerService {
       this.player.addListener('authentication_error', ({ message }: any) => { console.error('Erro Token:', message); });
       this.player.addListener('account_error', ({ message }: any) => { console.error('Erro Conta:', message); });
 
-      // 🚨 O MAIS IMPORTANTE: Avisa o nosso Componente que a música mudou!
+      // O MAIS IMPORTANTE: Avisa o nosso Componente que a música mudou!
       this.player.addListener('player_state_changed', (state: any) => {
         if (!state) return;
         this.playerStateSubject.next(state); // <--- Transmite a fofoca da música pro Angular
+        
+        // 🚨 [NOVO] O BÔNUS! Avisa o Dashboard que o estado do player mudou (alguém pulou, pausou, etc)
+        // Como o SDK detecta mudanças até do celular, o Dashboard vai se atualizar magicamente!
+        this.faixaModificada$.next();
       });
 
       this.player.connect().then((success: boolean) => {
@@ -80,11 +87,19 @@ export class PlayerService {
   }
 
   nextTrack() {
-    if (this.player) this.player.nextTrack();
+    if (this.player) {
+      this.player.nextTrack();
+      // 🚨 [NOVO] Grito manual caso o evento demore
+      setTimeout(() => this.faixaModificada$.next(), 500);
+    }
   }
 
   previousTrack() {
-    if (this.player) this.player.previousTrack();
+    if (this.player) {
+      this.player.previousTrack();
+      // 🚨 [NOVO] Grito manual caso o evento demore
+      setTimeout(() => this.faixaModificada$.next(), 500);
+    }
   }
 
   // O pedal de avançar/voltar a música na barra!
@@ -97,12 +112,12 @@ export class PlayerService {
     }
   }
 
-  // 🚨 3. O COMUNICADOR DA REPETIÇÃO: Chama a API direto
+  // 3. O COMUNICADOR DA REPETIÇÃO: Chama a API direto
   setRepeatMode(state: 'off' | 'context' | 'track') {
     if (!this.accessToken) return;
     
     // Fazemos um PUT na API Web oficial do Spotify passando o estado desejado e o ID do nosso Tunify
-    fetch(`https://api.spotify.com/v1/me/player/repeat?state=${state}&device_id=${this.deviceId}`, {
+    fetch(`https://api.spotify.com/v1/me/player/repeat?state=$${state}&device_id=${this.deviceId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${this.accessToken}`
@@ -117,7 +132,7 @@ export class PlayerService {
     }).catch(err => console.error('[TUNIFY] Erro ao tentar mudar repetição:', err));
   }
 
-  // 🚨 NOVA FUNÇÃO: Busca a letra na nossa PRÓPRIA API EM GO!
+  // NOVA FUNÇÃO: Busca a letra na nossa PRÓPRIA API EM GO!
   async buscarLetra(musica: string, artista: string): Promise<string | null> {
     try {
       // Limpando os nomes para a URL (tirando o "- Remix" e pegando só o primeiro artista)
@@ -141,7 +156,7 @@ export class PlayerService {
     }
   }
 
-  // 🚨 Busca a Fila completa direto dos servidores do Spotify
+  // Busca a Fila completa direto dos servidores do Spotify
   async getQueue() {
     if (!this.accessToken) return null;
     try {
