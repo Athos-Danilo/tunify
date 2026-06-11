@@ -251,9 +251,10 @@ async def obter_resumo_hoje(email: str, db: Session = Depends(get_db)):
         }
 
     # 2. CALCULAR OS MINUTOS OUVIDOS APENAS HOJE
-    # Pegamos o momento exato de agora no fuso horário local do servidor/máquina e zeramos as horas/minutos
-    agora_local = datetime.datetime.now().astimezone()
-    inicio_de_hoje = agora_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Pegamos o momento exato de agora no fuso horário do Brasil (UTC-3)
+    fuso_br = datetime.timezone(datetime.timedelta(hours=-3))
+    agora_br = datetime.datetime.now(fuso_br)
+    inicio_de_hoje = agora_br.replace(hour=0, minute=0, second=0, microsecond=0)
 
     resultado_hoje = db.query(
         func.sum(TrackCache.duration_ms).label('total_ms')
