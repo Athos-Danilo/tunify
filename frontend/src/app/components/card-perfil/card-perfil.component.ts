@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 
 @Component({
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./card-perfil.component.scss'] 
 })
 
-export class CardPerfilComponent implements OnInit, OnDestroy {
+export class CardPerfilComponent implements OnInit, OnDestroy, OnChanges {
 
   // INPUTS: Dados recebidos do componente pai:
   @Input() nomeUsuario: string | null = '';
@@ -31,6 +31,12 @@ export class CardPerfilComponent implements OnInit, OnDestroy {
   
   // ID do intervalo do carrossel para poder fazer limpeza no ngOnDestroy.
   private carrosselInterval: any;
+
+  // Flag para controle se o carrossel já foi iniciado no fluxo inicial
+  private carrosselIniciado: boolean = false;
+
+  // Controle de pausa via hover do mouse
+  private isHovered: boolean = false;
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -77,6 +83,24 @@ export class CardPerfilComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    // Só atualizamos dinamicamente se o fluxo de inicialização já chegou na etapa do carrossel
+    if (!this.carrosselIniciado) return;
+
+    const slides = this.availableSlides;
+
+    // Se passamos a ter mais de 1 slide e o carrossel estava parado, nós o reiniciamos
+    if (!this.carrosselInterval && slides.length > 1) {
+      this.iniciarCarrossel();
+    }
+
+    // Se o slide ativo atual não está mais na lista de permitidos, voltamos para o primeiro
+    if (!slides.includes(this.activeSlide)) {
+      this.activeSlide = slides[0];
+      this.cdr.detectChanges();
+    }
+  }
+
   /**
    * Define o texto de saudação apropriado baseado na hora do dia:
    * - 5h às 12h  → "Bom dia!"
@@ -98,17 +122,79 @@ export class CardPerfilComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Retorna os índices dos slides que devem ser exibidos com base nos dados
+  private get availableSlides(): number[] {
+    const slides = [0]; // Slide 0 (Demográficos) sempre aparece
+    
+    if (this.ultimaMusica) {
+      slides.push(1); // Slide 1 (Música tocando/última)
+    }
+    
+    if (this.minutosOuvidosHoje > 0) {
+      slides.push(2); // Slide 2 (Minutos ouvidos)
+    }
+    
+    return slides;
+  }
+
   // Inicialização do Carrossel: Este método configura o loop de rotação automática dos slides.
   private iniciarCarrossel(trocaImediata: boolean = false) {
-    if (trocaImediata) {
-      this.activeSlide = (this.activeSlide + 1) % 3;
+    this.carrosselIniciado = true;
+    const slides = this.availableSlides;
+
+    if (slides.length <= 1) {
+      this.activeSlide = 0;
       this.cdr.detectChanges();
+      return;
     }
 
-    // Configura o loop infinito: a cada 7 segundos, avança para o próximo slide.
+    if (trocaImediata && !this.isHovered) {
+      this.avancarSlide();
+    }
+
+    // Limpa qualquer intervalo perdido por segurança
+    if (this.carrosselInterval) {
+      clearInterval(this.carrosselInterval);
+    }
+
+    // Configura o loop infinito: a cada 7 segundos, tenta avançar
     this.carrosselInterval = setInterval(() => {
-      this.activeSlide = (this.activeSlide + 1) % 3;
-      this.cdr.detectChanges(); 
+      // Se o mouse estiver em cima, pulamos o avanço
+      if (!this.isHovered) {
+        this.avancarSlide();
+      }
     }, 7000);
+  }
+
+  // Lógica para avançar apenas entre os slides disponíveis
+  private avancarSlide() {
+    const slides = this.availableSlides;
+    
+    if (slides.length <= 1) {
+      this.activeSlide = 0;
+      if (this.carrosselInterval) {
+        clearInterval(this.carrosselInterval);
+        this.carrosselInterval = null;
+      }
+      this.cdr.detectChanges();
+      return;
+    }
+
+    let currentIndex = slides.indexOf(this.activeSlide);
+    if (currentIndex === -1) currentIndex = 0;
+    
+    const nextIndex = (currentIndex + 1) % slides.length;
+    this.activeSlide = slides[nextIndex];
+    this.cdr.detectChanges(); 
+  }
+
+  // Pausa a rotação do carrossel marcando a flag de hover
+  pausarCarrossel() {
+    this.isHovered = true;
+  }
+
+  // Retoma a rotação do carrossel desmarcando a flag
+  retomarCarrossel() {
+    this.isHovered = false;
   }
 }
