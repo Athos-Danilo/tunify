@@ -23,7 +23,10 @@
 
       <app-top-musicas></app-top-musicas>
 
-      <app-minutes-listened [totalMinutos]="minutosTotais"></app-minutes-listened>
+      <app-minutes-listened 
+        [totalMinutos]="minutosTotais"
+        [variacao]="variacaoMinutos">
+      </app-minutes-listened>
 
       <app-top-artistas *ngIf="emailUsuario" [email]="emailUsuario"></app-top-artistas>
 

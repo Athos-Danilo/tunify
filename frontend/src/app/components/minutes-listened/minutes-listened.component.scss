@@ -62,6 +62,82 @@
     }
   }
 
+  /* ✨ ESTILOS DA VARIAÇÃO (Raio + Porcentagem) */
+  .variacao-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    animation: slideInUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+
+    .raio-icon {
+      width: 42px;
+      height: 42px;
+      /* O SVG é animado suavemente na rotação */
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .textos-variacao {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .variacao-value {
+      margin: 0;
+      font-family: var(--fonte-especial);
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .variacao-label {
+      font-family: var(--fonte-principal);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--branco-dk);
+      opacity: 0.9;
+    }
+
+    &.positivo {
+      color: #43A047; /* Verde elegante que fica bom no dark mode */
+      .raio-icon {
+        transform: rotate(75deg);
+      }
+      .variacao-value {
+        color: #43A047;
+      }
+    }
+
+    &.negativo {
+      color: #E53935; /* Vermelho vibrante */
+      .raio-icon {
+        transform: rotate(250deg);
+      }
+      .variacao-value {
+        color: #E53935;
+      }
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   .arrow-btn {
     position: absolute;
     top: 14px;
@@ -156,6 +232,12 @@
       }
     }
 
+    .variacao-container {
+      .variacao-value { font-size: 2.5rem; }
+      .variacao-label { font-size: 0.95rem; }
+      .raio-icon { width: 48px; height: 48px; }
+    }
+
     .arrow-btn {
       top: 20px;
       right: 20px;
@@ -189,6 +271,17 @@
 
     &:hover {
       background-color: var(--azul-claro-lt);
+    }
+  }
+
+  .variacao-container {
+    .variacao-label {
+      color: var(--preto-lt); /* O texto de apoio precisa ser escuro no modo claro */
+    }
+    
+    &.positivo {
+      color: #2E7D32; /* Um verde um pouco mais escuro para garantir contraste no branco */
+      .variacao-value { color: #2E7D32; }
     }
   }
 }

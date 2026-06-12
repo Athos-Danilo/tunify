@@ -40,6 +40,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   emailUsuario: string | null = '';
 
   minutosTotais: number = 0;
+  variacaoMinutos: number = 0; // ✨ [NOVO] Variação percentual do mês passado
   ultimaMusica: any = null; 
   minutosOuvidosHoje: number = 0;
 
@@ -132,6 +133,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.dashboardService.obterMinutosOuvidos(this.emailUsuario).subscribe({
         next: (res) => {
           this.minutosTotais = res.total_minutos;
+          this.variacaoMinutos = res.variacao_minutos || 0;
           this.cdr.detectChanges();
         },
         error: (err) => {
