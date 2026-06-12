@@ -445,4 +445,68 @@
       }
     }
   }
+
+  // O Menu Flutuante de Perfil (Mobile)
+  .mobile-profile-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .btn-profile {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .mobile-dropdown-menu {
+      position: absolute; 
+      bottom: calc(100% + 25px); // Abre pra cima com margem
+      right: -10px; // Quase colado na borda direita
+      width: 220px; 
+      background: rgba(15, 23, 42, 0.95); 
+      backdrop-filter: blur(20px); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 16px; 
+      padding: 8px 0; 
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); 
+      overflow: hidden; 
+      
+      opacity: 0; 
+      visibility: hidden; 
+      pointer-events: none; 
+      transform: scale(0.95) translateY(10px); 
+      transform-origin: bottom right; 
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+
+      :host-context(.tema-claro) & { 
+        background: rgba(255, 255, 255, 0.95); 
+        border-color: rgba(0, 0, 0, 0.08); 
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); 
+      }
+
+      &.aberto {
+        opacity: 1; 
+        visibility: visible; 
+        pointer-events: auto; 
+        transform: scale(1) translateY(0);
+      }
+
+      .dropdown-item {
+        display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--cinza-claro-dk); text-decoration: none; font-family: var(--fonte-principal); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; background: transparent; border: none; width: 100%; text-align: left; cursor: pointer;
+        :host-context(.tema-claro) & { color: var(--cinza-escuro-lt, #4b5563); }
+        .material-icons { font-size: 1.2rem; }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05); color: var(--branco-dk); padding-left: 25px; 
+          :host-context(.tema-claro) & { background: rgba(0, 0, 0, 0.04); color: var(--preto-lt, #0f172a); }
+        }
+      }
+
+      .dropdown-divisor { height: 1px; background: rgba(255, 255, 255, 0.1); margin: 8px 0; :host-context(.tema-claro) & { background: rgba(0, 0, 0, 0.08); } }
+      .btn-sair-dropdown:hover { background: rgba(255, 71, 87, 0.1) !important; color: #ff4757 !important; .icone-sair-svg { stroke: #ff4757; transform: translateX(3px); } }
+    }
+  }
 }
