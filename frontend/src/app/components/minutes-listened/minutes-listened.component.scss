@@ -10,12 +10,12 @@
   width: 100%;
   box-sizing: border-box;
 
-  /* AJUSTE: Padding levemente aumentado para o celular */
-  padding: 20px 24px 18px 24px; 
+  /* AJUSTE: Padding igual para cima e para baixo */
+  padding: 20px 24px; 
   
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start; 
   position: relative; /* Para o posicionamento absoluto do botão */
   
@@ -42,11 +42,42 @@
     line-height: 1.2; 
   }
 
+  .carrossel-wrapper {
+    position: relative;
+    width: 100%;
+    height: 34px; /* Ajuste para não deixar margem fantasma embaixo */
+    margin-top: 2px;
+
+    @include tela-media {
+      height: 40px;
+    }
+
+    @include tela-grande {
+      height: 44px;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.6s ease;
+      pointer-events: none;
+
+      &.ativo {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+    }
+  }
+
   .minutes-value {
     margin: 0;
     color: var(--azul-dk); 
     font-family: var(--fonte-especial); 
-    font-size: 2.2rem; 
+    font-size: 1.95rem; 
     font-weight: 800;
     letter-spacing: -1px;
     line-height: 1; 
@@ -56,69 +87,54 @@
 
     .minutes-label {
       font-family: var(--fonte-especial);
-      font-size: 2.2rem; 
+      font-size: 1.95rem; 
       font-weight: 700;
       font-style: italic;
     }
   }
 
   /* ✨ ESTILOS DA VARIAÇÃO (Raio + Porcentagem) */
-  .variacao-container {
+  .variacao-inline {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 16px;
-    animation: slideInUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    gap: 8px;
 
-    .raio-icon {
-      width: 42px;
-      height: 42px;
-      /* O SVG é animado suavemente na rotação */
-      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .raio-icon-inline {
+      width: 25px;
+      height: 25px;
+      object-fit: contain;
     }
 
-    .textos-variacao {
+    .variacao-text-inline {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--fonte-principal);
+      white-space: nowrap;
     }
 
-    .variacao-value {
-      margin: 0;
+    .variacao-value-inline {
       font-family: var(--fonte-especial);
-      font-size: 2.2rem;
+      font-size: 1.25rem;
       font-weight: 800;
       line-height: 1;
-      letter-spacing: -1px;
+      letter-spacing: -0.5px;
     }
 
-    .variacao-label {
-      font-family: var(--fonte-principal);
-      font-size: 0.85rem;
+    .variacao-label-inline {
+      font-size: 0.95rem;
       font-weight: 500;
       color: var(--branco-dk);
       opacity: 0.9;
+      white-space: nowrap;
     }
 
     &.positivo {
-      color: #43A047; /* Verde elegante que fica bom no dark mode */
-      .raio-icon {
-        transform: rotate(75deg);
-      }
-      .variacao-value {
-        color: #43A047;
-      }
+      .variacao-value-inline { color: #598700; }
     }
 
     &.negativo {
-      color: #E53935; /* Vermelho vibrante */
-      .raio-icon {
-        transform: rotate(250deg);
-      }
-      .variacao-value {
-        color: #E53935;
-      }
+      .variacao-value-inline { color: #870000; }
     }
   }
 
@@ -192,19 +208,30 @@
     }
 
     .minutes-value {
-      font-size: 2.2rem; /* Número mais destacado */
+      font-size: 2rem; /* Número mais destacado */
       gap: 6px;
 
       .minutes-label {
-        font-size: 2.2rem; 
+        font-size: 2rem; 
       }
+    }
+
+    .variacao-inline {
+      .variacao-value-inline { font-size: 1.3rem; }
+      .variacao-label-inline { font-size: 0.95rem; }
+      .raio-icon-inline { width: 26px; height: 26px; }
     }
 
     .arrow-btn {
       top: 16px;
       right: 16px;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
+      
+      svg {
+        width: 18px;
+        height: 18px;
+      }
     }
   }
 
@@ -224,29 +251,29 @@
     }
 
     .minutes-value {
-      font-size: 2.5rem; /* 👇 Volta a ficar grandão e imponente! */
+      font-size: 2.2rem; /* 👇 Volta a ficar grandão e imponente! */
       gap: 8px;
 
       .minutes-label {
-        font-size: 2.5rem; 
+        font-size: 2.2rem; 
       }
     }
 
-    .variacao-container {
-      .variacao-value { font-size: 2.5rem; }
-      .variacao-label { font-size: 0.95rem; }
-      .raio-icon { width: 48px; height: 48px; }
+    .variacao-inline {
+      .variacao-value-inline { font-size: 1.4rem; }
+      .variacao-label-inline { font-size: 1rem; }
+      .raio-icon-inline { width: 28px; height: 28px; }
     }
 
     .arrow-btn {
       top: 20px;
       right: 20px;
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       
       svg {
-        width: 22px;
-        height: 22px;
+        width: 18px;
+        height: 18px;
       }
     }
   }
@@ -274,14 +301,17 @@
     }
   }
 
-  .variacao-container {
-    .variacao-label {
+  .variacao-inline {
+    .variacao-label-inline {
       color: var(--preto-lt); /* O texto de apoio precisa ser escuro no modo claro */
     }
     
     &.positivo {
-      color: #2E7D32; /* Um verde um pouco mais escuro para garantir contraste no branco */
-      .variacao-value { color: #2E7D32; }
+      .variacao-value-inline { color: #598700; }
+    }
+
+    &.negativo {
+      .variacao-value-inline { color: #870000; }
     }
   }
 }

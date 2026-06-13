@@ -1,27 +1,24 @@
 <section class="minutes-card" aria-labelledby="minutes-title">
 
   <!-- Agrupamos os textos na esquerda -->
-  <div class="content-left" *ngIf="!mostrarVariacao" style="animation: fadeIn 0.3s ease-out forwards;">
+  <div class="content-left" style="animation: fadeIn 0.3s ease-out forwards;">
     <p id="minutes-title" class="card-title">Total Mensal</p>
 
-    <h2 class="minutes-value">
-      {{ minutosAnimados | number:'1.0-0':'pt-BR' }}
-      <span class="minutes-label">Minutos</span>
-    </h2>
-  </div>
-
-  <!-- ✨ [NOVO] VISTA DA VARIAÇÃO PERCENTUAL COM O RAIO -->
-  <div class="content-left variacao-container" *ngIf="mostrarVariacao" [ngClass]="variacao >= 0 ? 'positivo' : 'negativo'">
-    <!-- SVG do Raio -->
-    <svg class="raio-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <!-- Polygon de um raio estético -->
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-    </svg>
-    <div class="textos-variacao">
-      <h2 class="variacao-value">
-        {{ variacao > 0 ? '+' : '' }}{{ variacao | number:'1.1-1':'pt-BR' }}%
+    <div class="carrossel-wrapper">
+      <h2 class="minutes-value slide" [class.ativo]="!mostrarVariacao">
+        {{ minutosAnimados | number:'1.0-0':'pt-BR' }}
+        <span class="minutes-label">Minutos</span>
       </h2>
-      <span class="variacao-label">que no mês passado</span>
+
+      <!-- ✨ VISTA DA VARIAÇÃO PERCENTUAL (Alterna com os minutos) -->
+      <div class="variacao-inline slide" [class.ativo]="mostrarVariacao" [ngClass]="variacao >= 0 ? 'positivo' : 'negativo'">
+        <!-- Ícone de seta -->
+        <img [src]="variacao >= 0 ? '/icones/arrows_verde.png' : '/icones/arrows_vermelho.png'" class="raio-icon-inline" alt="Ícone de Variação">
+        <span class="variacao-text-inline">
+          <span class="variacao-value-inline">{{ variacao > 0 ? '+' : '' }}{{ variacao | number:'1.1-1':'pt-BR' }}%</span>
+          <span class="variacao-label-inline">que no mês passado</span>
+        </span>
+      </div>
     </div>
   </div>
 

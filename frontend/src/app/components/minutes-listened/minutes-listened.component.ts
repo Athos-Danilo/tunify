@@ -14,11 +14,11 @@ export class MinutesListenedComponent implements OnChanges, OnDestroy {
   @Input() variacao: number = 0; // ✨ [NOVO] A porcentagem do mês passado
   minutosAnimados: number = 0; // O valor que aparece subindo na tela
   mostrarVariacao: boolean = false; // Flag para alternar a tela
-
+  isHovered: boolean = false; // Flag para controle de pausa no hover
+  
   private animacaoId: number = 0; // Guardião do motor nativo
   private timeoutId: any; // Controle do atraso do preloader
-  private timerVariacao: any; // Timer da exibição automática
-  private isHovered: boolean = false; // Guarda se o mouse está em cima
+  private loopId: any; // Controle do loop da variação
   private jaFoiAnimado: boolean = false; // Flag para garantir que o atraso seja só na 1ª vez
 
   // 🚨 Injetamos o "Detetive de Mudanças" do Angular
@@ -59,8 +59,9 @@ export class MinutesListenedComponent implements OnChanges, OnDestroy {
       const tempoDecorrido = tempoAtual - tempoInicio;
       const progresso = Math.min(tempoDecorrido / duracaoAnimacao, 1); // Vai de 0.0 até 1.0 (100%)
 
-      // 2. Movimento Linear: velocidade constante, sem desacelerar no final
-      const progressoSuave = progresso;
+      // 2. Movimento Ease-Out Suave (Quad): 
+      // Desacelera no final, mas sem se arrastar muito como o ease-out cúbico faria.
+      const progressoSuave = 1 - (1 - progresso) * (1 - progresso);
 
       // 3. Arredondamos para evitar números quebrados que bugam o HTML
       this.minutosAnimados = Math.round(totalFinal * progressoSuave);
@@ -76,8 +77,8 @@ export class MinutesListenedComponent implements OnChanges, OnDestroy {
         this.minutosAnimados = totalFinal;
         this.cdr.detectChanges();
 
-        // 🚨 Dispara a exibição automática da variação!
-        this.exibirVariacaoAutomatica();
+        // Inicia o loop infinito de visualização após a animação
+        this.iniciarLoopVariacao();
       }
     };
 
@@ -85,36 +86,48 @@ export class MinutesListenedComponent implements OnChanges, OnDestroy {
     this.animacaoId = requestAnimationFrame(animar);
   }
 
-  exibirVariacaoAutomatica() {
-    if (this.isHovered) return;
+  iniciarLoopVariacao() {
+    // Garante que não crie múltiplos loops se for chamado de novo
+    if (this.loopId) clearTimeout(this.loopId);
+    
+    // Começa o ciclo: 7s minutos, 3s variação
+    const ciclo = () => {
+      this.loopId = setTimeout(() => {
+        if (!this.isHovered) {
+          // Mostra a porcentagem (variação)
+          this.mostrarVariacao = true;
+          this.cdr.detectChanges();
+        }
+        
+        // Fica 5s mostrando a variação (ou esperando se estiver pausado)
+        this.loopId = setTimeout(() => {
+          if (!this.isHovered) {
+            // Volta a mostrar os minutos
+            this.mostrarVariacao = false;
+            this.cdr.detectChanges();
+          }
+          
+          // E repete o ciclo
+          ciclo();
+        }, 5000);
+      }, 7000); // 7 segundos de minutos
+    };
 
-    this.mostrarVariacao = true;
-    this.cdr.detectChanges();
-
-    this.timerVariacao = setTimeout(() => {
-      if (!this.isHovered) {
-        this.mostrarVariacao = false;
-        this.cdr.detectChanges();
-      }
-    }, 4000); // Mostra por 4 segundos
+    ciclo();
   }
 
   @HostListener('mouseenter')
-  @HostListener('touchstart') // Mobile
-  onMouseEnter() {
+  @HostListener('touchstart')
+  pausarAnimacao() {
     this.isHovered = true;
-    this.mostrarVariacao = true;
-    if (this.timerVariacao) {
-      clearTimeout(this.timerVariacao);
-    }
   }
 
   @HostListener('mouseleave')
-  @HostListener('touchend') // Mobile
-  onMouseLeave() {
+  @HostListener('touchend')
+  retomarAnimacao() {
     this.isHovered = false;
-    this.mostrarVariacao = false;
   }
+
 
   // SEGURO DE VIDA: Desliga o motor se o usuário sair da página no meio da animação
   ngOnDestroy() {
@@ -124,8 +137,8 @@ export class MinutesListenedComponent implements OnChanges, OnDestroy {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
-    if (this.timerVariacao) {
-      clearTimeout(this.timerVariacao);
+    if (this.loopId) {
+      clearTimeout(this.loopId);
     }
   }
 }
