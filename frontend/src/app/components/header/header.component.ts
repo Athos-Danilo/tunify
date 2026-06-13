@@ -22,6 +22,7 @@ export class HeaderComponent {
 
   // 🚨 NOVA VARIÁVEL: Controla se a barra de pesquisa do celular está aberta
   isSearchMobileOpen = false;
+  isMobileMenuOpen = false;
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
@@ -29,9 +30,11 @@ export class HeaderComponent {
     this.isScrolled = window.scrollY > 20; 
   }
 
-  // 🚨 FUNÇÕES PARA ABRIR/FECHAR A PESQUISA
+  // 🚨 FUNÇÕES PARA ABRIR/FECHAR A PESQUISA E O MENU MOBILE
   abrirPesquisaMobile() { this.isSearchMobileOpen = true; }
   fecharPesquisaMobile() { this.isSearchMobileOpen = false; }
+  
+  toggleMobileMenu() { this.isMobileMenuOpen = !this.isMobileMenuOpen; }
 
   alternarTema() { this.onAlternarTema.emit(); }
   fazerLogout() { this.onLogout.emit(); }

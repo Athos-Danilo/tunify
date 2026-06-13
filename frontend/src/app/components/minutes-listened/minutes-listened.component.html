@@ -1,27 +1,37 @@
 <section class="minutes-card" aria-labelledby="minutes-title">
-  
+
   <!-- Agrupamos os textos na esquerda -->
-  <div class="content-left">
-    <p id="minutes-title" class="card-title">Tempo Ouvido:</p>
-    
-    <h2 class="minutes-value">
-      {{ minutosAnimados | number:'1.0-0':'pt-BR' }}
-      <span class="minutes-label">Minutos</span>
-    </h2>
+  <div class="content-left" style="animation: fadeIn 0.3s ease-out forwards;">
+    <p id="minutes-title" class="card-title">Total Mensal</p>
+
+    <div class="carrossel-wrapper">
+      <h2 class="minutes-value slide" [class.ativo]="!mostrarVariacao">
+        {{ minutosAnimados | number:'1.0-0':'pt-BR' }}
+        <span class="minutes-label">Minutos</span>
+      </h2>
+
+      <!-- ✨ VISTA DA VARIAÇÃO PERCENTUAL (Alterna com os minutos) -->
+      <div class="variacao-inline slide" [class.ativo]="mostrarVariacao" [ngClass]="variacao >= 0 ? 'positivo' : 'negativo'">
+        <!-- Ícone de seta -->
+        <img [src]="variacao >= 0 ? '/icones/arrows_verde.png' : '/icones/arrows_vermelho.png'" class="raio-icon-inline" alt="Ícone de Variação">
+        <span class="variacao-text-inline">
+          <span class="variacao-value-inline">{{ variacao > 0 ? '+' : '' }}{{ variacao | number:'1.1-1':'pt-BR' }}%</span>
+          <span class="variacao-label-inline">que no mês passado</span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <!-- O botão fica isolado na direita -->
-  <button 
-    class="arrow-btn" 
-    routerLink="/estatisticas" 
-    aria-label="Ver estatísticas detalhadas"
+  <button class="arrow-btn" routerLink="/estatisticas" aria-label="Ver estatísticas detalhadas"
     title="Ver estatísticas detalhadas">
-    
-    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="5" y1="12" x2="19" y2="12"></line>
       <polyline points="12 5 19 12 12 19"></polyline>
     </svg>
-    
+
   </button>
 
 </section>

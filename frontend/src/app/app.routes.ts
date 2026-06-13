@@ -10,6 +10,7 @@ import { ContatoComponent } from './pages/contato/contato.component';
 import { CallbackComponent } from './pages/callback/callback';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ConfiguracoesComponent } from './pages/configuracoes/configuracoes.component';
+import { EstatisticasComponent } from './pages/estatisticas/estatisticas.component';
 
 // 🚨 IMPORTA O SEU GUARD AQUI (Verifique se o caminho da pasta está correto!)
 import { authGuard } from './core/guards/auth.guard'; 
@@ -41,6 +42,11 @@ export const routes: Routes = [
     path: 'configuracoes', 
     component: ConfiguracoesComponent,
     canActivate: [authGuard] // 🚨 TRANCA AS CONFIGURAÇÕES
+  },
+  { 
+    path: 'estatisticas', 
+    component: EstatisticasComponent,
+    canActivate: [authGuard] // 🚨 TRANCA AS ESTATÍSTICAS
   },
 
   // ---------------------------------------------------------

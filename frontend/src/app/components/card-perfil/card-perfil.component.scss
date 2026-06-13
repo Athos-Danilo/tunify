@@ -200,12 +200,12 @@
 
         @include tela-media {
           font-size: 1.8rem;
-          font-weight: 400;
+          font-weight: 500;
           letter-spacing: -0.5px;
 
           &.saudacao {
             font-size: 1.8rem;
-            font-weight: 400;
+            font-weight: 500;
             letter-spacing: -0.5px;
           }
         }
@@ -530,7 +530,7 @@
               font-style: italic;
               font-weight: 500;
               color: var(--azul-dk);
-              font-size: 1.8rem;
+              font-size: 1.5rem;
               line-height: 1;
 
               @include tela-media {

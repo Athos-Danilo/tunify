@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 
 @Component({
@@ -37,6 +37,23 @@ export class CardPerfilComponent implements OnInit, OnDestroy, OnChanges {
 
   // Controle de pausa via hover do mouse
   private isHovered: boolean = false;
+
+  // Controle de tela para responsividade
+  isMobile: boolean = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
+
+  @HostListener('window:resize')
+  onResize() {
+    const eraMobile = this.isMobile;
+    this.isMobile = typeof window !== 'undefined' ? window.innerWidth < 900 : false;
+    
+    if (this.isMobile !== eraMobile) {
+      const slides = this.availableSlides;
+      if (!slides.includes(this.activeSlide)) {
+        this.activeSlide = slides[0];
+        this.cdr.detectChanges();
+      }
+    }
+  }
 
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -126,7 +143,7 @@ export class CardPerfilComponent implements OnInit, OnDestroy, OnChanges {
   private get availableSlides(): number[] {
     const slides = [0]; // Slide 0 (Demográficos) sempre aparece
     
-    if (this.ultimaMusica) {
+    if (this.ultimaMusica && !this.isMobile) {
       slides.push(1); // Slide 1 (Música tocando/última)
     }
     

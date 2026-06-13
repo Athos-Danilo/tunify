@@ -49,9 +49,35 @@ async def obter_minutos_totais(email: str, db: Session = Depends(get_db)):
     total_artistas = resultado.total_artistas if resultado and resultado.total_artistas else 0
     minutos_totais = int(total_ms / 60000)
 
+    # 🚨 [NOVO] Lógica de Comparação Pro-Rata
+    import calendar
+    mes_anterior_ano = hoje.year if hoje.month > 1 else hoje.year - 1
+    mes_anterior_mes = hoje.month - 1 if hoje.month > 1 else 12
+    mes_anterior_str = f"{mes_anterior_ano}-{mes_anterior_mes:02d}"
+
+    minutos_passado_row = db.query(MinutesListened).filter(
+        MinutesListened.user_id == usuario.id,
+        MinutesListened.mes_referencia == mes_anterior_str
+    ).first()
+
+    variacao_porcentagem = 0.0
+
+    if minutos_passado_row and minutos_passado_row.total_minutes > 0:
+        total_min_mes_anterior = minutos_passado_row.total_minutes
+        _, dias_mes_anterior = calendar.monthrange(mes_anterior_ano, mes_anterior_mes)
+        media_diaria_anterior = total_min_mes_anterior / dias_mes_anterior
+        
+        # Projetamos a expectativa para o dia de hoje
+        meta_proporcional = media_diaria_anterior * hoje.day
+
+        if meta_proporcional > 0:
+            variacao = ((minutos_totais - meta_proporcional) / meta_proporcional) * 100
+            variacao_porcentagem = round(variacao, 1)
+
     return {
         "mes_referencia": mes_atual_str,
         "total_minutos": minutos_totais,
+        "variacao_minutos": variacao_porcentagem, # ✨ NOVO: Enviando pro Angular!
         "total_artistas_ouvidos": total_artistas # 🚨 Manda pro Angular aqui!
     }
 
