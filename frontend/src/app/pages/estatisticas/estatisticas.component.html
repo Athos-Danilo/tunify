@@ -1,0 +1,63 @@
+<div class="estatisticas-page">
+  <!-- Top Bar -->
+  <header class="top-bar" #header>
+    <button class="back-btn" routerLink="/dashboard" aria-label="Voltar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <h1 class="page-title">Tempo ouvido</h1>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <p class="mes-label" #heroTitle>{{ mesAtual }}</p>
+    <h2 class="hero-texto">
+      <span class="linha-1" #heroText1>Você ouviu <span class="destaque-verde" #totalMinutosSpan>0</span></span>
+      <span class="linha-2" #heroText2><span class="destaque-verde">minutos</span> de música esse mês.</span>
+    </h2>
+  </section>
+
+  <!-- Chart Section -->
+  <section class="chart-section" #chartSection>
+    <div class="chart-header">
+      <span class="media-label">Média diária: {{ mediaDiaria }} min</span>
+    </div>
+
+    <div class="chart-container">
+      <!-- Média Line -->
+      <div class="media-line" [style.bottom]="getBarHeight(mediaDiaria)">
+        <span class="media-value">{{ mediaDiaria }}</span>
+      </div>
+      
+      <!-- Max value reference (Optional, like in the screenshot '518') -->
+      <div class="max-line">
+        <span class="max-value">{{ maxMinutos }}</span>
+      </div>
+      
+      <!-- Zero line reference -->
+      <div class="zero-line">
+        <span class="zero-value">0</span>
+      </div>
+
+      <!-- Bars -->
+      <div class="bars-wrapper">
+        <div 
+          *ngFor="let min of diasNoMes; let i = index" 
+          class="bar-item"
+        >
+          <div 
+            class="bar-fill" 
+            [style.height]="getBarHeight(min)"
+            [class.zero]="min === 0"
+          ></div>
+          
+          <!-- Eixo X (Dias): Mostra alguns números de referência como 1, 8, 15, 22, 29 -->
+          <span class="x-label" *ngIf="i === 0 || i === 7 || i === 14 || i === 21 || i === 28">
+            {{ i + 1 }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,284 @@
+@use '../../../assets/mixins' as *;
+
+.estatisticas-page {
+  /* Fundo da tela toda */
+  background-color: var(--fundo-dk, #121212);
+  min-height: 100vh;
+  padding: 24px;
+  color: #ffffff;
+  font-family: var(--fonte-principal, 'Inter', sans-serif);
+  display: flex;
+  flex-direction: column;
+
+  /* ---------- HEADER ---------- */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 40px;
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: translateX(-4px);
+      }
+    }
+
+    .page-title {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+      left: 0;
+      z-index: 1;
+    }
+  }
+
+  /* ---------- HERO TEXT ---------- */
+  .hero-section {
+    margin-bottom: 60px;
+
+    .mes-label {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .hero-texto {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+
+      .destaque-verde {
+        color: #598700; // Corrigido para a cor verde solicitada anteriormente
+      }
+    }
+  }
+
+  /* ---------- CHART SECTION ---------- */
+  .chart-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .chart-header {
+      margin-bottom: 16px;
+      
+      .media-label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      flex: 1;
+      min-height: 250px;
+      max-height: 350px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: block; // Fallback to block, we use absolute positioning for children
+      padding-bottom: 1px; // offset for the bottom border
+
+      /* Lines */
+      .media-line, .max-line, .zero-line {
+        position: absolute;
+        width: 100%;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        z-index: 1;
+        pointer-events: none;
+
+        span {
+          position: absolute;
+          right: 0;
+          top: -10px;
+          font-size: 0.7rem;
+          color: rgba(255, 255, 255, 0.5);
+          background-color: var(--fundo-dk, #121212);
+          padding-left: 8px;
+        }
+      }
+
+      .media-line {
+        border-top: 2px solid #ffffff; // The solid white line from the design
+        z-index: 2;
+        
+        span {
+          color: #ffffff;
+          font-weight: bold;
+        }
+      }
+
+      .max-line { top: 0; }
+      .zero-line { bottom: 0; border-top: 2px dashed rgba(255, 255, 255, 0.2); }
+
+      /* Bars */
+      .bars-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+        padding-right: 30px; // space for the y-axis labels
+        z-index: 3; // above the dashed lines, below the solid line se quiséssemos, but top is fine
+
+        .bar-item {
+          width: 8px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          align-items: center;
+          position: relative;
+
+          .bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, rgba(89, 135, 0, 0.3), #598700);
+            border-radius: 4px 4px 0 0;
+            // Height is set via GSAP inline styles
+            
+            &.zero {
+              background: rgba(255, 255, 255, 0.1);
+              height: 2px; // fallback
+            }
+          }
+
+          .x-label {
+            position: absolute;
+            bottom: -24px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
+    }
+  }
+
+  /* ---------- TELA MEDIA (TABLET) ---------- */
+  @include tela-media {
+    padding: 40px 60px;
+
+    .hero-section {
+      .hero-texto {
+        font-size: 3rem;
+      }
+    }
+
+    .chart-section {
+      .chart-container {
+        min-height: 350px;
+        
+        .bars-wrapper {
+          .bar-item {
+            width: 12px;
+          }
+        }
+      }
+    }
+  }
+
+  /* ---------- TELA GRANDE (DESKTOP) ---------- */
+  @include tela-grande {
+    padding: 60px 120px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .hero-section {
+      .hero-texto {
+        font-size: 4rem;
+        flex-direction: row;
+        gap: 12px;
+      }
+    }
+
+    .chart-section {
+      .chart-container {
+        min-height: 450px;
+        
+        .bars-wrapper {
+          .bar-item {
+            width: 16px;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ---------- TEMA CLARO ---------- */
+:host-context(.tema-claro) .estatisticas-page {
+  background-color: var(--fundo-lt);
+  color: var(--preto-lt);
+
+  .top-bar {
+    .back-btn {
+      color: var(--preto-lt);
+    }
+  }
+
+  .hero-section {
+    .mes-label {
+      color: rgba(0, 0, 0, 0.6);
+    }
+    // destaque-verde remains the same!
+  }
+
+  .chart-section {
+    .chart-header {
+      .media-label {
+        color: rgba(0, 0, 0, 0.6);
+      }
+    }
+
+    .chart-container {
+      border-bottom-color: rgba(0, 0, 0, 0.1);
+
+      .media-line, .max-line, .zero-line {
+        border-top-color: rgba(0, 0, 0, 0.1);
+        
+        span {
+          color: rgba(0, 0, 0, 0.5);
+          background-color: var(--fundo-lt);
+        }
+      }
+
+      .media-line {
+        border-top-color: var(--preto-lt);
+        span {
+          color: var(--preto-lt);
+        }
+      }
+
+      .bars-wrapper {
+        .bar-item {
+          .bar-fill {
+            &.zero {
+              background: rgba(0, 0, 0, 0.1);
+            }
+          }
+          .x-label {
+            color: rgba(0, 0, 0, 0.5);
+          }
+        }
+      }
+    }
+  }
+}
