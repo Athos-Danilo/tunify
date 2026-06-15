@@ -1,0 +1,23 @@
+<svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bar {
+      transform-origin: center;
+    }
+    .bar1 { animation: wave1 2.2s ease-in-out infinite; }
+    .bar2 { animation: wave2 1.8s ease-in-out infinite; }
+    .bar3 { animation: wave3 2.1s ease-in-out infinite; }
+    .bar4 { animation: wave4 2.5s ease-in-out infinite; }
+    .bar5 { animation: wave5 1.9s ease-in-out infinite; }
+
+    @keyframes wave1 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.4); } }
+    @keyframes wave2 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+    @keyframes wave3 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.3); } }
+    @keyframes wave4 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.7); } }
+    @keyframes wave5 { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.2); } }
+  </style>
+  <rect class="bar bar1" x="0" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+  <rect class="bar bar2" x="11" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+  <rect class="bar bar3" x="22" y="0" width="6" height="50" rx="3" fill="#0285FF"/>
+  <rect class="bar bar4" x="33" y="5" width="6" height="40" rx="3" fill="#0285FF"/>
+  <rect class="bar bar5" x="44" y="15" width="6" height="20" rx="3" fill="#0285FF"/>
+</svg>

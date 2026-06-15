@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Tunify | A matemática da sua vibe</title>
+  <title>Tunify</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,5 +37,54 @@
   <app-root></app-root>
 
   <script src="/finisher-header.es5.min.js"></script>
+  <script>
+    (function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 50;
+      canvas.height = 50;
+      const ctx = canvas.getContext('2d');
+      const link = document.querySelector("link[rel~='icon']");
+      if (!link) return;
+
+      // Retornamos à velocidade original das ondas do logo
+      const bars = [
+        { x: 0, w: 6, maxH: 20, speed: 2200, minScale: 0.4 },
+        { x: 11, w: 6, maxH: 40, speed: 1800, minScale: 0.6 },
+        { x: 22, w: 6, maxH: 50, speed: 2100, minScale: 0.3 },
+        { x: 33, w: 6, maxH: 40, speed: 2500, minScale: 0.7 },
+        { x: 44, w: 6, maxH: 20, speed: 1900, minScale: 0.2 }
+      ];
+
+      function draw() {
+        ctx.clearRect(0, 0, 50, 50);
+        ctx.fillStyle = '#0285FF';
+        const now = Date.now();
+        
+        bars.forEach(bar => {
+          const p = (now % bar.speed) / bar.speed;
+          // Math.cos cria um vai e vem natural entre 1 e -1. Ajustamos para 0 a 1.
+          const wave = (Math.cos(p * Math.PI * 2) + 1) / 2;
+          const finalScale = bar.minScale + (1 - bar.minScale) * wave;
+          
+          const currentH = bar.maxH * finalScale;
+          const y = 25 - (currentH / 2);
+          
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(bar.x, y, bar.w, currentH, 3);
+            ctx.fill();
+          } else {
+            ctx.fillRect(bar.x, y, bar.w, currentH);
+          }
+        });
+        
+        link.type = 'image/png';
+        link.href = canvas.toDataURL('image/png');
+      }
+
+      // Travando em 40fps (25ms) para evitar que o Chrome engasgue
+      setInterval(draw, 25);
+    })();
+  </script>
 </body>
 </html>
