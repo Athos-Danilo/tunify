@@ -9,23 +9,31 @@
   <ol class="lista-musicas">
     @for (musica of musicas; track musica.posicao) {
       
-
-      <li class="musica-row" [style.--delay]="$index">
+      <li class="musica-row" 
+          [class.ativa]="musica.uri === faixaTocandoUri" 
+          [style.--delay]="$index"
+          (click)="tocarFaixa($index)">
         
         <div class="rank-info">
-          <span class="numero" aria-hidden="true">{{ musica.posicao }}</span>
+          <span class="numero" aria-hidden="true" [style.opacity]="musica.uri === faixaTocandoUri ? 0 : ''">
+            {{ musica.posicao }}
+          </span>
           
-          <div class="tendencia" [ngClass]="musica.tendencia" [attr.aria-label]="'Tendência: ' + musica.tendencia">
+          <div class="tendencia" [ngClass]="musica.tendencia" [attr.aria-label]="'Tendência: ' + musica.tendencia" *ngIf="musica.uri !== faixaTocandoUri">
             @if (musica.tendencia === 'sobe') { <span class="material-icons" aria-hidden="true">north</span> {{ musica.valorTendencia }} }
             @if (musica.tendencia === 'desce') { <span class="material-icons" aria-hidden="true">south</span> {{ musica.valorTendencia }} }
             @if (musica.tendencia === 'nova') { <span class="tag-nova">NOVA</span> }
           </div>
+          <span class="material-icons icone-tocando" *ngIf="musica.uri === faixaTocandoUri">
+            volume_up
+          </span>
         </div>
 
         <div class="capa-container">
           <img [src]="musica.capa" alt="">
           <div class="overlay-play" aria-hidden="true">
-            <span class="material-icons">play_arrow</span>
+            <span class="material-icons" *ngIf="musica.uri === faixaTocandoUri && !faixaPausada">pause</span>
+            <span class="material-icons" *ngIf="musica.uri !== faixaTocandoUri || faixaPausada">play_arrow</span>
           </div>
         </div>
 

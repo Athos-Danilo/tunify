@@ -131,6 +131,7 @@
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
+  cursor: pointer; /* 🚨 Indica que agora a linha é clicável */
 
   transition: all 0.3s ease;
   opacity: 0;
@@ -138,9 +139,19 @@
   animation: entrada-cascata 0.5s ease forwards;
   animation-delay: calc(var(--delay) * 0.1s);
 
+  /* 🚨 ESTADO ATIVO: Quando a música está tocando */
+  &.ativa {
+    background: rgba(255, 255, 255, 0.05);
+    .titulo-musica { color: var(--azul-dk); }
+  }
+
   &:hover {
-    background: rgba(255, 255, 255, 0.03);
-    .titulo-musica { color: var(--verde-spotify-dk); text-decoration: underline; }
+    background: rgba(255, 255, 255, 0.08); /* Fica um tiquinho mais claro no hover */
+    .titulo-musica { text-decoration: underline; }
+    
+    /* Só pinta de verde se NÃO estiver ativa. Se estiver ativa, continua no azul */
+    &:not(.ativa) .titulo-musica { color: var(--verde-spotify-dk); }
+    
     .overlay-play { opacity: 1; }
     .numero { opacity: 0; }
   }
@@ -158,8 +169,17 @@
     font-size: 1.2rem; 
     font-weight: 700; 
     opacity: 0.3; 
+    transition: opacity 0.3s;
   }
   
+  /* 🚨 Ícone pulsante de áudio! */
+  .icone-tocando {
+    position: absolute;
+    font-size: 1.3rem;
+    color: var(--azul-dk);
+    animation: pulso-audio 1.5s infinite;
+  }
+
   .tendencia { 
     display: flex;
     align-items: center;
@@ -328,6 +348,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulso-audio {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
 /* ========================================================= */
 /* ☀️ O CHAVEAMENTO PARA O MODO CLARO                        */
 /* ========================================================= */
@@ -347,6 +373,11 @@
   }
 
   .musica-row {
+    &.ativa {
+      background: rgba(0, 0, 0, 0.05);
+      .titulo-musica { color: var(--azul-lt); }
+    }
+
     &:hover {
       background: rgba(0, 0, 0, 0.04); /* Hover agora escurece levemente o fundo */
     }
@@ -356,6 +387,9 @@
     .numero {
       color: var(--preto-lt);
       opacity: 0.3; /* Deixa o número sutil no fundo branco */
+    }
+    .icone-tocando {
+      color: var(--azul-lt);
     }
   }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 // 🚨 IMPORTANTE: Ajuste o caminho de acordo com onde você salvou o service!
 import { SpotifyService } from '../../core/services/spotify.service';
+import { PlayerService } from '../../core/services/player.service'; // 🚨 IMPORTADO PLAYER
 
 interface Musica {
   posicao: number;
@@ -12,6 +13,7 @@ interface Musica {
   reproducoes: number;
   tendencia: 'sobe' | 'desce' | 'nova' | 'estavel';
   valorTendencia?: number;
+  uri: string; // 🚨 [NOVO] O RG da música no Spotify
 }
 
 @Component({
@@ -31,8 +33,13 @@ export class TopMusicasComponent implements OnInit {
   // Variável para mostrar um "Carregando..." no HTML se você quiser depois
   carregando: boolean = true; 
 
-  // Injetamos o nosso carteiro
+  // Variáveis para controlar o estado da UI de reprodução
+  faixaTocandoUri: string | null = null;
+  faixaPausada: boolean = false;
+
+  // Injetamos os nossos carteiros
   private spotifyService = inject(SpotifyService);
+  private playerService = inject(PlayerService); // 🚨 Injetado o motor do player
 
   ngOnInit() {
     this.mesAtual = new Intl.DateTimeFormat('pt-PT', { month: 'long' }).format(new Date());
@@ -40,6 +47,30 @@ export class TopMusicasComponent implements OnInit {
     
     // Chama a função que busca no Backend
     this.buscarDadosDoBackend();
+
+    // 🚨 Escuta o Rádio do Player para saber quem está tocando em tempo real
+    this.playerService.playerState$.subscribe(state => {
+      if (state && state.track_window && state.track_window.current_track) {
+         this.faixaTocandoUri = state.track_window.current_track.uri;
+         this.faixaPausada = state.paused;
+      } else {
+         this.faixaTocandoUri = null;
+      }
+    });
+  }
+
+  // 🚨 [NOVO] Função disparada no HTML ao clicar na música
+  tocarFaixa(index: number) {
+    const uris = this.musicas.map(m => m.uri);
+    
+    // Se a música clicada já é a que está tocando, a gente apenas pausa ou despausa
+    if (this.faixaTocandoUri === uris[index]) {
+       this.playerService.togglePlay();
+       return;
+    }
+
+    // Dispara a fila inteira pro player, começando do index clicado!
+    this.playerService.tocarFila(uris, index);
   }
 
   buscarDadosDoBackend() {
@@ -70,7 +101,8 @@ export class TopMusicasComponent implements OnInit {
           artista: item.artista,
           capa: item.capa_url,
           reproducoes: item.total_plays,
-          tendencia: 'nova' 
+          tendencia: 'nova',
+          uri: item.uri || `spotify:track:${item.id}` // 🚨 Pegamos o URI!
         }));
         
         this.carregando = false;
