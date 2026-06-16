@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs'; // 🚨 [NOVO] Importa para usar async/await
 
 // 🚨 IMPORTANTE: Ajuste o caminho de acordo com onde você salvou o service!
 import { SpotifyService } from '../../core/services/spotify.service';
@@ -36,6 +37,9 @@ export class TopMusicasComponent implements OnInit {
   // Variáveis para controlar o estado da UI de reprodução
   faixaTocandoUri: string | null = null;
   faixaPausada: boolean = false;
+
+  // Variável para travar o botão e dar feedback visual enquanto carrega
+  criandoPlaylist: boolean = false;
 
   // Injetamos os nossos carteiros
   private spotifyService = inject(SpotifyService);
@@ -132,5 +136,68 @@ export class TopMusicasComponent implements OnInit {
     
     // Formata para DD/MM às 12:00
     this.ultimaAtualizacao = `Atualizado: ${dia}/${mes} às 12:00`;
+  }
+
+  // ==========================================================
+  // 🚨 FUNÇÃO DISPARADA PELO BOTÃO (A GRANDE MÁGICA)
+  // ==========================================================
+  async criarNovaPlaylistNoSpotify() {
+    // Trava o botão para o usuário não clicar 2 vezes por ansiedade kkkk
+    if (this.criandoPlaylist) return;
+    
+    // Verifica se a lista já carregou
+    const uris = this.musicas.map(m => m.uri);
+    if (uris.length === 0) {
+      alert('Ainda não há músicas para salvar!');
+      return;
+    }
+
+    this.criandoPlaylist = true;
+
+    try {
+      // 🚨 AGORA SIM: Pegando o token diretamente da chave correta!
+      const userInfoString = localStorage.getItem('tunify_user_info');
+      let token = localStorage.getItem('spotify_token'); 
+      if (userInfoString) {
+        const usuario = JSON.parse(userInfoString);
+        token = usuario.spotify_token || token;
+      }
+
+      if (!token) throw new Error('Token do Spotify não encontrado na sessão');
+
+      // 1. DADOS DINÂMICOS DA PLAYLIST
+      const mesNome = this.mesAtual.charAt(0).toUpperCase() + this.mesAtual.slice(1); // Ex: "Junho"
+      const hoje = new Date();
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const ano = hoje.getFullYear();
+      
+      // As variáveis exatas que decidimos!
+      const nomePlaylist = `As Mais Ouvidas - ${mesNome}`;
+      const descricaoPlaylist = `O seu histórico sonoro: as músicas mais reproduzidas por você. Criada em ${dia}/${mes}/${ano} via Tunify.`;
+
+      console.log('[TUNIFY] 1/3 - Buscando perfil do usuário para pegar o ID...');
+      const perfil = await firstValueFrom(this.spotifyService.obterPerfilSpotify(token));
+      const userId = perfil.id;
+
+      console.log('[TUNIFY] 2/3 - Criando a Playlist vazia...');
+      const novaPlaylist = await firstValueFrom(this.spotifyService.criarPlaylist(userId, token, nomePlaylist, descricaoPlaylist));
+      const playlistId = novaPlaylist.id;
+
+      console.log('[TUNIFY] 3/3 - Injetando as faixas na playlist...');
+      await firstValueFrom(this.spotifyService.adicionarMusicasPlaylist(playlistId, token, uris));
+
+      console.log('✅ [SUCESSO] Playlist criada e populada com sucesso!');
+      
+      // Sucesso na interface!
+      alert('Playlist criada com sucesso! Abra o seu Spotify para conferir. 🎧');
+
+    } catch (erro) {
+      console.error('❌ [ERRO] Falha na operação da Playlist:', erro);
+      alert('Ops! Não foi possível criar a playlist. Verifique se o token não expirou.');
+    } finally {
+      // Destrava o botão aconteça o que acontecer
+      this.criandoPlaylist = false; 
+    }
   }
 }

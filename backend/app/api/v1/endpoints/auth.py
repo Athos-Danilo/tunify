@@ -60,6 +60,8 @@ def login_spotify():
             "playlist-modify-private",
             "playlist-read-private",
             "playlist-read-collaborative",
+            "playlist-modify-public",     
+            "playlist-modify-private",
             "user-top-read",
             "user-library-read",
             "streaming",

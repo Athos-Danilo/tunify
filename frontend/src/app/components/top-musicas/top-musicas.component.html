@@ -57,9 +57,18 @@
   </ol>
 
   <footer class="footer-actions">
-    <button class="btn-spotify-premium" aria-label="Criar nova playlist com estas faixas">
-      <span class="material-icons icone-animado" aria-hidden="true">playlist_add</span>
-      <span class="texto-btn">Criar Playlist</span>
+    <button class="btn-spotify-premium" 
+            aria-label="Criar nova playlist com estas faixas"
+            (click)="criarNovaPlaylistNoSpotify()"
+            [disabled]="criandoPlaylist"
+            [style.opacity]="criandoPlaylist ? 0.7 : 1"
+            [style.cursor]="criandoPlaylist ? 'wait' : 'pointer'">
+      
+      <span class="material-icons icone-animado" aria-hidden="true" [class.spin]="criandoPlaylist">
+        {{ criandoPlaylist ? 'sync' : 'playlist_add' }}
+      </span>
+      
+      <span class="texto-btn">{{ criandoPlaylist ? 'Montando Playlist...' : 'Criar Playlist' }}</span>
     </button>
   </footer>
 

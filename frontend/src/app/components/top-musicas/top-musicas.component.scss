@@ -415,3 +415,13 @@
     }
   }
 }
+
+/* 🚨 Animação de Loading para o Botão de Playlist */
+@keyframes girar-loading {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: girar-loading 1s linear infinite;
+}
