@@ -22,7 +22,7 @@ import time
 import datetime
 from app.core.database import SessionLocal 
 from app.models.user import User
-from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack
 from app.services.spotify_service import SpotifyService
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
 from app.core.config import settings
@@ -244,6 +244,10 @@ async def robo_agregador_mensal():
 
             for rank, (track_id, play_count) in enumerate(ranking_musicas, start=1):
                 db.add(TopTwoHundred(user_id=u_id, mes_referencia=mes_ref, spotify_track_id=track_id, play_count=play_count, rank_position=rank))
+
+            # Top 10 Músicas (Dedicado para as tendências do Dashboard)
+            for rank, (track_id, play_count) in enumerate(ranking_musicas[:10], start=1):
+                db.add(MonthlyTopTrack(user_id=u_id, mes_referencia=mes_ref, spotify_track_id=track_id, play_count=play_count, rank_position=rank))
 
             # Top 15 Artistas (Usando capa do álbum como backup caso a foto do Genius falhe)
             ranking_artistas = db.query(

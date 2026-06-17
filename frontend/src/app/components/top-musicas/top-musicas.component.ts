@@ -105,7 +105,8 @@ export class TopMusicasComponent implements OnInit {
           artista: item.artista,
           capa: item.capa_url,
           reproducoes: item.total_plays,
-          tendencia: 'nova',
+          tendencia: item.tendencia || 'nova', // O backend agora envia a tendência real
+          valorTendencia: item.valorTendencia, // E também envia o valor da variação
           uri: item.uri || `spotify:track:${item.id}` // 🚨 Pegamos o URI!
         }));
         
