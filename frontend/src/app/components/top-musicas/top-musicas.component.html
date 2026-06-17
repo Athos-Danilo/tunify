@@ -3,7 +3,7 @@
   <header class="header-ranking">
     <span class="subtitulo">AS TUAS FAIXAS MAIS OUVIDAS</span>
     <h2 id="ranking-title" class="mes-letreiro">{{ mesAtual }}</h2>
-    <span class="data-atualizacao">{{ ultimaAtualizacao }}</span>
+    <span class="data-atualizacao" [title]="proximaAtualizacao">{{ ultimaAtualizacao }}</span>
   </header>
 
   <ol class="lista-musicas">

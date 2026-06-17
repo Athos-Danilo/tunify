@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.history import MonthlyHistory, MonthlyTopTrack
 from app.models.track import TrackCache
+from app.models.system import SystemMetadata
 
 # 🚨 [NOVO] Importando o nosso Motor de Busca e Configurações
 from app.services.spotify_service import SpotifyService
@@ -184,4 +185,13 @@ async def obter_top_mensal(email: str, db: Session = Depends(get_db)):
             "valorTendencia": valor_tendencia
         })
 
-    return {"dados": resultado_formatado}
+    # Consulta a última execução do robô
+    meta = db.query(SystemMetadata).filter(SystemMetadata.key == "rastreador_spotify").first()
+    ultima = meta.last_run.isoformat() if meta and meta.last_run else None
+    proxima = meta.next_run.isoformat() if meta and meta.next_run else None
+
+    return {
+        "ultima_atualizacao": ultima,
+        "proxima_atualizacao": proxima,
+        "dados": resultado_formatado
+    }

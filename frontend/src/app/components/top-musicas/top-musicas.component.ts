@@ -27,6 +27,7 @@ interface Musica {
 export class TopMusicasComponent implements OnInit {
   mesAtual: string = '';
   ultimaAtualizacao: string = '';
+  proximaAtualizacao: string = ''; // 🚨 [NOVO] Armazena o horário do Tooltip
   
   // Começamos com a lista vazia
   musicas: Musica[] = [];
@@ -47,7 +48,6 @@ export class TopMusicasComponent implements OnInit {
 
   ngOnInit() {
     this.mesAtual = new Intl.DateTimeFormat('pt-PT', { month: 'long' }).format(new Date());
-    this.calcularUltimaAtualizacao();
     
     // Chama a função que busca no Backend
     this.buscarDadosDoBackend();
@@ -110,6 +110,9 @@ export class TopMusicasComponent implements OnInit {
           uri: item.uri || `spotify:track:${item.id}` // 🚨 Pegamos o URI!
         }));
         
+        // 🚨 MÁGICA DO TEMPO: Processa as datas enviadas pelo backend
+        this.calcularUltimaAtualizacao(resposta.ultima_atualizacao, resposta.proxima_atualizacao);
+        
         this.carregando = false;
       },
       error: (erro) => {
@@ -127,16 +130,35 @@ export class TopMusicasComponent implements OnInit {
     return `${(reproducoes / maxPlays) * 100}%`;
   }
 
-  calcularUltimaAtualizacao() {
-    const hoje = new Date();
-    const ontem = new Date(hoje);
-    ontem.setDate(ontem.getDate() - 1);
+  calcularUltimaAtualizacao(ultimaIso: string | null, proximaIso: string | null) {
+    if (!ultimaIso || !proximaIso) {
+      this.ultimaAtualizacao = 'Ainda não atualizado hoje';
+      this.proximaAtualizacao = 'Próxima: em breve';
+      return;
+    }
+
+    const ultimaData = new Date(ultimaIso);
+    const proximaData = new Date(proximaIso);
+    const agora = new Date();
+
+    // 1. Calcula diferença em minutos para "Atualizado há X min"
+    const diffMs = agora.getTime() - ultimaData.getTime();
+    const diffMinutos = Math.floor(diffMs / 60000);
     
-    const dia = String(ontem.getDate()).padStart(2, '0');
-    const mes = String(ontem.getMonth() + 1).padStart(2, '0');
-    
-    // Formata para DD/MM às 12:00
-    this.ultimaAtualizacao = `Atualizado: ${dia}/${mes} às 12:00`;
+    if (diffMinutos < 1) {
+      this.ultimaAtualizacao = 'Atualizado agora mesmo';
+    } else if (diffMinutos < 60) {
+      this.ultimaAtualizacao = `Atualizado há ${diffMinutos} min`;
+    } else {
+      const horas = Math.floor(diffMinutos / 60);
+      const minutos = diffMinutos % 60;
+      this.ultimaAtualizacao = `Atualizado há ${horas}h ${minutos}m`;
+    }
+
+    // 2. Formata "Próxima atualização às HH:MM" para o Tooltip
+    const hora = String(proximaData.getHours()).padStart(2, '0');
+    const min = String(proximaData.getMinutes()).padStart(2, '0');
+    this.proximaAtualizacao = `Próxima atualização às ${hora}:${min}`;
   }
 
   // ==========================================================

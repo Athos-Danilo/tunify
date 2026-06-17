@@ -23,6 +23,7 @@ import datetime
 from app.core.database import SessionLocal 
 from app.models.user import User
 from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack
+from app.models.system import SystemMetadata
 from app.services.spotify_service import SpotifyService
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
 from app.core.config import settings
@@ -187,6 +188,28 @@ async def robo_rastreador_hourly():
                 db.close() # Garante a liberação dos recursos da sessão deste usuário imediatamente
 
             await asyncio.sleep(35) 
+
+        # Registra a execução nos metadados do sistema para o Frontend consumir
+        db_meta = SessionLocal()
+        try:
+            agora = datetime.datetime.now(datetime.timezone.utc)
+            proxima = agora + datetime.timedelta(minutes=100)
+            
+            meta = db_meta.query(SystemMetadata).filter(SystemMetadata.key == "rastreador_spotify").first()
+            if not meta:
+                meta = SystemMetadata(key="rastreador_spotify", last_run=agora, next_run=proxima)
+                db_meta.add(meta)
+            else:
+                meta.last_run = agora
+                meta.next_run = proxima
+            
+            db_meta.commit()
+            logger.info("🕒 [RASTREADOR] Horários de sincronização atualizados no banco.")
+        except Exception as e:
+            logger.error(f"❌ [RASTREADOR] Erro ao atualizar metadados: {e}")
+        finally:
+            db_meta.close()
+
     finally:
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
 
