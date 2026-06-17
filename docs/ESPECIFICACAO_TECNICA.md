@@ -2,11 +2,11 @@
 
 **Slogan:** "A matemática da sua vibe."
 
-**Versão:** 1.0.6
+**Versão:** 1.0.7
 
 **Status:** Desenvolvimento
 
-**Data da Atualização:** 17/04/2026
+**Data da Atualização:** 15/06/2026
 
 ---
 
@@ -103,6 +103,11 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RF31 - Métrica "Fã Raiz" (Tempo vs. Plays):** O Dashboard deve apresentar um ranking dos artistas mais ouvidos baseado no **tempo total de imersão** (minutos) e não apenas na quantidade de reproduções. O sistema fará o cruzamento da tabela de histórico com o tempo da faixa (duration_ms) para revelar os artistas que mais prenderam a atenção do usuário.
 * **RF32 - Gamificação Geek (Equivalências Temporais):** O sistema deve converter o tempo total ouvido no mês em marcos lúdicos de cultura pop ou do mundo real (Ex: "Você ouviu o equivalente a maratonar a trilogia do Senhor dos Anéis 5 vezes"). O frontend renderizará mensagens dinâmicas baseadas em faixas de minutos pré-estabelecidas no backend.
 * **RF33 - Taxa de Imersão (Time Percentage):** O Dashboard exibirá um indicador de impacto visual informando qual a porcentagem do mês o usuário passou ouvindo música. O cálculo dividirá os minutos totais ouvidos pela quantidade de minutos em um mês padrão (~43.200 minutos).
+* **RF34 - Sistema de Conquistas e Selos (Badge System):** O sistema deve introduzir uma mecânica avançada de gamificação recompensando o engajamento através de "Selos de Fã" (Badges). As conquistas serão divididas em três categorias de temporalidade:
+  1. **Mensais (Rotativos):** Selos de dominância temporária. Exemplo: *"Top 1% Ouvinte de Post Malone em Maio"*. Expiram no mês seguinte se a coroa não for mantida.
+  2. **Anuais (Legado):** Selos de honra referentes a um ano fechado. Exemplo: *"Fã do Ano de 2025"*.
+  3. **Permanentes (Marcos Globais):** Troféus vitalícios por acúmulo. Exemplo: *"Audiófilo de Elite: Ouviu 10.000 minutos no Tunify"* ou *"Explorador: Descobriu 500 artistas novos"*.
+* **RF35 - Vitrine de Selos (Badge Showcase):** O Dashboard deve possuir uma seção "Vitrine" (Trophy Room). O usuário poderá visualizar todos os seus selos conquistados (coloridos) e os bloqueados (em escala de cinza, com uma barra de progresso indicando o que falta para o desbloqueio). O usuário poderá "Fixar" (Pin) seus 3 selos favoritos no topo do perfil para exibição no Tunify Sync.
 
 ### **Módulo 7: Transmissão Direta (Comunicação e Feedback)**
 
@@ -205,6 +210,9 @@ Ferramentas de visualização de dados para o usuário entender seus próprios h
 * **RN23 - Paginação com Delay (Rate Limit Protection):** Para escanear bibliotecas imensas (ex: 3000+ faixas), a rotina do Backend deve utilizar paginação de 50 em 50 itens (limite da API). Para evitar bloqueio preventivo do Spotify (HTTP 429), a iteração deve possuir um backoff (delay de processamento assíncrono) entre os lotes, alimentando o progresso do frontend via WebSocket ou Polling.
 * **RN24 - Normalização de Duração (Anti-Redundância):** Respeitando o princípio DRY (Don't Repeat Yourself), o dado de duração da música (`duration_ms`) **nunca** será salvo na tabela de histórico quente (`monthly_history`). A duração será armazenada exclusivamente na tabela dicionário (`tracks_cache`). O cálculo de tempo total será sempre realizado via junção relacional (JOIN) sob demanda ou durante o fechamento mensal.
 * **RN25 - Agregação e Fechamento de Tempo (Monthly Time Rollup):** Em conjunto com a RN19 (faxina do dia 1º de cada mês às 03:00 da manhã), o Cron Job executará uma soma (SUM) multiplicando os plays de cada usuário pela duração (`duration_ms`) das respectivas músicas. O resultado total convertido em minutos será salvo na tabela de consolidação `minutes_listened`. Isso garante performance extrema para o Dashboard sem precisar varrer milhares de linhas diariamente.
+* **RN26 - Motor de Resolução de Conquistas (Badge Engine):** A avaliação e distribuição dos selos não deve ser calculada em tempo real para evitar gargalos no banco relacional. 
+  * *Selos Mensais/Anuais:* Serão calculados e distribuídos exclusivamente pelo Cron Job de consolidação (RN19 e RN25) durante o fechamento do dia 1º de cada mês, onde o Backend ranqueará os usuários globalmente para definir os "Top Ouvintes" de cada artista.
+  * *Selos Permanentes:* Serão aferidos de forma assíncrona logo após o "Hourly Tracker" (RN13) injetar novos plays no histórico, disparando um evento de checagem (Event-Driven) para verificar se o usuário cruzou alguma marca histórica.
 ---
 
 ## **5. Requisitos Não-Funcionais (RNF)**
@@ -395,6 +403,26 @@ Esquema relacional otimizado para performance e integridade.
 * `description` (Text): Resumo curto e direto (máximo de 2 parágrafos).
 * `trivia` (String): Fato curioso ou trivia rápida sobre o gênero para engajamento.
 * `updated_at` (Timestamp): Data da última atualização do registro.
+
+**Tabela: badges_catalog** (Catálogo Oficial de Selos)
+*Descrição: O dicionário global que define todos os selos possíveis de serem conquistados na plataforma.*
+* `id` (String/Slug, PK): Identificador programático (ex: `1000_mins_club`, `top_listener_artist`).
+* `name` (String): Nome público de exibição (ex: "Audiófilo de Elite").
+* `description` (Text): Regra ou descrição da conquista (ex: "Ouça 10.000 minutos no Tunify").
+* `category` (Enum): Categoria da conquista (`MILESTONE`, `ARTIST_TOP_FAN`, `GENRE_EXPLORER`).
+* `icon_url` (String): Caminho do ícone vetorial ou imagem que representa o selo.
+* `base_temporality` (Enum): A temporalidade natural do selo (`MONTHLY`, `ANNUAL`, `PERMANENT`).
+* `is_active` (Boolean): Flag para ativar/desativar selos (útil para eventos sazonais).
+* `created_at` (Timestamp).
+
+**Tabela: user_badges** (Inventário de Conquistas do Usuário)
+*Descrição: Armazena o mapeamento entre os usuários e os selos que eles desbloquearam.*
+* `id` (UUID, PK): Identificador único da conquista de um usuário.
+* `user_id` (UUID, FK -> users.id, Index): Dono da conquista.
+* `badge_id` (String, FK -> badges_catalog.id, Index): Referência direta ao selo do catálogo.
+* `reference_period` (String, Opcional): Mês/Ano que a conquista representa (ex: "2026-05" ou "2026"). Será sempre nulo para selos de `base_temporality` PERMANENT.
+* `is_pinned` (Boolean): Flag (true/false) indicando se o selo está fixado no topo do perfil (limite de 3 por usuário).
+* `unlocked_at` (Timestamp): Data e hora exatas em que o usuário atingiu a meta.
 
 ---
 

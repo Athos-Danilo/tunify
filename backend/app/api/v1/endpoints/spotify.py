@@ -5,8 +5,9 @@ import httpx
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.history import MonthlyHistory
+from app.models.history import MonthlyHistory, MonthlyTopTrack
 from app.models.track import TrackCache
+from app.models.system import SystemMetadata
 
 # 🚨 [NOVO] Importando o nosso Motor de Busca e Configurações
 from app.services.spotify_service import SpotifyService
@@ -107,7 +108,7 @@ async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
     return pacote_resumo
 
 
-# A Rota top-mensal continua intocada aqui embaixo...
+# A Rota top-mensal atualizada para calcular a tendência!
 @router.get("/top-mensal/{email}")
 async def obter_top_mensal(email: str, db: Session = Depends(get_db)):
     usuario_real = db.query(User).filter(User.email == email).first()
@@ -138,15 +139,59 @@ async def obter_top_mensal(email: str, db: Session = Depends(get_db)):
     if not top_tracks:
         return {"mensagem": "O robô ainda está mapeando sua vibe!", "dados": []}
 
+    # 🚨 LÓGICA DE TENDÊNCIA: Buscar o Top 10 do mês passado na MonthlyTopTrack
+    ultimo_fechamento = db.query(MonthlyTopTrack.mes_referencia)\
+                          .filter(MonthlyTopTrack.user_id == user_id_dinamico)\
+                          .order_by(desc(MonthlyTopTrack.mes_referencia))\
+                          .first()
+    
+    mapa_tendencias = {}
+    if ultimo_fechamento:
+        mes_passado = ultimo_fechamento[0]
+        top_anterior = db.query(MonthlyTopTrack).filter(
+            MonthlyTopTrack.user_id == user_id_dinamico,
+            MonthlyTopTrack.mes_referencia == mes_passado
+        ).all()
+        for track in top_anterior:
+            mapa_tendencias[track.spotify_track_id] = track.rank_position
+
     resultado_formatado = []
     for posicao, track in enumerate(top_tracks, start=1):
+        tendencia = 'nova'
+        valor_tendencia = None
+
+        if track.spotify_track_id in mapa_tendencias:
+            posicao_anterior = mapa_tendencias[track.spotify_track_id]
+            diferenca = posicao_anterior - posicao
+            
+            if diferenca > 0:
+                tendencia = 'sobe'
+                valor_tendencia = diferenca
+            elif diferenca < 0:
+                tendencia = 'desce'
+                valor_tendencia = abs(diferenca)
+            else:
+                tendencia = 'estavel'
+                valor_tendencia = 0
+
         resultado_formatado.append({
             "rank": posicao,
             "id": track.spotify_track_id,
             "nome": track.name,
             "artista": track.artist_name,
             "capa_url": track.album_cover_url,
-            "total_plays": track.play_count
+            "total_plays": track.play_count,
+            "tendencia": tendencia,
+            "valorTendencia": valor_tendencia
         })
 
-    return {"dados": resultado_formatado}
+    # Consulta a última execução do robô
+    meta = db.query(SystemMetadata).filter(SystemMetadata.key == "rastreador_spotify").first()
+    ultima = meta.last_run.isoformat() if meta and meta.last_run else None
+    proxima = meta.next_run.isoformat() if meta and meta.next_run else None
+
+    return {
+        "ultima_atualizacao": ultima,
+        "proxima_atualizacao": proxima,
+        "dados": resultado_formatado
+    }

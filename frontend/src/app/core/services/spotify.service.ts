@@ -80,4 +80,50 @@ export class SpotifyService {
       catchError(() => of(null)) // Se a API falhar, não quebra a tela, apenas retorna vazio
     );
   }
+
+  // ==========================================================
+  // 🚨 MÁGICA DA PLAYLIST (CRIAR E POPULAR) - URLS CORRIGIDAS
+  // ==========================================================
+
+  // 1. Pega o Perfil do usuário logado (Precisamos do ID dele)
+  obterPerfilSpotify(token: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return this.http.get('https://api.spotify.com/v1/me', { headers });
+  }
+
+  // 2. Cria a "Casca" da Playlist vazia
+  criarPlaylist(userId: string, token: string, nome: string, descricao: string): Observable<any> {
+    const headers = new HttpHeaders({ 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    const body = {
+      name: nome,
+      description: descricao,
+      public: false // Mantemos privada no começo para respeitar o usuário
+    };
+    // 🚨 URL Oficial de criação atualizada (Fevereiro/2026) - Agora usamos /me/playlists
+    return this.http.post(`https://api.spotify.com/v1/me/playlists`, body, { headers });
+  }
+
+  // 3. Injeta o Array de Músicas na Playlist
+  adicionarMusicasPlaylist(playlistId: string, token: string, uris: string[]): Observable<any> {
+    const headers = new HttpHeaders({ 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    const body = { uris: uris };
+    // 🚨 URL Oficial para adicionar faixas (Agora usando /items em vez de /tracks que foi descontinuado)
+    return this.http.post(`https://api.spotify.com/v1/playlists/${playlistId}/items`, body, { headers });
+  }
+
+  // 4. 🚨 [NOVO] Envia a foto personalizada gerada no Canvas para o Spotify
+  uploadCapaPlaylist(playlistId: string, token: string, imagemBase64: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'image/jpeg' // O Spotify exige estritamente image/jpeg para capas
+    });
+    // Envia o texto Base64 puro direto na requisição PUT
+    return this.http.put(`https://api.spotify.com/v1/playlists/${playlistId}/images`, imagemBase64, { headers });
+  }
 }

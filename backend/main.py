@@ -16,7 +16,7 @@ from app.core.database import engine, Base
 
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
 # 🚨 [AJUSTE] Adicionamos o ArtistCache aqui para o banco criar a tabela de fotos oficiais!
-from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened
+from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata
 from app.models.artist import ArtistCache 
 
 

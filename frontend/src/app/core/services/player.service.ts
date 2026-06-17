@@ -112,12 +112,34 @@ export class PlayerService {
     }
   }
 
+  // 🚨 [NOVO METODO] Dispara a Fila inteira com base no clique
+  tocarFila(uris: string[], offsetIndex: number = 0) {
+    if (!this.accessToken || !this.deviceId) return;
+
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${this.deviceId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        uris: uris,
+        offset: { position: offsetIndex }
+      })
+    }).then(response => {
+      if (response.ok || response.status === 204) {
+        console.log(`[TUNIFY] Tocando fila a partir da faixa ${offsetIndex + 1}!`);
+        setTimeout(() => this.faixaModificada$.next(), 500);
+      }
+    }).catch(err => console.error('[TUNIFY] Erro ao tocar fila:', err));
+  }
+
   // 3. O COMUNICADOR DA REPETIÇÃO: Chama a API direto
   setRepeatMode(state: 'off' | 'context' | 'track') {
     if (!this.accessToken) return;
     
     // Fazemos um PUT na API Web oficial do Spotify passando o estado desejado e o ID do nosso Tunify
-    fetch(`https://api.spotify.com/v1/me/player/repeat?state=$${state}&device_id=${this.deviceId}`, {
+    fetch(`https://api.spotify.com/v1/me/player/repeat?state=${state}&device_id=${this.deviceId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${this.accessToken}`

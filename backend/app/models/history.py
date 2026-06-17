@@ -140,3 +140,35 @@ class MonthlyTopArtist(Base):
 
     # 7. Relacionamento Virtual
     user = relationship("User", backref="top_artists_history")
+
+
+# ======> O Molde da Tabela do Top Músicas Mensal.
+# Armazena o fechamento mensal das 10 músicas mais ouvidas de cada usuário.
+# Serve para a lógica de UI de comparar se a música subiu, desceu ou é nova no ranking.
+# ----------------------------------------------------------------------------------------- #
+class MonthlyTopTrack(Base):
+    __tablename__ = "monthly_top_tracks"
+
+    # 1. Chave Primária (ID)
+    id = Column(Integer, primary_key=True, index=True)
+
+    # 2. ID do Usuário (Chave Estrangeira)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    # 3. Mês de Referência
+    # Segue o mesmo padrão do Top200 (Exemplo: "2026-04").
+    mes_referencia = Column(String, index=True, nullable=False)
+
+    # 4. ID da Música no Spotify
+    spotify_track_id = Column(String, index=True, nullable=False)
+
+    # 5. Contagem de Plays e Posição
+    play_count = Column(Integer, nullable=False)
+    rank_position = Column(Integer, nullable=False)
+
+    # 6. Data de Criação
+    # Carimba o momento exato do fechamento.
+    created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+
+    # 7. Relacionamento Virtual
+    user = relationship("User", backref="top_monthly_tracks_history")
