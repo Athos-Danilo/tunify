@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs'; // 🚨 IMPORTADO para usar async/await
 
@@ -45,6 +45,7 @@ export class TopMusicasComponent implements OnInit {
   // Injetamos os nossos carteiros
   private spotifyService = inject(SpotifyService);
   private playerService = inject(PlayerService); // 🚨 Injetado o motor do player
+  private cdr = inject(ChangeDetectorRef); // 🚨 Injetado para forçar a atualização de tela síncrona
 
   ngOnInit() {
     this.mesAtual = new Intl.DateTimeFormat('pt-PT', { month: 'long' }).format(new Date());
@@ -60,6 +61,10 @@ export class TopMusicasComponent implements OnInit {
       } else {
          this.faixaTocandoUri = null;
       }
+      
+      // 🚨 Resolve o erro NG0100 forçando o Angular a validar esse componente
+      // na mesma hora que o estado do player muda, sincronizando com o PlayerContainer!
+      this.cdr.detectChanges();
     });
   }
 
