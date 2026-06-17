@@ -116,4 +116,14 @@ export class SpotifyService {
     // 🚨 URL Oficial para adicionar faixas (Agora usando /items em vez de /tracks que foi descontinuado)
     return this.http.post(`https://api.spotify.com/v1/playlists/${playlistId}/items`, body, { headers });
   }
+
+  // 4. 🚨 [NOVO] Envia a foto personalizada gerada no Canvas para o Spotify
+  uploadCapaPlaylist(playlistId: string, token: string, imagemBase64: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'image/jpeg' // O Spotify exige estritamente image/jpeg para capas
+    });
+    // Envia o texto Base64 puro direto na requisição PUT
+    return this.http.put(`https://api.spotify.com/v1/playlists/${playlistId}/images`, imagemBase64, { headers });
+  }
 }
