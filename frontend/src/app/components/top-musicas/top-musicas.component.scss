@@ -3,7 +3,7 @@
 :host {
   display: block;
   width: 100%;
-  min-width: 0; 
+  min-width: 0;
 }
 
 .card-top-musicas {
@@ -12,9 +12,9 @@
   padding: 1.5rem 0.2rem;
   width: 100%;
   box-sizing: border-box;
-  max-width: 780px; 
+  max-width: 780px;
   min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.07); 
+  border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 
   height: 100%;
@@ -26,41 +26,45 @@
   }
 
   @include tela-grande {
-    padding: 2rem 1.3rem; 
-    max-width: 1000px; /* Deixa o card crescer mais no PC */
+    padding: 2rem 1.3rem;
+    max-width: 1000px;
+    /* Deixa o card crescer mais no PC */
   }
 
   .header-ranking {
     margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
     text-align: center;
     position: relative;
+
     .subtitulo {
       color: var(--cinza-claro-dk);
       font-size: 0.75rem;
       letter-spacing: 2px;
       font-weight: 600;
     }
+
     .mes-letreiro {
       font-size: 3rem;
       font-family: var(--fonte-especial);
       margin-top: -5px;
-      margin-bottom: 5px; 
+      margin-bottom: 5px;
       line-height: 1;
       background: linear-gradient(to bottom, var(--cor-azul, #347CD4), rgba(52, 124, 212, 0.1));
-      
+
       -webkit-background-clip: text;
-      background-clip: text; 
-      
+      background-clip: text;
+
       -webkit-text-fill-color: transparent;
       letter-spacing: 2px;
     }
+
     .data-atualizacao {
       font-size: 0.65rem;
       color: rgba(255, 255, 255, 0.4);
-      margin-top: 0; 
+      margin-top: 0;
       font-style: italic;
     }
   }
@@ -68,42 +72,51 @@
 
 .lista-musicas {
   display: grid;
-  gap: 6px; 
-  
+  gap: 6px;
+
   /* ========================================================= */
   /* 📱 MÁGICA MOBILE: Scroll Interno com Barra Invisível      */
   /* ========================================================= */
-  grid-template-columns: 1fr; 
-  max-height: 345px; /* 👈 Altura exata para caberem 5 músicas! */
-  overflow-y: auto; /* 👈 Liga o scroll vertical */
-  padding-right: 5px; /* Respiro pro scroll não amassar o layout */
+  grid-template-columns: 1fr;
+  max-height: 345px;
+  /* 👈 Altura exata para caberem 5 músicas! */
+  overflow-y: auto;
+  /* 👈 Liga o scroll vertical */
+  padding-right: 5px;
+  /* Respiro pro scroll não amassar o layout */
   padding-left: 0;
   margin: 0;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  
+
   /* Esconde a barra de rolagem mas mantém a função (Padrão App Nativo) */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE e Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+
+  /* IE e Edge */
   &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari e Opera */
+    display: none;
+    /* Chrome, Safari e Opera */
   }
 
   /* ========================================================= */
   /* 💻 TABLET / PC: Desliga o scroll e mostra as 2 colunas    */
   /* ========================================================= */
   @include tela-media {
-    grid-template-columns: 1fr; /* Mantém 1 coluna lindona */
-    
+    grid-template-columns: 1fr;
+    /* Mantém 1 coluna lindona */
 
-    max-height: 444px; 
-    
+
+    max-height: 444px;
+
     /* Zera os flex que a gente tentou antes */
-    flex: unset; 
-    height: auto; 
-    
-    overflow-y: auto; /* Mantém o scroll rodando liso */
+    flex: unset;
+    height: auto;
+
+    overflow-y: auto;
+    /* Mantém o scroll rodando liso */
     padding-right: 5px;
   }
 
@@ -111,14 +124,17 @@
   /* 🖥️ DESKTOP: 2 Colunas e sem limites!                        */
   /* ========================================================= */
   @include tela-grande {
-    grid-template-columns: 1fr 1fr; /* Divide em 2 colunas iguais */
-    column-gap: 20px; /* Um corredor elegante entre as colunas */
-    row-gap: 12px; /* Distância um pouco maior entre as linhas */
-    
+    grid-template-columns: 1fr 1fr;
+    /* Divide em 2 colunas iguais */
+    column-gap: 20px;
+    /* Um corredor elegante entre as colunas */
+    row-gap: 12px;
+    /* Distância um pouco maior entre as linhas */
+
     /* Desliga as limitações do tablet/celular */
-    max-height: none; 
-    overflow-y: visible; 
-    padding-right: 0; 
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
   }
 }
 
@@ -131,7 +147,8 @@
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
-  cursor: pointer; /* 🚨 Indica que agora a linha é clicável */
+  cursor: pointer;
+  /* 🚨 Indica que agora a linha é clicável */
 
   transition: all 0.3s ease;
   opacity: 0;
@@ -142,36 +159,48 @@
   /* 🚨 ESTADO ATIVO: Quando a música está tocando */
   &.ativa {
     background: rgba(255, 255, 255, 0.05);
-    .titulo-musica { color: var(--azul-dk); }
+
+    .titulo-musica {
+      color: var(--azul-dk);
+    }
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08); /* Fica um tiquinho mais claro no hover */
-    .titulo-musica { text-decoration: underline; }
-    
+    background: rgba(255, 255, 255, 0.08);
+
+    /* Fica um tiquinho mais claro no hover */
+    .titulo-musica {
+      text-decoration: underline;
+    }
+
     /* Só pinta de verde se NÃO estiver ativa. Se estiver ativa, continua no azul */
-    &:not(.ativa) .titulo-musica { color: var(--verde-spotify-dk); }
-    
-    .overlay-play { opacity: 1; }
-    .numero { opacity: 0; }
+    &:not(.ativa) .titulo-musica {
+      color: var(--verde-spotify-dk);
+    }
+
+    .overlay-play {
+      opacity: 1;
+    }
+
+    /* (O efeito de hover do progresso está desativado devido a problemas de renderização, veja o TODO abaixo no .progresso) */
   }
 }
 
 .rank-info {
-  width: 45px; 
+  width: 45px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  
-  .numero { 
-    font-size: 1.2rem; 
-    font-weight: 700; 
-    opacity: 0.3; 
+
+  .numero {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--cinza-claro-dk, #B3B3B3);
     transition: opacity 0.3s;
   }
-  
+
   /* 🚨 Ícone pulsante de áudio! */
   .icone-tocando {
     position: absolute;
@@ -180,23 +209,33 @@
     animation: pulso-audio 1.5s infinite;
   }
 
-  .tendencia { 
+  .tendencia {
     display: flex;
     align-items: center;
     gap: 2px;
-    font-size: 0.7rem; 
+    font-size: 0.7rem;
     font-weight: 800;
     margin-top: 2px;
 
-    &.sobe { color: #2ecc71; .material-icons { font-size: 0.9rem; } }
-    &.desce { color: #e74c3c; .material-icons { font-size: 0.9rem; } }
-    
-    .tag-nova { 
-      background: var(--cor-azul); 
-      padding: 3px 5px; 
-      border-radius: 4px; 
-      color: white;
-      font-size: 0.5rem;
+    &.sobe {
+      color: #2ecc71;
+
+      .material-icons {
+        font-size: 0.9rem;
+      }
+    }
+
+    &.desce {
+      color: #e74c3c;
+
+      .material-icons {
+        font-size: 0.9rem;
+      }
+    }
+
+    .tag-nova {
+      color: var(--cinza-escuro-dk, #1E2E48);
+      font-size: 0.65rem;
       letter-spacing: 0.5px;
     }
   }
@@ -206,13 +245,30 @@
   position: relative;
   width: 50px;
   height: 50px;
-  img { width: 100%; border-radius: 8px; }
+
+  img {
+    width: 100%;
+    border-radius: 8px;
+  }
+
   .overlay-play {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.3s;
-    span { color: white; font-size: 2rem; }
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+
+    span {
+      color: white;
+      font-size: 2rem;
+    }
   }
 }
 
@@ -220,13 +276,13 @@
   flex: 1;
   min-width: 0;
 
-  .titulo-musica { 
+  .titulo-musica {
     font-size: 1rem;
     color: var(--branco-dk);
-    margin: 0; 
-    transition: color 0.3s; 
-    white-space: nowrap; 
-    overflow: hidden; 
+    margin: 0;
+    transition: color 0.3s;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
   }
 
@@ -235,32 +291,52 @@
     width: 100%;
   }
 
-  .titulo-musica { 
-    font-size: 1rem; 
-    color: var(--branco-dk); 
-    margin: 0; 
-    transition: color 0.3s; 
-    
+  .titulo-musica {
+    font-size: 1rem;
+    color: var(--branco-dk);
+    margin: 0;
+    transition: color 0.3s;
+
     /* Mágica do Ellipsis garantida */
     display: block;
     width: 100%;
-    white-space: nowrap; 
-    overflow: hidden; 
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .artista-nome { 
-    font-size: 0.8rem; 
-    color: var(--cinza-claro-dk); 
-    margin: 0; 
-    white-space: nowrap; 
-    overflow: hidden; 
+  .artista-nome {
+    font-size: 0.8rem;
+    color: var(--cinza-claro-dk);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .regua-vicio {
-    height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 6px;
-    .progresso { height: 100%; background: var(--verde-spotify-dk); box-shadow: 0 0 10px var(--verde-spotify-dk); border-radius: 2px; transition: width 1s ease-out; }
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    margin-top: 6px;
+
+    .progresso {
+      height: 100%;
+      background: var(--azul-dk, #0285FF);
+      box-shadow: 0 0 10px var(--azul-dk, #0285FF);
+      opacity: 0.6;
+      border-radius: 2px;
+      transition: width 1s ease-out;
+
+      /* 
+       * TODO(BUG): Efeito de preenchimento no Hover.
+       * Queríamos um efeito onde a barra mudasse para 100% de brilho (opacity: 1) da esquerda 
+       * para a direita quando o usuário passasse o mouse (.musica-row:hover). 
+       * Porém, devido à largura dinâmica sendo injetada pelo Angular no elemento ([style.width]), 
+       * as abordagens via CSS puro (pseudo-elementos, background-position, scaleX) não estão 
+       * disparando a animação visualmente. Retornamos para o visual estático em 60% por enquanto.
+       */
+    }
   }
 }
 
@@ -269,12 +345,12 @@
   padding: 6px 10px;
   border-radius: 20px;
   flex-shrink: 0;
-  
-  span { 
-    font-size: 0.7rem; 
-    font-weight: 600; 
-    color: var(--cinza-claro-dk); 
-    white-space: nowrap; 
+
+  span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--cinza-claro-dk);
+    white-space: nowrap;
   }
 }
 
@@ -282,9 +358,10 @@
 /* 🚨 RODAPÉ E BOTÃO PREMIUM SPOTIFY */
 /* ========================================================= */
 .footer-actions {
-  margin-top: 1.5rem; /* 👈 Volta pro margin-top padrão */
+  margin-top: 1.5rem;
+  /* 👈 Volta pro margin-top padrão */
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   width: 100%;
 }
 
@@ -292,15 +369,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 24px; 
-  background: rgba(29, 185, 84, 0.05); 
-  border: 1px solid rgba(29, 185, 84, 0.3); 
-  border-radius: 50px; 
+  padding: 10px 24px;
+  background: rgba(29, 185, 84, 0.05);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  border-radius: 50px;
   cursor: pointer;
   outline: none;
   overflow: hidden;
   position: relative;
-  
+
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   .icone-animado {
@@ -320,24 +397,24 @@
 
   &:hover {
     background: var(--verde-spotify-dk, #1DB954);
-    transform: translateY(-3px); 
-    box-shadow: 
-      0 10px 20px rgba(29, 185, 84, 0.3), 
-      0 0 15px rgba(29, 185, 84, 0.5), 
+    transform: translateY(-3px);
+    box-shadow:
+      0 10px 20px rgba(29, 185, 84, 0.3),
+      0 0 15px rgba(29, 185, 84, 0.5),
       inset 0 0 5px rgba(255, 255, 255, 0.4);
     border-color: transparent;
 
     .icone-animado {
-      color: #000; 
-      transform: scale(1.1); 
+      color: #000;
+      transform: scale(1.1);
     }
 
     .texto-btn {
-      color: #000; 
+      color: #000;
       font-weight: 700;
     }
   }
-  
+
   &:active {
     transform: translateY(1px);
     box-shadow: 0 5px 10px rgba(29, 185, 84, 0.3);
@@ -345,13 +422,27 @@
 }
 
 @keyframes entrada-cascata {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulso-audio {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
 }
 
 /* ========================================================= */
@@ -359,37 +450,52 @@
 /* ========================================================= */
 :host-context(.tema-claro) .card-top-musicas {
   background-color: var(--branco-lt);
-  border-color: rgb(191, 190, 190); /* Mesma borda dos outros cards */
+  border-color: rgb(191, 190, 190);
+  /* Mesma borda dos outros cards */
 
   .header-ranking {
     .subtitulo {
       color: var(--preto-lt);
       opacity: 0.6;
     }
+
     .data-atualizacao {
       color: rgba(0, 0, 0, 0.4);
     }
+
     /* O .mes-letreiro azul continua lindo no fundo branco, não precisamos mexer! */
   }
 
   .musica-row {
     &.ativa {
       background: rgba(0, 0, 0, 0.05);
-      .titulo-musica { color: var(--azul-lt); }
+
+      .titulo-musica {
+        color: var(--azul-lt);
+      }
     }
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04); /* Hover agora escurece levemente o fundo */
+      background: rgba(0, 0, 0, 0.04);
+      /* Hover agora escurece levemente o fundo */
     }
   }
 
   .rank-info {
     .numero {
       color: var(--preto-lt);
-      opacity: 0.3; /* Deixa o número sutil no fundo branco */
+      opacity: 0.3;
+      /* Deixa o número sutil no fundo branco */
     }
+
     .icone-tocando {
       color: var(--azul-lt);
+    }
+
+    .tendencia {
+      .tag-nova {
+        color: var(--cinza-escuro-lt, #474952);
+      }
     }
   }
 
@@ -397,18 +503,22 @@
     .titulo-musica {
       color: var(--preto-lt);
     }
+
     .artista-nome {
       color: var(--preto-lt);
       opacity: 0.6;
     }
+
     .regua-vicio {
-      background: rgba(0, 0, 0, 0.1); /* Fundo da régua mais escurinho */
-      /* A barrinha .progresso continua var(--verde-spotify-dk), que dá um contraste show! */
+      background: rgba(0, 0, 0, 0.1);
+      /* Fundo da régua mais escurinho */
+      /* A barrinha .progresso continua var(--azul-dk), que dá um contraste show! */
     }
   }
 
   .plays-badge {
     background: rgba(0, 0, 0, 0.05);
+
     span {
       color: var(--preto-lt);
       opacity: 0.7;
@@ -418,8 +528,13 @@
 
 /* 🚨 Animação de Loading para o Botão de Playlist */
 @keyframes girar-loading {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spin {
