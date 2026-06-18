@@ -35,6 +35,9 @@ export class TopArtistasComponent implements OnInit {
   totalArtistasMes: number = 0;
   carregando: boolean = true;
 
+  podeRolarEsquerda: boolean = false;
+  podeRolarDireita: boolean = true;
+
   ngOnInit(): void {
     if (this.email) {
       this.buscarDadosDoComponente();
@@ -57,6 +60,9 @@ export class TopArtistasComponent implements OnInit {
         
         this.carregando = false;
         this.cdr.detectChanges(); 
+        
+        // Verifica as setas assim que os cards renderizarem
+        setTimeout(() => this.atualizarSetas(), 100);
       },
       error: (err) => {
         console.error('Erro ao buscar dados do Top Artistas:', err);
@@ -76,6 +82,22 @@ export class TopArtistasComponent implements OnInit {
         left: direcao === 'esq' ? currentScroll - scrollAmount : currentScroll + scrollAmount,
         behavior: 'smooth' // Animação suave nativa do navegador
       });
+    }
+  }
+
+  // Monitora a rolagem para esconder/mostrar as setas
+  atualizarSetas() {
+    if (this.carrosselRef) {
+      const el = this.carrosselRef.nativeElement;
+      const rolarEsq = el.scrollLeft > 0;
+      // Dá uma margem de erro de 1px por conta do arredondamento de pixels em telas com zoom
+      const rolarDir = Math.ceil(el.scrollLeft + el.clientWidth) < el.scrollWidth;
+
+      if (this.podeRolarEsquerda !== rolarEsq || this.podeRolarDireita !== rolarDir) {
+        this.podeRolarEsquerda = rolarEsq;
+        this.podeRolarDireita = rolarDir;
+        this.cdr.detectChanges();
+      }
     }
   }
 }

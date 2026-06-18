@@ -1,36 +1,36 @@
+// Importação dos Mixins.
 @use '../../../assets/mixins' as *;
 
-/* PALETA FIGMA */
-$figma-bg-color: #0B1120; 
-$figma-text-white: #FFFFFF;
-$figma-text-gray: #B3B3B3;
-$figma-up-green: #1DB954; 
-$figma-down-red: #E22134;
-$figma-rank-blue: #2C9FFF; 
-$figma-title-blue: #0285FF; 
+/*--- Importa as variáveis e mixins globais ---*/
+@import '../../../styles.scss';
 
-$figma-badge-new-bg: #35607E;
-$figma-badge-new-text: #DBF1FF;
-$figma-badge-up-bg: #357E4F;
-$figma-badge-down-bg: #7E3536;
-$figma-badge-same-bg: #40434B;
-$figma-border-color: rgba(255, 255, 255, 0.6); 
+/* Configuração do Host do Componente */
+:host {
+  display: block;
+  overflow: visible !important;
+  /* Libera a sombra (box-shadow) para não formar pontas quadradas */
+}
 
+/*---------- Card Top Artistas ----------*/
 .card-top-artistas {
-  background-color: $figma-bg-color; 
-  border-radius: 40px; 
-  color: $figma-text-white;
-  font-family: 'Poppins', 'Montserrat', sans-serif;
-  padding: 16px; 
+  background-color: var(--azul-muito-escuro-dk);
+  border-radius: 40px;
+  color: var(--branco-dk);
+  font-family: var(--fonte-principal);
+  padding: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
   /* ✨ A TRAVA DO CARD ✨ */
   width: 100%;
-  box-sizing: border-box; 
-  overflow: hidden; 
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
 
   @include tela-media {
-    padding: 32px; 
+    padding: 32px;
+    border: 1.1px solid rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -39,22 +39,22 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
   margin-bottom: 40px;
 
   .titulo-especial {
-    font-family: 'MuseoModerno', sans-serif; 
+    font-family: var(--fonte-especial);
     font-size: 2.2rem;
     font-style: italic;
-    font-weight: 800; 
-    color: $figma-title-blue; 
+    font-weight: 800;
+    color: var(--azul-dk);
     margin: 0 0 8px 0;
     letter-spacing: -0.5px;
   }
 
   .subtitulo {
     font-size: 1.1rem;
-    color: $figma-text-white;
+    color: var(--branco-dk);
     margin: 0;
 
     .destaque-verde {
-      color: $figma-up-green; 
+      color: var(--verde-spotify-dk);
       font-weight: 700;
     }
   }
@@ -62,57 +62,56 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
 
 .conteudo-principal {
   display: flex;
-  flex-direction: column; 
-  gap: 30px; 
+  flex-direction: column;
+  gap: 30px;
 }
 
 .hero-artista {
   display: flex;
   justify-content: center;
+  margin-bottom: 10px;
+  /* Mais espaço para o carrossel de baixo */
 
   .hero-card-outline {
     display: flex;
-    position: relative; 
-    max-width: 500px;
+    position: relative;
+    max-width: 600px;
+    /* Aumentado para não quebrar nomes no PC */
     width: 100%;
     border-style: solid;
-    border-color: $figma-border-color;
+    border-color: rgba(255, 255, 255, 0.6);
     border-radius: 24px;
+    border-width: 1px;
 
-    /* 📱 MOBILE-FIRST: Padrão para telas menores que 900px */
-    flex-direction: column;
-    align-items: center; 
-    text-align: center;
-    padding: 0 0 24px 0; 
-    gap: 0; 
-    border-width: 1px; 
+    /* 📱 MOBILE-FIRST: Agora na horizontal, igual ao Figma! */
+    flex-direction: row;
+    align-items: stretch;
+    /* Faz a foto esticar para preencher toda a altura do card */
+    text-align: left;
+    padding: 0 16px 0 0;
+    gap: 16px;
 
     @include tela-media {
-      /* 💻 TABLET E DESKTOP (A partir de 900px) */
-      flex-direction: row;
-      align-items: center; 
-      text-align: left;
-      padding: 0 24px 0 0; 
-      gap: 16px; 
-      border-width: 1px 1px 1px 0px; 
+      /* 💻 TABLET E DESKTOP */
+      padding: 0 24px 0 0;
+      gap: 20px;
     }
 
     .hero-img {
       object-fit: cover;
-      flex-shrink: 0; 
+      flex-shrink: 0;
 
       /* 📱 MOBILE-FIRST */
-      width: 100%;
-      height: 140px; /* Altura fixa para não esticar demais no celular */
-      border-radius: 24px 24px 0 0; 
-      margin-bottom: 12px;
+      width: 100px;
+      height: auto;
+      min-height: 100px;
+      border-radius: 24px 0 0 24px;
+      margin-bottom: 0;
 
       @include tela-media {
         /* 💻 TABLET E DESKTOP */
-        width: 110px; 
-        height: 110px;
-        border-radius: 24px; 
-        margin-bottom: 0;
+        width: 110px;
+        min-height: 110px;
       }
     }
 
@@ -121,40 +120,56 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
       flex-direction: column;
 
       /* 📱 MOBILE-FIRST */
-      align-items: center;
-      padding-top: 0;
-      padding-left: 12px;
-      padding-right: 12px;
-
-      @include tela-media {
-        /* 💻 TABLET E DESKTOP */
-        align-items: flex-start;
-        padding-top: 8px; 
-        padding-left: 0;
-        padding-right: 0;
-      }
+      align-items: flex-start;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      padding-left: 0;
+      padding-right: 0;
+      justify-content: center;
+      flex: 1;
+      min-width: 0;
+      /* Permite que o texto quebre com ellipsis */
 
       .hero-nome {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 700;
-        color: $figma-text-white;
+        color: var(--branco-dk);
         margin: 0 0 4px 0;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; 
+        text-overflow: ellipsis;
+        max-width: 100%;
+
+        @include tela-media {
+          font-size: 1.5rem;
+        }
       }
 
       // ✨ VOLTOU! Estilo das Músicas Diferentes
       .hero-musicas {
-        font-size: 0.9rem;
-        color: $figma-text-gray;
-        margin: 0 0 4px 0;
+        font-size: 0.85rem;
+        color: var(--cinza-claro-dk);
+        margin: 0 0 2px 0;
+
+        @include tela-media {
+          font-size: 0.9rem;
+          margin: 0 0 4px 0;
+        }
       }
 
       .hero-minutos {
-        font-size: 1.1rem;
-        color: $figma-text-gray;
-        margin: 0 0 10px 0; 
+        font-size: 0.85rem;
+        color: var(--cinza-claro-dk);
+        margin: 0 0 10px 0;
+
+        @include tela-media {
+          font-size: 0.95rem;
+        }
+      }
+
+      /* Garante que o container do status alinhe à esquerda */
+      .status-container {
+        justify-content: flex-start;
       }
     }
   }
@@ -167,14 +182,17 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
 
   .carrossel-container {
     display: flex;
-    flex-direction: row; 
-    gap: 20px; 
+    flex-direction: row;
+    gap: 20px;
     overflow-x: auto;
     scroll-behavior: smooth;
     padding: 10px 0;
     width: 100%;
-    
-    &::-webkit-scrollbar { display: none; }
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
     -ms-overflow-style: none;
     scrollbar-width: none;
 
@@ -183,7 +201,7 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
       flex-direction: column;
       align-items: center;
       text-align: center;
-      min-width: 110px; 
+      min-width: 110px;
       position: relative;
       transition: transform 0.2s ease;
 
@@ -197,48 +215,48 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
         margin-bottom: 12px;
 
         .circulo-img {
-          width: 64px; 
+          width: 64px;
           height: 64px;
-          border-radius: 50%; 
+          border-radius: 50%;
           object-fit: cover;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          flex-shrink: 0; 
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          flex-shrink: 0;
         }
       }
 
       .circulo-nome {
-        font-size: 0.9rem; 
+        font-size: 0.9rem;
         font-weight: 700;
-        color: $figma-text-white;
+        color: var(--branco-dk);
         margin: 0 0 4px 0;
         max-width: 110px;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; 
+        text-overflow: ellipsis;
       }
 
       // ✨ VOLTOU! Estilo das Músicas Diferentes
       .circulo-musicas {
         font-size: 0.75rem;
-        color: $figma-text-gray;
+        color: var(--cinza-claro-dk);
         margin: 0 0 2px 0;
       }
 
       .circulo-minutos {
         font-size: 0.8rem;
-        color: $figma-text-gray;
+        color: var(--cinza-claro-dk);
         margin: 0 0 10px 0;
       }
     }
   }
 
   .seta-btn {
-    display: none; 
-    background: rgba(255, 255, 255, 0.08); 
-    color: $figma-text-white; 
+    display: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--branco-dk);
     border: none;
-    border-radius: 4px; 
-    width: 32px; 
+    border-radius: 4px;
+    width: 32px;
     height: 32px;
     font-size: 1rem;
     cursor: pointer;
@@ -247,47 +265,52 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
     align-items: center;
     justify-content: center;
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
       background-color: #D3D3D3;
-      color: #333; 
+      color: #333;
     }
 
     @include tela-media {
-      display: flex; /* Agora sim, só aparece no mixin oficial */
+      display: flex;
+      /* Agora sim, só aparece no mixin oficial */
       position: absolute;
-      &.esquerda { left: -10px; } 
-      &.direita { right: -10px; }
+
+      &.esquerda {
+        left: -10px;
+      }
+
+      &.direita {
+        right: -10px;
+      }
     }
   }
 }
 
 .posicao-rank {
   position: absolute;
-  background-color: $figma-rank-blue;
-  color: $figma-text-white;
-  font-weight: 800; 
+  background-color: var(--azul-claro-dk);
+  color: var(--branco-dk);
+  font-weight: 800;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+  .ordinal {
+    font-size: 0.65em;
+    transform: translateY(-0.35em);
+    font-weight: 700;
+  }
 
   &.hero-rank {
     top: -12px;
-    /* 📱 MOBILE-FIRST: Centralizado */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1rem;
-    padding: 8px;
-    width: 32px;
-    height: 32px;
-
-    @include tela-media {
-      /* 💻 TABLET/DESKTOP: Volta pro canto esquerdo */
-      left: -12px;
-      transform: none;
-    }
+    left: -12px;
+    font-size: 1.1rem;
+    width: 38px;
+    height: 38px;
   }
 
   &.list-rank {
@@ -304,22 +327,105 @@ $figma-border-color: rgba(255, 255, 255, 0.6);
   justify-content: center;
 
   .badge {
-    font-size: 0.75rem; 
+    font-size: 0.65rem;
     font-weight: 600;
     display: inline-block;
-    padding: 6px 16px; 
+    padding: 4px 12px;
     border-radius: 20px;
-    text-transform: uppercase; 
+    text-transform: uppercase;
 
-    &.badge-new { background-color: $figma-badge-new-bg; color: $figma-badge-new-text; } 
-    &.badge-up { background-color: $figma-badge-up-bg; color: $figma-text-white; } 
-    &.badge-down { background-color: $figma-badge-down-bg; color: $figma-text-white; } 
-    &.badge-same { background-color: $figma-badge-same-bg; color: $figma-text-white; } 
+    &.badge-new {
+      background-color: #35607E;
+      color: var(--branco-azulado-dk);
+    }
+
+    &.badge-up {
+      background-color: #357E4F;
+      color: var(--branco-dk);
+    }
+
+    &.badge-down {
+      background-color: #7E3536;
+      color: var(--branco-dk);
+    }
+
+    &.badge-same {
+      background-color: #40434B;
+      color: var(--branco-dk);
+    }
   }
 }
 
 .estado-vazio {
   text-align: center;
   padding: 40px;
-  color: $figma-text-white;
+  color: var(--branco-dk);
+}
+
+// Card Top Artistas <<< Modo Claro >>>
+:host-context(.tema-claro) .card-top-artistas {
+  background-color: var(--branco-lt);
+  border: 1px solid rgb(191, 190, 190);
+
+  .card-header {
+    .titulo-especial {
+      color: var(--azul-lt);
+    }
+
+    .subtitulo {
+      color: var(--preto-lt);
+
+      .destaque-verde {
+        color: var(--verde-spotify-lt);
+      }
+    }
+  }
+
+  .hero-artista .hero-card-outline {
+    background-color: var(--branco-azulado-lt, #DBF1FF);
+    border-color: var(--azul-claro-lt, #2C9FFF);
+
+    .hero-info {
+      .hero-nome {
+        color: var(--preto-lt);
+      }
+
+      .hero-musicas,
+      .hero-minutos {
+        color: var(--cinza-escuro-lt);
+      }
+    }
+  }
+
+  .carrossel-wrapper {
+    .carrossel-container .circulo-artista {
+      .circulo-nome {
+        color: var(--preto-lt);
+      }
+
+      .circulo-musicas,
+      .circulo-minutos {
+        color: var(--cinza-escuro-lt);
+      }
+    }
+
+    .seta-btn {
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--preto-lt);
+
+      &:hover,
+      &:active {
+        background-color: #D3D3D3;
+      }
+    }
+  }
+
+  .posicao-rank {
+    background-color: var(--azul-claro-lt);
+    color: var(--branco-lt);
+  }
+
+  .estado-vazio {
+    color: var(--preto-lt);
+  }
 }
