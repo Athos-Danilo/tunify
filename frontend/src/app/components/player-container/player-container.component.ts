@@ -50,6 +50,7 @@ import { PlayerDesktopComponent } from '../player-desktop/player-desktop.compone
             [currentTime]="currentTime"
             [duration]="duration"
             [repeatMode]="repeatMode"
+            [volume]="volume"
 
             (onTogglePlay)="togglePlay()"
             (onNext)="next()"
@@ -57,7 +58,8 @@ import { PlayerDesktopComponent } from '../player-desktop/player-desktop.compone
             (onSeek)="onSeek($event)"
             (onSeekStart)="onSeekStart()"
             (onChangeRepeat)="ciclarRepeat()"
-            (onAbrirLetras)="buscarLetras()">
+            (onAbrirLetras)="buscarLetras()"
+            (onVolumeChange)="onVolumeChange($event)">
         </app-player-desktop>
 
         </ng-container>
@@ -96,7 +98,12 @@ export class PlayerContainerComponent implements OnInit, OnDestroy {
   formattedLyrics: string = '';
   private currentLyricsText: string = '';
 
+  volume: number = 100;
+
   ngOnInit() {
+    const volumeSalvo = typeof localStorage !== 'undefined' ? localStorage.getItem('tunify-volume') : null;
+    this.volume = volumeSalvo !== null ? Math.round(Number(volumeSalvo) * 100) : 100;
+
     this.breakpointObserver.observe(['(max-width: 768px)']).subscribe(result => {
       this.isMobile = result.matches;
       this.cdr.detectChanges();
@@ -249,6 +256,10 @@ export class PlayerContainerComponent implements OnInit, OnDestroy {
   togglePlay() { this.playerService.togglePlay(); }
   next() { this.playerService.nextTrack(); }
   previous() { this.playerService.previousTrack(); }
+  onVolumeChange(novoVolume: number) {
+    this.volume = novoVolume;
+    this.playerService.setVolume(novoVolume);
+  }
   
   ciclarRepeat() {
     let newStateStr: 'off' | 'context' | 'track' = 'off';

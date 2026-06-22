@@ -10,7 +10,7 @@
     <div class="hero-artista" *ngIf="topArtistas.length > 0">
       <div class="hero-card-outline">
         
-        <div class="posicao-rank hero-rank">1º</div>
+        <div class="posicao-rank hero-rank">1<span class="ordinal">º</span></div>
         
         <img [src]="topArtistas[0].capa_url" [alt]="topArtistas[0].nome" class="hero-img">
         
@@ -32,13 +32,13 @@
 
     <div class="carrossel-wrapper" *ngIf="topArtistas.length > 1">
       
-      <button class="seta-btn esquerda" (click)="rolarCarrossel('esq')">&#10094;</button>
+      <button class="seta-btn esquerda" *ngIf="podeRolarEsquerda" (click)="rolarCarrossel('esq')">&#10094;</button>
 
-      <div class="carrossel-container" #carrossel>
+      <div class="carrossel-container" #carrossel (scroll)="atualizarSetas()">
         <div class="circulo-artista" *ngFor="let artista of topArtistas | slice:1; let i = index">
           
           <div class="img-container">
-            <div class="posicao-rank list-rank">{{ i + 2 }}º</div>
+            <div class="posicao-rank list-rank">{{ i + 2 }}<span class="ordinal">º</span></div>
             <img [src]="artista.capa_url" [alt]="artista.nome" class="circulo-img">
           </div>
           
@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <button class="seta-btn direita" (click)="rolarCarrossel('dir')">&#10095;</button>
+      <button class="seta-btn direita" *ngIf="podeRolarDireita" (click)="rolarCarrossel('dir')">&#10095;</button>
 
     </div>
   </ng-container>

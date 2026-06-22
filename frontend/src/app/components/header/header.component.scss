@@ -46,6 +46,7 @@
 .header-logo {
   display: flex;
   align-items: center;
+  cursor: pointer;
 }
 
 // Navegação Central
@@ -245,6 +246,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; // Permite que a linha de contexto vá para a linha de baixo
   position: fixed;
   z-index: 9998;
   box-sizing: border-box; 
@@ -265,6 +267,7 @@
     overflow: hidden; // Prepara pra sumir
     max-width: 150px; 
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    cursor: pointer;
   }
 
   // 🚨 A NOVA CAIXA DA PESQUISA
@@ -306,7 +309,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    overflow: hidden; // Prepara os botões pra sumirem juntos
+    overflow: visible; // Permite que a sombra do botão apareça
     max-width: 150px;
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 
@@ -321,10 +324,51 @@
       transform-origin: right center; 
       
       // 🚨 A TESOURA NO FANTASMA DO BOTÃO
-      overflow: hidden; 
+      overflow: visible; 
       max-width: 60px; 
       opacity: 1;
       transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+  }
+
+  // A NOVA LINHA DE CONTEXTO
+  .header-context-row {
+    pointer-events: auto;
+    flex-basis: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center; // 🚨 Centraliza os itens dentro da linha de contexto
+    gap: 8px;
+    margin-top: 8px; // 🚨 Posiciona a data logo abaixo do logo/botões, com um espaço sutil
+    color: var(--cinza-claro-dk);
+    font-family: var(--fonte-principal);
+    font-size: 0.85rem; // 🚨 Fonte um pouco maior
+    font-weight: 600; // 🚨 Fonte um pouco mais grossa (semi-bold)
+    text-transform: uppercase; // 🚨 Tudo maiúsculo
+    letter-spacing: 0.05em; // 🚨 Espaçamento extra premium para letras maiúsculas
+    
+    // Animação de entrada e saída
+    max-height: 25px;
+    opacity: 1;
+    overflow: hidden;
+    transform: translateY(0);
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); // 🚨 Suavizado
+
+    :host-context(.tema-claro) & {
+      color: var(--cinza-escuro-lt, #4b5563);
+    }
+  }
+
+  // =======================================================
+  // 0️⃣ MODO AGUARDANDO PRELOADER (Para a animação inicial)
+  // =======================================================
+  &.aguardando-preloader {
+    .header-context-row {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0; // 🚨 Ajustado de volta para margin-top
+      transform: translateY(-10px);
+      pointer-events: none;
     }
   }
 
@@ -336,11 +380,14 @@
     left: 1.5rem; right: 1.5rem; 
     padding: 12px 20px; 
     border-radius: 40px; 
+    justify-content: center;
+    column-gap: 30px; // Gap só horizontal para não dar espaço embaixo
+    row-gap: 0;
     background: rgba(11, 17, 32, 0.85); 
     backdrop-filter: blur(20px); 
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); // Sobrescreve a sombra interna do topo
 
     :host-context(.tema-claro) & {
       background: rgba(255, 255, 255, 0.9);
@@ -348,12 +395,20 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
-    // Mata o fantasma do botão de vez!
-    .btn-tema-neon.mini {
-      max-width: 0;
+    // Ocultar a linha de contexto
+    .header-context-row {
+      max-height: 0;
       opacity: 0;
-      margin-left: -15px; // Engole o gap do flexbox
-      pointer-events: none; 
+      margin-top: 0; // 🚨 Ajustado de volta para margin-top
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    // Mata o botão de tema de vez no modo compacto!
+    .mobile-top-actions {
+      .btn-tema-neon.mini {
+        display: none !important;
+      }
     }
   }
 

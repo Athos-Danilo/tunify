@@ -4,7 +4,7 @@
 <header class="header-desktop-wrapper">
   <div class="cyber-glass-pill">
     
-    <div class="header-logo">
+    <div class="header-logo" (click)="rolarParaOTopo()">
       <app-logo tamanho="pequeno" [animado]="true"></app-logo>
     </div>
 
@@ -67,11 +67,11 @@
 <!-- 📱 TOPO MOBILE (LOGO E PESQUISA)                        -->
 <!-- ======================================================= -->
 <!-- 🚨 Adicionamos a classe "search-aberta" baseada na variável -->
-<header class="header-top-mobile" [class.compacta]="isScrolled" [class.search-aberta]="isSearchMobileOpen">
+<header class="header-top-mobile" [class.compacta]="isScrolled" [class.search-aberta]="isSearchMobileOpen" [class.aguardando-preloader]="isPreloaderActive">
   
   <!-- A LOGO -->
-  <div class="mobile-logo-mini">
-    <app-logo tamanho="pequeno" [animado]="true"></app-logo>
+  <div class="mobile-logo-mini" (click)="rolarParaOTopo()">
+    <app-logo tamanho="medio" [animado]="true"></app-logo>
   </div>
 
   <!-- 🚨 A NOVA BARRA DE PESQUISA MÁGICA (Nasce escondida) -->
@@ -98,6 +98,12 @@
       </div>
     </button>
   </div>
+
+  <!-- A NOVA LINHA DE CONTEXTO -->
+  <div class="header-context-row">
+    <span class="context-date">{{ dataAtual }}</span>
+  </div>
+
 </header>
 
 

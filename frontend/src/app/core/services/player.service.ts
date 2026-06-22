@@ -42,10 +42,13 @@ export class PlayerService {
     window.onSpotifyWebPlaybackSDKReady = () => {
       console.log('[SUCESSO] SDK do Spotify carregado! Montando o Player...');
 
+      const volumeSalvo = typeof localStorage !== 'undefined' ? localStorage.getItem('tunify-volume') : null;
+      const volumeInicial = volumeSalvo !== null ? Number(volumeSalvo) : 1.0;
+
       this.player = new Spotify.Player({
         name: 'Tunify Web Player 📻',
         getOAuthToken: (cb: (token: string) => void) => { cb(token); },
-        volume: 0.5 
+        volume: volumeInicial 
       });
 
       this.player.addListener('ready', ({ device_id }: { device_id: string }) => {
@@ -109,6 +112,22 @@ export class PlayerService {
       this.player.seek(positionMs).then(() => {
         console.log(`[TUNIFY] Pulou para o milissegundo: ${positionMs}`);
       });
+    }
+  }
+
+  setVolume(volumePercent: number) {
+    const vol = volumePercent / 100;
+    if (this.player) {
+      this.player.setVolume(vol).then(() => {
+        console.log(`[TUNIFY] Volume alterado para: ${vol}`);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('tunify-volume', vol.toString());
+        }
+      });
+    } else {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('tunify-volume', vol.toString());
+      }
     }
   }
 
