@@ -33,7 +33,7 @@
   display: flex;
   flex-direction: column; 
   align-items: center; 
-  padding: 100px 1.5rem 120px 1.5rem;
+  padding: 125px 1.5rem 120px 1.5rem; // 🚨 Aumentado de 100px para 125px no mobile para acomodar o header com data no topo
 
   @include tela-media {
     padding: 120px 3rem 3rem 3rem;
