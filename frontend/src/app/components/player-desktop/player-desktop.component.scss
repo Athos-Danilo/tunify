@@ -23,55 +23,60 @@
   // ☀️ MODO TEMA CLARO DESKTOP
   // ==========================================
   :host-context(.tema-claro) & {
-    background: linear-gradient(90deg, rgba(var(--album-color), 0.1) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.9) 100%);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: linear-gradient(90deg, rgba(var(--album-color), 0.1) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.9) 100%) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
 
     // Ajuste dos Textos (Preto)
     .track-info .details {
-      .track-title { color: var(--preto-lt, #0f172a); }
-      .track-artist { color: var(--cinza-escuro-lt, #4b5563); }
+      .track-title { color: var(--preto-lt, #0f172a) !important; }
+      .track-artist { color: var(--cinza-escuro-lt, #4b5563) !important; }
     }
 
     // Ajuste dos Ícones Secundários (Preto com Opacidade)
     .controls-center .buttons .control-icon {
-      color: var(--cinza-escuro-lt, #4b5563);
-      &:hover { color: var(--preto-lt, #0f172a); }
+      color: var(--cinza-escuro-lt, #4b5563) !important;
+      &:hover { color: var(--preto-lt, #0f172a) !important; }
     }
     
     .active-green { color: var(--verde-spotify-dk, #1DB954) !important; opacity: 1 !important; }
 
     // 🚨 Inverte o botão de Play (Bola preta com ícone branco)
     .controls-center .buttons .play-btn {
-      background: #000; color: #fff;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-      &:hover { background: #222; }
+      background: #000 !important; color: #fff !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+      &:hover { background: #222 !important; }
     }
 
     // Barras de Progresso no Tema Claro
     .progress-container {
-      .time { color: var(--cinza-escuro-lt, #4b5563); }
+      .time { color: var(--cinza-escuro-lt, #4b5563) !important; }
       .progress-bar { 
-        background: rgba(0,0,0,0.1); // Fundo cinza opaco
-        .fill::after { background: #000; } // Bolinha de seek preta
+        background: rgba(0,0,0,0.1) !important; // Fundo cinza opaco
+        .fill::after { background: #000 !important; } // Bolinha de seek preta
       }
     }
 
     // Volume no Tema Claro
     .volume-actions {
       .action-icon {
-        color: var(--cinza-escuro-lt, #4b5563);
-        &:hover { color: var(--preto-lt, #0f172a); }
+        color: var(--cinza-escuro-lt, #4b5563) !important;
+        &:hover { color: var(--preto-lt, #0f172a) !important; }
       }
       .volume-bar { 
-        background: rgba(0,0,0,0.1); 
-        // Garante que o preenchimento fique visível (Preto/Cinza ou o verde clássico)
-        .volume-fill { background: var(--preto-lt, #0f172a); } 
-        &:hover .volume-fill { background: var(--verde-spotify-dk, #1DB954); }
+        background: rgba(0,0,0,0.1) !important; 
+        .volume-fill { 
+          background: var(--preto-lt, #0f172a) !important; 
+          &::after { background: var(--preto-lt, #0f172a) !important; }
+        } 
+        &:hover .volume-fill { 
+          background: var(--verde-spotify-dk, #1DB954) !important; 
+          &::after { background: var(--verde-spotify-dk, #1DB954) !important; }
+        }
       }
     }
     
     // Número 1 da Repetição
-    .repeat-track-number { color: inherit; }
+    .repeat-track-number { color: inherit !important; }
   }
 
   // Ajustes de Tamanho Tela Grande
@@ -146,6 +151,8 @@
 
         .ghost-slider {
           position: absolute; top: -6px; left: 0; width: 100%; height: 16px; opacity: 0; cursor: pointer; margin: 0;
+          z-index: 10 !important;
+          pointer-events: auto !important;
         }
       }
     }
@@ -157,9 +164,30 @@
     .action-icon { color: rgba(255, 255, 255, 0.7); font-size: 14px; cursor: pointer; transition: 0.2s; &:hover { color: var(--branco-dk, #fff); } }
     
     .volume-bar {
-      width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer;
-      .volume-fill { width: 50%; height: 100%; background: #fff; border-radius: 2px; transition: background 0.2s; }
-      &:hover .volume-fill { background: var(--verde-spotify-dk, #1DB954); }
+      width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; cursor: pointer;
+      
+      .volume-fill { 
+        height: 100%; background: #fff; border-radius: 2px; 
+        transition: background 0.2s, width 0.1s linear; 
+        position: relative; pointer-events: none;
+        
+        &::after { 
+          content: ''; position: absolute; right: -4px; top: 50%; 
+          transform: translateY(-50%) scale(0); width: 10px; height: 10px; 
+          background: #fff; border-radius: 50%; transition: transform 0.1s; 
+        }
+      }
+      
+      &:hover .volume-fill {
+        background: var(--verde-spotify-dk, #1DB954);
+        &::after { transform: translateY(-50%) scale(1); }
+      }
+
+      .ghost-slider {
+        position: absolute; top: -6px; left: 0; width: 100%; height: 16px; opacity: 0; cursor: pointer; margin: 0;
+        z-index: 10 !important;
+        pointer-events: auto !important;
+      }
     }
   }
 

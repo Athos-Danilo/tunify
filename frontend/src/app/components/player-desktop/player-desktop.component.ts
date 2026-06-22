@@ -21,6 +21,7 @@ export class PlayerDesktopComponent {
   @Input() currentTime: string = '0:00';
   @Input() duration: string = '0:00';
   @Input() repeatMode: number = 0;
+  @Input() volume: number = 100;
 
   // ==========================================
   // 📤 OUTPUTS (Os cliques que mandamos pro Pai)
@@ -32,6 +33,7 @@ export class PlayerDesktopComponent {
   @Output() onSeekStart = new EventEmitter<void>(); 
   @Output() onChangeRepeat = new EventEmitter<void>();
   @Output() onAbrirLetras = new EventEmitter<void>();
+  @Output() onVolumeChange = new EventEmitter<number>();
 
   // ==========================================
   // 🔗 REPASSADORES RÁPIDOS
@@ -54,5 +56,27 @@ export class PlayerDesktopComponent {
       novoProgresso = Number(event.target.value);
     }
     this.onSeek.emit(novoProgresso);
+  }
+
+  onVolumeVisual(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.volume = Number(input.value);
+    this.onVolumeChange.emit(this.volume);
+  }
+
+  onVolumeEnd(event: any) {
+    let novoVolume = this.volume;
+    if (event && event.target && event.target.value) {
+      novoVolume = Number(event.target.value);
+    }
+    this.volume = novoVolume;
+    this.onVolumeChange.emit(novoVolume);
+  }
+
+  get iconeVolume(): string {
+    if (this.volume === 0) return 'fa-volume-xmark';
+    if (this.volume < 30) return 'fa-volume-low';
+    if (this.volume < 70) return 'fa-volume-medium';
+    return 'fa-volume-high';
   }
 }
