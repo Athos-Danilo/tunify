@@ -14,3 +14,7 @@ from .artist import ArtistCache
 
 # Importa o modelo de Metadados do Sistema
 from .system import SystemMetadata
+
+# Importa os modelos de Selos e Conquistas
+from .selo import SeloCatalog, UserSelo
+
