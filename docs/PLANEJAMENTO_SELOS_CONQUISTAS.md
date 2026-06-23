@@ -95,13 +95,65 @@ Para o lançamento inicial e validação da feature, definimos o seguinte conjun
   - *Critério:* `distinct_artists` >= 15
   - *Descrição:* Escutou músicas de pelo menos 15 artistas diferentes.
 
-#### Selos Mensais (Fechamento via Cron Job)
-* **Top Fan (Especial)**:
-  - *Critério:* `artist_loyalty_percentile` <= 1 (Estar no Top 1%)
-  - *Descrição:* Ficou no Top 1% de ouvintes de um artista específico durante o mês.
-* **Madrugador**:
-  - *Critério:* `night_plays` >= 10 (músicas tocadas entre 01h e 05h da manhã)
-  - *Descrição:* Escutou mais de 10 músicas de madrugada ao longo do mês.
+#### Selos Mensais (Fechamento via Cron Job - Catálogo Focado de Reengajamento)
+
+Para as métricas mensais de reengajamento, o sistema focará em duas frentes de grande impacto: **Fidelidade/Ranking de Artistas** e **Popularidade das Músicas**.
+
+##### A. Rankings e Fidelidade de Artistas (Cálculo na Comunidade Local)
+> [!TIP]
+> **Decisão de Engenharia (Cálculo do Top Fan):** Como a API do Spotify não disponibiliza rankings globais ou percentis de ouvintes em tempo real, o Tunify calcula essas conquistas de forma **interna**. No fechamento mensal, o Cron Job do backend agrega o histórico local de escutas de todos os usuários do Tunify e ranqueia os maiores ouvintes de cada artista.
+
+* **Ouvinte Número 1**:
+  - *Critério:* Usuário com a maior quantidade de reproduções (plays) de um artista específico no Tunify durante o mês (1º lugar do ranking local).
+  - *Descrição:* *"Você foi o ouvinte número 1 de [Artista] no Tunify este mês! Um feito histórico."*
+* **Top Fan**:
+  - *Critério:* `artist_loyalty_percentile` <= 1 (Estar no Top 1% de ouvintes de um artista no ranking local do Tunify no mês).
+  - *Descrição:* *"Você ficou no Top 1% de ouvintes de [Artista] no Tunify durante o mês."*
+
+##### B. Curadoria e Popularidade de Músicas (Baseado na API do Spotify)
+Utiliza a propriedade `popularity` (0 a 100) retornada pela API do Spotify e armazenada no banco local de faixas sincronizadas do Tunify.
+
+* **Fora do Radar (Níveis 1 a 4)**:
+  - *Critério:* `low_popularity_tracks_ratio_month` (Músicas com popularidade inferior a 40)
+  - *Metas:* 
+    * **Nível 1 (15%):** *"Você começou a garimpar faixas menos conhecidas e alternativas este mês."*
+    * **Nível 2 (30%):** *"Sua playlist mensal reservou um espaço notável para faixas menos conhecidas e alternativas."*
+    * **Nível 3 (50%):** *"Metade do seu mês foi dominado por faixas menos conhecidas e tesouros escondidos."*
+    * **Nível 4 (70%):** *"Seu gosto musical este mês foi quase inteiramente alternativo, focado em faixas fora do radar comercial."*
+* **Viciado em Hits (Níveis 1 a 4)**:
+  - *Critério:* `high_popularity_tracks_ratio_month` (Músicas com popularidade superior a 80)
+  - *Metas:* 
+    * **Nível 1 (40%):** *"Você acompanhou algumas das paradas de sucesso mais ouvidas do momento."*
+    * **Nível 2 (60%):** *"As faixas mais quentes e populares dominaram boa parte do seu histórico este mês."*
+    * **Nível 3 (80%):** *"Seu mês foi dominado quase por completo pelas paradas de sucesso e hits globais."*
+    * **Nível 4 (95%):** *"Obsessão pelo topo! Quase todas as faixas que você ouviu no mês estão no topo absoluto das paradas."*
+
+#### Selos Anuais (Fechamento via Cron Job - Foco de Engajamento em Artistas)
+
+Para a retrospectiva e consolidação anual, os selos anuais são focados exclusivamente na relação do usuário com seus artistas favoritos. O sistema calcula as métricas dinamicamente para o ano corrente e concede a conquista associando o nome do artista correspondente (ex: *"Obsessão por Michael Jackson: 5.000 min"*).
+
+##### Categoria A: Obsessão por Artistas (Minutos Ouvidos de um Único Artista no Ano)
+* **Critério:** `artist_minutes_year`
+* **Escala de metas (16 níveis):**
+  * De 1.000 a 10.000 (incremento de 1.000 em 1.000): `1.000`, `2.000`, `3.000`, `4.000`, `5.000`, `6.000`, `7.000`, `8.000`, `9.000`, `10.000`
+  * De 10.000 a 20.000 (incremento de 2.500 em 2.500): `12.500`, `15.000`, `17.500`, `20.000`
+  * De 20.000 a 30.000 (incremento de 5.000 em 5.000): `25.000`, `30.000`
+* **Nomes e Patentes:**
+  * 1.000 a 4.000 min: *Fã Dedicado* (Níveis 1 a 4)
+  * 5.000 a 9.000 min: *Super Fã* (Níveis 5 a 9)
+  * 10.000 a 17.500 min: *Fã Obsessivo* (Níveis 10 a 13)
+  * 20.000 a 30.000 min: *Devoto Absoluto* (Níveis 14 a 16)
+
+##### Categoria B: Explorador de Discografia - Lado B (Músicas Diferentes de um Único Artista no Ano)
+* **Critério:** `artist_distinct_tracks_year`
+* **Escala de metas (12 níveis):**
+  * De 15 a 100: `15`, `30`, `45`, `60`, `75`, `90`, `100`
+  * De 100 a 200 (incremento de 20 em 20): `120`, `140`, `160`, `180`, `200`
+* **Nomes e Patentes:**
+  * 15 a 45 músicas: *Lado B Conhecido* (Níveis 1 a 3)
+  * 60 a 90 músicas: *Mergulho na Obra* (Níveis 4 a 6)
+  * 100 a 160 músicas: *Discografia Completa* (Níveis 7 a 10)
+  * 180 a 200 músicas: *Conhecedor Supremo* (Níveis 11 a 12)
 
 ### 2.6. Resumo do Catálogo Geral de Selos Permanentes (SQL Seed)
 
@@ -200,14 +252,15 @@ Para gerar engajamento externo, o sistema fornecerá duas modalidades de compart
 
 ## 7. Roteiro Passo a Passo de Implementação (Back-to-Front)
 
-Para estruturar o desenvolvimento, mapeamos a funcionalidade em etapas incrementais e sequenciadas:
+Para estruturar o desenvolvimento, gerenciamos o progresso com a lista de tarefas a seguir:
 
-1. **Modelagem e Seed do DB**: Criação das tabelas PostgreSQL e definição do catálogo de selos iniciais.
-2. **Definição de Models & Schemas**: Mapeamento SQLAlchemy das tabelas e criação de DTOs no Pydantic.
-3. **Desenvolvimento do Motor (Badge Engine)**: Escrita dos algoritmos de cálculo para selos permanentes e agendamento em lote (Cron).
-4. **Infraestrutura de Notificações**: Configuração de rotas de leitura offline e WebSockets para alertas em tempo real.
-5. **Endpoints e Controladores da API**: Criação das rotas REST de listagem, marcação de leitura e fixação (Pins).
-6. **Integração de Serviços no Frontend**: Criação de serviços Angular, controle de conexões de WebSocket e estado reativo.
-7. **Construção da Interface Gráfica**: Componentização da Vitrine (Trophy Room), Toasts comemorativos e Destaques (Pins).
-8. **Módulo de Compartilhamento Social**: Implementação do template de compartilhamento e da integração com a Web Share API.
+- `[x]` **1. Modelagem e Seed do DB**: Criação das tabelas PostgreSQL e definição do catálogo de selos iniciais (Scripts SQL de Sementes).
+- `[x]` **2. Definição de Models & Schemas**: Mapeamento SQLAlchemy das tabelas (concluído) e criação de DTOs no Pydantic (a ser feito junto com os endpoints).
+- `[ ]` **3. Desenvolvimento do Motor (Badge Engine)**: Escrita dos algoritmos de cálculo para selos permanentes e agendamento em lote (Cron).
+- `[ ]` **4. Infraestrutura de Notificações**: Configuração de rotas de leitura offline e WebSockets para alertas em tempo real.
+- `[ ]` **5. Endpoints e Controladores da API**: Criação das rotas REST de listagem, marcação de leitura e fixação (Pins).
+- `[ ]` **6. Integração de Serviços no Frontend**: Criação de serviços Angular, controle de conexões de WebSocket e estado reativo.
+- `[ ]` **7. Construção da Interface Gráfica**: Componentização da Vitrine (Trophy Room), Toasts comemorativos e Destaques (Pins).
+- `[ ]` **8. Módulo de Compartilhamento Social**: Implementação do template de compartilhamento e da integração com a Web Share API.
+
 
