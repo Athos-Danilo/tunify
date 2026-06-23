@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 
 # Importa as rotas.
-from app.api.v1.endpoints import auth, spotify, dashboard
+from app.api.v1.endpoints import auth, spotify, dashboard, selos
 
 
 # Importa o motor do banco de dados e a classe Base.
@@ -16,7 +16,7 @@ from app.core.database import engine, Base
 
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
 # 🚨 [AJUSTE] Adicionamos o ArtistCache aqui para o banco criar a tabela de fotos oficiais!
-from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata
+from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata, SeloCatalog, UserSelo
 from app.models.artist import ArtistCache 
 
 
@@ -87,6 +87,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(spotify.router, prefix="/api/v1/spotify", tags=["Spotify"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(selos.router, prefix="/api/v1/selos", tags=["Selos"])
 
 
 # ======> Rota Raiz.
