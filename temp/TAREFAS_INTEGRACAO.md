@@ -2,17 +2,19 @@
 
 Este documento detalha o plano de ação granular para integrar o ecossistema central (Backend em FastAPI e Frontend em Angular) ao microserviço **Tunify Letras**. Seguindo o **Padrão Ouro do Mercado**, a arquitetura será focada em alta resiliência (tolerância a falhas), desacoplamento e comunicação reativa.
 
+> **💡 Diretriz de Arquitetura (Vertical Slicing):** Todo o código e infraestrutura (Schemas, Repositories, Services, etc.) referentes a esta integração (e as futuras que virão) devem ser preferencialmente centralizados e isolados dentro de pastas de domínio próprio, como `app/api_tunify_liricys/`. O objetivo é evitar espalhar a lógica pelo projeto e manter as responsabilidades altamente coesas e organizadas.
+
 ---
 
 ## 🎯 Épico 1: Setup da Camada de Dados e Modelagem Estrita (Backend FastAPI)
 **Objetivo:** Integrar o MongoDB ao backend atual (que hoje roda apenas PostgreSQL) e isolar o acesso a dados, garantindo validação de tipos com Pydantic.
 
-- [ ] **Instalação do Driver MongoDB:**
+- [x] **Instalação do Driver MongoDB:**
   - Adicionar e instalar a biblioteca assíncrona `motor` no `requirements.txt` para conectar o FastAPI ao MongoDB do microserviço.
   - Atualizar o arquivo `.env` do backend principal para receber a variável `MONGO_URI`.
-- [ ] **Padrão Repository (Data Access):**
+- [x] **Padrão Repository (Data Access):**
   - Criar um `LetrasRepository` para encapsular todas as operações do MongoDB (`motor`). O resto da aplicação não deve saber os detalhes do driver.
-- [ ] **Validação de Schema (Pydantic):**
+- [x] **Validação de Schema (Pydantic):**
   - Implementar a validação estrita usando o **Pydantic** (`BaseModel`), garantindo o espelho perfeito do schema da coleção `Letras`:
     ```python
     from pydantic import BaseModel
@@ -32,7 +34,7 @@ Este documento detalha o plano de ação granular para integrar o ecossistema ce
         criado_em: datetime
         atualizado_em: datetime
     ```
-- [ ] **Connection Pooling e Índices:**
+- [x] **Connection Pooling e Índices:**
   - Garantir o reaproveitamento do client MongoDB via ciclo de vida (`lifespan`) do FastAPI.
   - Verificar se a coleção `Letras` possui índices no campo `id_musica_spotify` para garantir a busca instantânea em `O(1)`.
 
