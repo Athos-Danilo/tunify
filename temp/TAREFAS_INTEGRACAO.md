@@ -17,12 +17,12 @@ Este documento detalha o plano de ação granular para integrar o ecossistema ce
 ## 🎯 Épico 2: Orquestração e Semeamento 100% Background (Backend FastAPI)
 **Objetivo:** Alimentar a fila do MongoDB estritamente via robô rodando em background (trabalho assíncrono), respeitando o limite diário de processamento do Go.
 
-- [ ] **O Robô Semeador Aleatório (`tasks.py`):**
+- [x] **O Robô Semeador Aleatório (`tasks.py`):**
   - Criar a função `robo_semeador_letras()` agendada para rodar diariamente às **05:00 da manhã**.
   - O robô selecionará **aleatoriamente** até 100 faixas da tabela `tracks_cache` do PostgreSQL que ainda não existam na coleção de letras do MongoDB.
   - Inserir essas músicas selecionadas no MongoDB com o status inicial de `PENDENTE`.
   - Disparar um `POST` para o endpoint `/trigger` da API em Go, avisando que o lote diário está pronto para raspagem lenta.
-- [ ] **Endpoint de Leitura Simples (`GET /api/v1/letras/{id_musica}`):**
+- [x] **Endpoint de Leitura Simples (`GET /api/v1/letras/{id_musica}`):**
   - O endpoint de consumo fará **apenas** leitura passiva. Não haverá inserção reativa desencadeada pelo clique do usuário.
   - Se a letra existir no Mongo e estiver `CONCLUIDO`, retorna a letra imediatamente (<10ms).
   - Se estiver `PENDENTE/PROCESSANDO`, retorna `202 Accepted`.

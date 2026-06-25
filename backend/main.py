@@ -10,6 +10,9 @@ from app.core.config import settings
 # Importa as rotas.
 from app.api.v1.endpoints import auth, spotify, dashboard, selos
 
+# Importa a nova rota isolada de Letras
+from app.api_tunify_liricys.api import letras as letras_router
+
 
 # Importa o motor do banco de dados e a classe Base.
 from app.core.database import engine, Base
@@ -98,6 +101,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(spotify.router, prefix="/api/v1/spotify", tags=["Spotify"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
 app.include_router(selos.router, prefix="/api/v1/selos", tags=["Selos"])
+app.include_router(letras_router.router, prefix="/api/v1/letras", tags=["Letras (Tunify Liricys)"])
 
 
 # ======> Rota Raiz.

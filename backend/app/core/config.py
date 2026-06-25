@@ -34,6 +34,9 @@ class Settings:
     
     # Chave de conexão com o MongoDB
     MONGO_URI: str = os.getenv("MONGO_URI")
+    
+    # URL do Microserviço em Go
+    GO_MICROSERVICE_URL: str = os.getenv("GO_MICROSERVICE_URL", "http://localhost:8080")
 
     # Função que verifica se o arquivo .env foi lido corretamente.
     def check_setup(self):
