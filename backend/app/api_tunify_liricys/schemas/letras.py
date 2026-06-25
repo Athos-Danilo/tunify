@@ -11,7 +11,6 @@ from datetime import datetime
 # ---------------------------------------------------------------------------------- #
 class LetraSchema(BaseModel):
     id_musica_spotify: str
-    id_usuario: str
     nome_musica: str
     nome_artista: str
     status: Literal["PENDENTE", "PROCESSANDO", "CONCLUIDO", "NAO_ENCONTRADA"]
