@@ -482,11 +482,11 @@
 
     // A foto de perfil como ícone de menu
     .mobile-avatar {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid transparent;
+      border: 1px solid transparent;
       transition: border-color 0.3s ease;
     }
 
@@ -514,6 +514,7 @@
       padding: 0;
       cursor: pointer;
       outline: none;
+      margin-top: 3px; // 🚨 Ajuste fino para alinhar a foto e o texto perfeitamente com os ícones de fonte!
     }
 
     .mobile-dropdown-menu {
