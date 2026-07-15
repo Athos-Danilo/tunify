@@ -108,7 +108,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Só dispara as requisições se a gente conseguiu o e-mail
     if (this.emailUsuario) {
-      // Chamada 1: Resumo do Perfil (Spotify API)
       this.spotifyService.buscarResumoPerfil(this.emailUsuario).subscribe({
         next: (resumoReal) => {
           this.nomeUsuario = resumoReal.dono_da_conta;
@@ -120,6 +119,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             seguidores: resumoReal.seguidores,
             seguindo: resumoReal.seguindo
           };
+          // 🚨 [NOVO] Salvando a foto no localStorage para as outras telas usarem imediatamente!
+          if (resumoReal.foto_perfil) {
+            localStorage.setItem('tunify_foto_perfil', resumoReal.foto_perfil);
+          }
           this.cdr.detectChanges();
         },
         error: (erro) => {

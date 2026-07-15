@@ -1,3 +1,17 @@
 <main class="estatisticas-container" [ngClass]="{'tema-claro': !modoEscuro}">
-  <h1 class="titulo-especial">Estatisticas Mensais</h1>
+  
+  <div class="header-wrapper">
+    <app-header 
+      [nomeUsuario]="nomeUsuario" 
+      [fotoPerfil]="fotoPerfil"
+      [modoEscuro]="modoEscuro"
+      (onAlternarTema)="alternarTema()"
+      (onLogout)="fazerLogout()">
+    </app-header>
+  </div>
+
+  <div class="conteudo-central">
+    <h1 class="titulo-especial">Estatisticas Mensais</h1>
+  </div>
+
 </main>

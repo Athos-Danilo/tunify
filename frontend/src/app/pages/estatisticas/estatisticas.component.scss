@@ -2,13 +2,9 @@
 @import '../../../styles.scss';
 
 .estatisticas-container {
-  // Ocupa a tela inteira e centraliza o conteúdo
   min-height: 100vh;
   width: 100%;
-  padding: 20px;
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
   box-sizing: border-box;
   
@@ -17,9 +13,28 @@
   color: var(--branco-dk);
   transition: background-color 0.3s ease, color 0.3s ease;
 
+  // Header Wrapper (para posicionar o header no topo)
+  .header-wrapper {
+    width: 100%;
+    padding: 20px 20px 0 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+  }
+
+  // Conteúdo Central
+  .conteudo-central {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+  }
+
   // Modo Claro (acionado pela diretiva ngClass no HTML)
   &.tema-claro {
-    background-color: var(--branco-lt); // O Fundo branco como você pediu
+    background-color: var(--branco-lt);
     color: var(--preto-lt);
   }
 
