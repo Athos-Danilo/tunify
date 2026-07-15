@@ -436,8 +436,8 @@
   bottom: 20px; // Flutuando chique
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px; // Não deixa esticar muito em telas médias
+  width: 95%; // Ajustado para dar mais folga
+  max-width: 450px; // Aumentado um pouquinho para caber 5 itens confortavelmente
   z-index: 9999;
   
   .nav-glass-container {
@@ -449,7 +449,7 @@
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 40px;
-    padding: 12px 15px;
+    padding: 12px 10px; // Levemente reduzido pra dar espaço pros itens
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 
     :host-context(.tema-claro) & {
