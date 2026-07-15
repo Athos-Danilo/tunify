@@ -9,9 +9,10 @@
     </div>
 
     <nav class="header-nav">
-      <a routerLink="/dashboard" class="nav-item ativo">Início</a>
-      <a routerLink="/playlists" class="nav-item">Playlists</a>
-      <a routerLink="/radar" class="nav-item">Vibe Radar</a>
+      <a routerLink="/dashboard" class="nav-item" routerLinkActive="ativo" [routerLinkActiveOptions]="{exact: true}">Início</a>
+      <a routerLink="/estatisticas" class="nav-item" routerLinkActive="ativo">Histórico</a>
+      <a routerLink="/playlists" class="nav-item" routerLinkActive="ativo">Playlists</a>
+      <a routerLink="/radar" class="nav-item" routerLinkActive="ativo">Vibe Radar</a>
     </nav>
 
     <div class="header-actions">
@@ -113,21 +114,26 @@
 <!-- ======================================================= -->
 <nav class="bottom-nav-mobile">
   <div class="nav-glass-container">
-    <a routerLink="/dashboard" class="mobile-nav-item ativo">
+    <a routerLink="/dashboard" class="mobile-nav-item" routerLinkActive="ativo" [routerLinkActiveOptions]="{exact: true}">
       <span class="material-icons">home</span>
       <span>Início</span>
     </a>
-    <a routerLink="/playlists" class="mobile-nav-item">
+    <a routerLink="/estatisticas" class="mobile-nav-item" routerLinkActive="ativo">
+      <span class="material-icons">bar_chart</span>
+      <span>Histórico</span>
+    </a>
+    <a routerLink="/playlists" class="mobile-nav-item" routerLinkActive="ativo">
       <span class="material-icons">queue_music</span>
       <span>Playlists</span>
     </a>
-    <a routerLink="/radar" class="mobile-nav-item">
+    <a routerLink="/radar" class="mobile-nav-item" routerLinkActive="ativo">
       <span class="material-icons">radar</span>
       <span>Radar</span>
     </a>
     <div class="mobile-profile-wrapper">
       <button class="mobile-nav-item btn-profile" [class.ativo]="isMobileMenuOpen" (click)="toggleMobileMenu()">
         <img [src]="fotoPerfil" alt="Perfil" class="mobile-avatar">
+        <span>{{ primeiroNome }}</span>
       </button>
 
       <!-- Menu Flutuante Mobile -->

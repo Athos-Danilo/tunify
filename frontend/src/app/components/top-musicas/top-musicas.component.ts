@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs'; // 🚨 IMPORTADO para usar async/await
 
 // 🚨 IMPORTANTE: Ajuste o caminho de acordo com onde você salvou o service!
@@ -20,7 +21,7 @@ interface Musica {
 @Component({
   selector: 'app-top-musicas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './top-musicas.component.html',
   styleUrl: './top-musicas.component.scss'
 })
