@@ -31,6 +31,12 @@ class Settings:
     
     # Chave de conexão com o Banco de Dados PostgreSQL.
     DATABASE_URL: str = os.getenv("DATABASE_URL")
+    
+    # Chave de conexão com o MongoDB
+    MONGO_URI: str = os.getenv("MONGO_URI")
+    
+    # URL do Microserviço em Go
+    GO_MICROSERVICE_URL: str = os.getenv("GO_MICROSERVICE_URL", "http://localhost:8080")
 
     # Função que verifica se o arquivo .env foi lido corretamente.
     def check_setup(self):
@@ -50,6 +56,10 @@ class Settings:
         if not self.DATABASE_URL:
             print("[ERRO CRÍTICO] DATABASE_URL não encontrada no arquivo .env!")
             raise ValueError("ERRO: O servidor não pode ligar sem o caminho do PostgreSQL.")
+            
+        if not self.MONGO_URI:
+            print("[ERRO CRÍTICO] MONGO_URI não encontrada no arquivo .env!")
+            raise ValueError("ERRO: O servidor não pode ligar sem o caminho do MongoDB.")
             
         print("[SUCESSO] Cofre de chaves validado com sucesso!")
 

@@ -8,15 +8,22 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 
 # Importa as rotas.
-from app.api.v1.endpoints import auth, spotify, dashboard
+from app.api.v1.endpoints import auth, spotify, dashboard, selos
+
+# Importa a nova rota isolada de Letras
+from app.api_tunify_liricys.api import letras as letras_router
 
 
 # Importa o motor do banco de dados e a classe Base.
 from app.core.database import engine, Base
 
+# Importa o gerenciador do MongoDB
+from app.core.mongo import db
+from motor.motor_asyncio import AsyncIOMotorClient
+
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
 # 🚨 [AJUSTE] Adicionamos o ArtistCache aqui para o banco criar a tabela de fotos oficiais!
-from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata
+from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata, SeloCatalog, UserSelo
 from app.models.artist import ArtistCache 
 
 
@@ -38,8 +45,13 @@ async def lifespan(app: FastAPI):
     # Sincronização: O SQLAlchemy olha para todos os modelos importados e cria as tabelas se não existirem.
     Base.metadata.create_all(bind=engine)
     
+    # Inicializa o client do MongoDB
+    db.client = AsyncIOMotorClient(settings.MONGO_URI)
+    # Garante o índice da busca em O(1)
+    await db.client.tunify.letras.create_index("id_musica_spotify")
+    
     print(f"> {settings.PROJECT_NAME} rodando! Link de login: http://127.0.0.1:8000/api/v1/auth/login")
-    print("> Banco de Dados conectado e tabelas verificadas com sucesso!")
+    print("> Bancos de Dados (PostgreSQL e MongoDB) conectados com sucesso!")
     
     # Liga a nossa central de robôs!
     iniciar_robos()
@@ -50,6 +62,7 @@ async def lifespan(app: FastAPI):
     print("> Desligando a central de robôs com segurança...")
     if scheduler.running:
         scheduler.shutdown()
+    db.client.close()
     print("> Central de Robôs desligada. Servidor encerrado com sucesso! 💤")
 
 
@@ -87,6 +100,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(spotify.router, prefix="/api/v1/spotify", tags=["Spotify"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(selos.router, prefix="/api/v1/selos", tags=["Selos"])
+app.include_router(letras_router.router, prefix="/api/v1/letras", tags=["Letras (Tunify Liricys)"])
 
 
 # ======> Rota Raiz.

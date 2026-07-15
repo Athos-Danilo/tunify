@@ -28,6 +28,11 @@ from app.services.spotify_service import SpotifyService
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
 from app.core.config import settings
 
+# ======> Importações do Microserviço de Letras
+from app.api_tunify_liricys.repositories.letras_repository import LetrasRepository
+from app.api_tunify_liricys.schemas.letras import LetraSchema
+
+
 # ======> Robô 1: O Rastreador Diário (O Olheiro)
 # 1) Roda a cada 100 minutos.
 # 2) Salva as músicas e "planta a semente" dos artistas novos na tabela ArtistCache.
@@ -351,6 +356,71 @@ async def robo_faxineiro_artistas():
         logger.info("🎉 [FAXINEIRO] Turno de madrugada encerrado.")
 
 
+# ======> Robô 4: O Semeador Aleatório de Letras
+# 1) Roda diariamente às 05:00 da manhã.
+# 2) Pega 100 músicas aleatórias do banco que não tem letra.
+# 3) Envia para o MongoDB e acorda a API em Go.
+# -------------------------------------------------------------------------------------- #
+async def robo_semeador_letras():
+    logger.info("🌱 [SEMEADOR] Acordando para semear letras no MongoDB...")
+    db = SessionLocal()
+    letras_repo = LetrasRepository()
+    
+    try:
+        # Busca 100 faixas aleatórias no PostgreSQL
+        faixas_candidatas = db.query(TrackCache).order_by(func.random()).limit(100).all()
+        
+        if not faixas_candidatas:
+            logger.info("✅ [SEMEADOR] Nenhuma música encontrada no cache.")
+            return
+
+        novas_adicionadas = 0
+        
+        for faixa in faixas_candidatas:
+            # Verifica se já existe no MongoDB
+            letra_existente = await letras_repo.get_letra_by_spotify_id(faixa.spotify_id)
+            
+            if not letra_existente:
+                # Prepara o schema
+                nova_letra = LetraSchema(
+                    id_musica_spotify=faixa.spotify_id,
+                    nome_musica=faixa.name,
+                    nome_artista=faixa.artist_name,
+                    status="PENDENTE",
+                    texto_letra=None,
+                    sincronizada=False,
+                    fonte_letra=None,
+                    tentativas_processamento=0,
+                    criado_em=datetime.datetime.now(datetime.timezone.utc),
+                    atualizado_em=datetime.datetime.now(datetime.timezone.utc)
+                )
+                
+                # Salva no Mongo
+                await letras_repo.save_letra(nova_letra)
+                novas_adicionadas += 1
+
+        logger.info(f"✅ [SEMEADOR] {novas_adicionadas} novas letras adicionadas à fila PENDENTE do MongoDB.")
+        
+        # Dispara o microserviço Go
+        if novas_adicionadas > 0:
+            logger.info("⚡ [SEMEADOR] Disparando o endpoint /trigger do Microserviço Go...")
+            try:
+                url_go = getattr(settings, 'GO_MICROSERVICE_URL', "http://localhost:8080")
+                async with httpx.AsyncClient() as client:
+                    await client.post(f"{url_go.rstrip('/')}/trigger", timeout=5.0)
+                logger.info("⚡ [SEMEADOR] Microserviço Go acionado com sucesso!")
+            except Exception as e:
+                logger.warning(f"⚠️ [SEMEADOR] Aviso: Não foi possível acordar o Go automaticamente: {e}. Ele rodará no próximo cron dele.")
+                
+    except Exception as e:
+        logger.error(f"❌ [SEMEADOR] Erro crítico: {e}")
+    finally:
+        db.close()
+        logger.info("🎉 [SEMEADOR] Turno de madrugada encerrado.")
+
+
+
+
 # ======> Função de Ignição
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
@@ -381,5 +451,14 @@ def iniciar_robos():
         replace_existing=True
     )
 
+    # 🌱 Robô 4: Todo dia às 5 da manhã (Semeador Aleatório de Letras)
+    scheduler.add_job(
+        robo_semeador_letras,
+        trigger=CronTrigger(hour=5, minute=0),
+        id="semeador_letras",
+        name="Alimenta a fila do MongoDB para o microserviço Go",
+        replace_existing=True
+    )
+
     scheduler.start()
-    logger.info("Central de Robôs do Tunify iniciada com Integração Genius! 🚀")
+    logger.info("Central de Robôs do Tunify iniciada com Integração Genius e Letras! 🚀")
