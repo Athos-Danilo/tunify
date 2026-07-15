@@ -78,6 +78,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     // 1. Pega os dados do usuário da nossa gaveta nova do login!
     const userInfoString = localStorage.getItem('tunify_user_info');
     
+    // 🚨 Tenta puxar a foto do cache imediatamente
+    const fotoSalva = localStorage.getItem('tunify_foto_perfil');
+    if (fotoSalva) {
+      this.dadosDemograficos.foto_perfil = fotoSalva;
+    }
+    
     if (userInfoString) {
       const usuario = JSON.parse(userInfoString);
       // Se não tiver display_name, usa o nome ou o próprio email
