@@ -81,6 +81,15 @@ export class SpotifyService {
     );
   }
 
+  // 🚨 [NOVO] Busca o histórico completo (várias músicas) para a tabela de reproduções
+  getHistoricoRecente(token: string, limit: number = 20): Observable<any[]> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return this.http.get<any>(`https://api.spotify.com/v1/me/player/recently-played?limit=${limit}`, { headers }).pipe(
+      map(response => response.items || []),
+      catchError(() => of([]))
+    );
+  }
+
   // ==========================================================
   // 🚨 MÁGICA DA PLAYLIST (CRIAR E POPULAR) - URLS CORRIGIDAS
   // ==========================================================
