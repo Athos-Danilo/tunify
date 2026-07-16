@@ -1,0 +1,75 @@
+<div class="historico-container">
+  
+  <div class="historico-header">
+    <h2 class="historico-titulo">
+      <span class="material-icons">history</span> Histórico Recente
+    </h2>
+    <p class="historico-subtitulo">As últimas músicas que tocaram no seu Tunify.</p>
+  </div>
+
+  <div *ngIf="carregando" class="estado-carregando">
+    <div class="spinner"></div>
+    <p>Buscando suas faixas...</p>
+  </div>
+
+  <div *ngIf="erro && !carregando" class="estado-erro">
+    <span class="material-icons">error_outline</span>
+    <p>Não foi possível carregar o histórico no momento.</p>
+  </div>
+
+  <!-- A TABELA ESPETACULAR -->
+  <div class="tabela-responsiva-wrapper" *ngIf="!carregando && !erro && historico.length > 0">
+    <table class="tabela-historico">
+      <thead>
+        <tr>
+          <th class="col-faixa">FAIXA</th>
+          <th class="col-album">ÁLBUM</th>
+          <th class="col-generos">GÊNEROS</th>
+          <th class="col-data">TOCADA EM</th>
+          <th class="col-duracao"><span class="material-icons">schedule</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of historico" class="linha-tabela">
+          
+          <!-- COLUNA FAIXA (Imagem + Nome + Artista) -->
+          <td class="col-faixa">
+            <div class="faixa-info">
+              <img [src]="item.imagem" alt="Capa do Álbum" class="capa-album-mini">
+              <div class="faixa-textos">
+                <span class="faixa-nome">{{ item.nome }}</span>
+                <span class="faixa-artista">{{ item.artistas }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- COLUNA ÁLBUM (Escondida no mobile) -->
+          <td class="col-album">
+            <span class="texto-truncado" [title]="item.album">{{ item.album }}</span>
+          </td>
+
+          <!-- COLUNA GÊNEROS (Vazia por enquanto) -->
+          <td class="col-generos">
+            <span class="badge-genero">{{ item.generos }}</span>
+          </td>
+
+          <!-- COLUNA DATA/HORA -->
+          <td class="col-data">
+            {{ item.tocadaEm | date:'dd/MM/yyyy • HH:mm' }}
+          </td>
+
+          <!-- COLUNA DURAÇÃO (Escondida no mobile muito pequeno) -->
+          <td class="col-duracao">
+            {{ item.duracaoMs | date:'mm:ss' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!carregando && !erro && historico.length === 0" class="estado-vazio">
+    <span class="material-icons">music_off</span>
+    <p>Nenhuma música encontrada no seu histórico.</p>
+  </div>
+
+</div>
