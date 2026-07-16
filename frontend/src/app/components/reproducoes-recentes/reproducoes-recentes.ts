@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HistorySyncService } from '../../core/services/history-sync.service';
 import { SecureStorage } from '../../core/utils/secure-storage';
@@ -12,6 +12,7 @@ import { SecureStorage } from '../../core/utils/secure-storage';
 })
 export class ReproducoesRecentes implements OnInit, OnDestroy {
   private historySyncService = inject(HistorySyncService);
+  private cdr = inject(ChangeDetectorRef);
 
   historicoCompleto: any[] = []; // O array completo salvo em memória
   historicoPagina: any[] = []; // O array fatiado para a página atual
@@ -135,6 +136,16 @@ export class ReproducoesRecentes implements OnInit, OnDestroy {
     }
   }
 
+  irParaPagina(event: any) {
+    const valor = parseInt(event.target.value, 10);
+    if (!isNaN(valor)) {
+      this.mudarPagina(valor);
+    } else {
+      // Se apagar tudo ou digitar texto, volta o valor atual no input
+      event.target.value = this.paginaAtual;
+    }
+  }
+
   iniciarTimer() {
     if (this.intervalTimer) {
       clearInterval(this.intervalTimer);
@@ -158,6 +169,8 @@ export class ReproducoesRecentes implements OnInit, OnDestroy {
           this.tempoRestanteSegundos = Math.floor(diff / 1000);
           this.podeAtualizar = false;
         }
+        
+        this.cdr.detectChanges(); // Força a atualização da view no Angular
       }, 1000);
     } else {
       // Fallback

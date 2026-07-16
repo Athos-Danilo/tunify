@@ -21,10 +21,10 @@ async def get_recent_history(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    # Busca os últimos 50 registros do banco
+    # Busca os registros do banco (limitando a 2000 para segurança de memória)
     history_records = db.query(MonthlyHistory).filter(
         MonthlyHistory.user_id == user.id
-    ).order_by(desc(MonthlyHistory.played_at)).limit(50).all()
+    ).order_by(desc(MonthlyHistory.played_at)).limit(2000).all()
 
     response_items = []
     last_played_at_ms = 0

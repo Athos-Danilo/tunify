@@ -51,10 +51,7 @@
             <div class="faixa-info">
               <img [src]="item.imagem" alt="Capa do Álbum" class="capa-album-mini">
               <div class="faixa-textos">
-                <span class="faixa-nome">
-                  {{ item.nome }}
-                  <span class="badge-novo" *ngIf="item.source === 'spotify_delta'" title="Novidade fresquinha!">NOVO</span>
-                </span>
+                <span class="faixa-nome">{{ item.nome }}</span>
                 <span class="faixa-artista">{{ item.artistas }}</span>
               </div>
             </div>
@@ -89,7 +86,17 @@
         <span class="material-icons">chevron_left</span> Anterior
       </button>
       
-      <span class="info-paginacao">Página {{ paginaAtual }} de {{ totalPaginas }}</span>
+      <div class="info-paginacao">
+        Página 
+        <input type="number" 
+               class="input-pagina" 
+               [value]="paginaAtual" 
+               (keyup.enter)="irParaPagina($event)"
+               (blur)="irParaPagina($event)"
+               min="1" 
+               [max]="totalPaginas"> 
+        de {{ totalPaginas }}
+      </div>
       
       <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">
         Próxima <span class="material-icons">chevron_right</span>

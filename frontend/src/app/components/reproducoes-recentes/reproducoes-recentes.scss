@@ -405,11 +405,47 @@
   }
 
   .info-paginacao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     color: var(--cinza-texto-dk);
     font-size: 0.95rem;
 
     :host-context(.tema-claro) & {
       color: var(--cinza-texto-lt);
+    }
+
+    .input-pagina {
+      width: 50px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.2);
+      color: var(--branco-dk);
+      text-align: center;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+
+      :host-context(.tema-claro) & {
+        background: rgba(255,255,255,0.5);
+        border-color: rgba(0,0,0,0.2);
+        color: var(--preto-lt);
+      }
+
+      &:focus {
+        border-color: var(--verde-spotify);
+      }
+
+      /* Remove as setinhas feias de input type="number" nos navegadores */
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      &[type=number] {
+        -moz-appearance: textfield;
+      }
     }
   }
 }
