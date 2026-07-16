@@ -256,32 +256,93 @@
 }
 
 /* ========================================= */
-/* RESPONSIVIDADE (MOBILE FIRST, MAS AQUI É DOWN) */
+/* RESPONSIVIDADE (TABLET & MOBILE)          */
 /* ========================================= */
-@media (max-width: 899px) {
-  .historico-container {
-    padding: 20px 15px;
-  }
-  
+
+/* TABLET */
+@media (max-width: 1024px) {
   .tabela-historico {
-    .col-album, .col-generos, .col-duracao {
-      display: none; // Esconde colunas menos importantes no celular
+    .col-generos {
+      display: none; // Esconde apenas gêneros no tablet
     }
-    
+    .col-album {
+      width: 30%;
+    }
     .col-faixa {
-      width: 60%;
-    }
-    .col-data {
       width: 40%;
-      text-align: right;
     }
-    
-    min-width: 100%; // Tabela volta a ocupar só 100% sem scroll no mobile se esconder colunas
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .historico-container {
+    padding: 15px 10px;
   }
 
   .historico-header {
     flex-direction: column;
     gap: 15px;
+    align-items: center;
+    text-align: center;
+
+    .historico-titulo {
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .timer-box {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  .tabela-historico {
+    min-width: 100%;
+    
+    .col-album, .col-generos, .col-duracao {
+      display: none; // Esconde tudo menos faixa e data
+    }
+    
+    .col-faixa {
+      width: 65%;
+      
+      .faixa-info {
+        gap: 10px;
+        .capa-album-mini {
+          width: 40px;
+          height: 40px;
+        }
+        .faixa-nome {
+          font-size: 0.9rem;
+          white-space: normal; // Permite quebrar linha no mobile
+        }
+      }
+    }
+    
+    .col-data {
+      width: 35%;
+      text-align: right;
+      font-size: 0.75rem;
+    }
+
+    th, td {
+      padding: 10px 8px;
+    }
+  }
+
+  .paginacao-container {
+    flex-direction: column;
+    gap: 15px;
+
+    .info-paginacao {
+      order: -1; // Joga a info pra cima dos botões
+    }
+
+    .btn-paginacao {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
 
