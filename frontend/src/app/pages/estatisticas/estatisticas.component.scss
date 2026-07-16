@@ -26,10 +26,19 @@
   .conteudo-central {
     flex: 1;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: stretch;
     flex-direction: column;
-    padding: 20px;
+    padding: 100px 20px 20px 20px; // 100px top para compensar o header fixed
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+
+    app-reproducoes-recentes {
+      display: block;
+      width: 100%;
+    }
   }
 
   // Modo Claro (acionado pela diretiva ngClass no HTML)

@@ -5,11 +5,12 @@ import gsap from 'gsap';
 import { HeaderComponent } from '../../components/header/header.component';
 import { AuthService } from '../../core/services/auth.service';
 import { SpotifyService } from '../../core/services/spotify.service';
+import { ReproducoesRecentes } from '../../components/reproducoes-recentes/reproducoes-recentes';
 
 @Component({
   selector: 'app-estatisticas',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes],
   templateUrl: './estatisticas.component.html',
   styleUrls: ['./estatisticas.component.scss']
 })

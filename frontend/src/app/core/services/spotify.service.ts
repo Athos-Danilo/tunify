@@ -81,6 +81,22 @@ export class SpotifyService {
     );
   }
 
+  // 🚨 [NOVO] Busca o histórico completo (várias músicas) para a tabela de reproduções
+  getHistoricoRecente(token: string, limit: number = 20, after_ms: number = 0): Observable<any[]> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    
+    // Se o backend disser que tem um after_ms maior que 0, filtramos para não pegar duplicatas do DB
+    let url = `https://api.spotify.com/v1/me/player/recently-played?limit=${limit}`;
+    if (after_ms > 0) {
+      url += `&after=${after_ms}`;
+    }
+
+    return this.http.get<any>(url, { headers }).pipe(
+      map(response => response.items || []),
+      // Não tratamos o erro com of([]) aqui para deixar o HistorySyncService dar o retry
+    );
+  }
+
   // ==========================================================
   // 🚨 MÁGICA DA PLAYLIST (CRIAR E POPULAR) - URLS CORRIGIDAS
   // ==========================================================
