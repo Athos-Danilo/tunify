@@ -1,10 +1,24 @@
 <div class="historico-container">
   
   <div class="historico-header">
-    <h2 class="historico-titulo">
-      <span class="material-icons">history</span> Histórico Recente
-    </h2>
-    <p class="historico-subtitulo">As últimas músicas que tocaram no seu Tunify.</p>
+    <div class="titulos">
+      <h2 class="historico-titulo">
+        <span class="material-icons">history</span> Histórico Recente
+      </h2>
+      <p class="historico-subtitulo">As últimas músicas que tocaram no seu Tunify.</p>
+    </div>
+
+    <!-- BLOCO DO TIMER (Mostra só na primeira página) -->
+    <div class="timer-box" *ngIf="paginaAtual === 1 && !carregando && !erro">
+      <ng-container *ngIf="!podeAtualizar">
+        <span class="material-icons timer-icon rodando">hourglass_empty</span>
+        <span class="timer-texto">Atualiza em {{ tempoFormatado }}</span>
+      </ng-container>
+      
+      <button *ngIf="podeAtualizar" class="btn-atualizar" (click)="atualizarManual()">
+        <span class="material-icons">refresh</span> Atualizar Agora
+      </button>
+    </div>
   </div>
 
   <div *ngIf="carregando" class="estado-carregando">
@@ -18,7 +32,7 @@
   </div>
 
   <!-- A TABELA ESPETACULAR -->
-  <div class="tabela-responsiva-wrapper" *ngIf="!carregando && !erro && historico.length > 0">
+  <div class="tabela-responsiva-wrapper" *ngIf="!carregando && !erro && historicoCompleto.length > 0">
     <table class="tabela-historico">
       <thead>
         <tr>
@@ -30,25 +44,28 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of historico" class="linha-tabela">
+        <tr *ngFor="let item of historicoPagina" class="linha-tabela">
           
-          <!-- COLUNA FAIXA (Imagem + Nome + Artista) -->
+          <!-- COLUNA FAIXA -->
           <td class="col-faixa">
             <div class="faixa-info">
               <img [src]="item.imagem" alt="Capa do Álbum" class="capa-album-mini">
               <div class="faixa-textos">
-                <span class="faixa-nome">{{ item.nome }}</span>
+                <span class="faixa-nome">
+                  {{ item.nome }}
+                  <span class="badge-novo" *ngIf="item.source === 'spotify_delta'" title="Novidade fresquinha!">NOVO</span>
+                </span>
                 <span class="faixa-artista">{{ item.artistas }}</span>
               </div>
             </div>
           </td>
 
-          <!-- COLUNA ÁLBUM (Escondida no mobile) -->
+          <!-- COLUNA ÁLBUM -->
           <td class="col-album">
             <span class="texto-truncado" [title]="item.album">{{ item.album }}</span>
           </td>
 
-          <!-- COLUNA GÊNEROS (Vazia por enquanto) -->
+          <!-- COLUNA GÊNEROS -->
           <td class="col-generos">
             <span class="badge-genero">{{ item.generos }}</span>
           </td>
@@ -58,16 +75,29 @@
             {{ item.tocadaEm | date:'dd/MM/yyyy • HH:mm' }}
           </td>
 
-          <!-- COLUNA DURAÇÃO (Escondida no mobile muito pequeno) -->
+          <!-- COLUNA DURAÇÃO -->
           <td class="col-duracao">
             {{ item.duracaoMs | date:'mm:ss' }}
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- PAGINAÇÃO -->
+    <div class="paginacao-container">
+      <button class="btn-paginacao" (click)="mudarPagina(paginaAtual - 1)" [disabled]="paginaAtual === 1">
+        <span class="material-icons">chevron_left</span> Anterior
+      </button>
+      
+      <span class="info-paginacao">Página {{ paginaAtual }} de {{ totalPaginas }}</span>
+      
+      <button class="btn-paginacao" (click)="mudarPagina(paginaAtual + 1)" [disabled]="paginaAtual === totalPaginas">
+        Próxima <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="!carregando && !erro && historico.length === 0" class="estado-vazio">
+  <div *ngIf="!carregando && !erro && historicoCompleto.length === 0" class="estado-vazio">
     <span class="material-icons">music_off</span>
     <p>Nenhuma música encontrada no seu histórico.</p>
   </div>

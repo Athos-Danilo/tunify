@@ -82,11 +82,18 @@ export class SpotifyService {
   }
 
   // 🚨 [NOVO] Busca o histórico completo (várias músicas) para a tabela de reproduções
-  getHistoricoRecente(token: string, limit: number = 20): Observable<any[]> {
+  getHistoricoRecente(token: string, limit: number = 20, after_ms: number = 0): Observable<any[]> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    return this.http.get<any>(`https://api.spotify.com/v1/me/player/recently-played?limit=${limit}`, { headers }).pipe(
+    
+    // Se o backend disser que tem um after_ms maior que 0, filtramos para não pegar duplicatas do DB
+    let url = `https://api.spotify.com/v1/me/player/recently-played?limit=${limit}`;
+    if (after_ms > 0) {
+      url += `&after=${after_ms}`;
+    }
+
+    return this.http.get<any>(url, { headers }).pipe(
       map(response => response.items || []),
-      catchError(() => of([]))
+      // Não tratamos o erro com of([]) aqui para deixar o HistorySyncService dar o retry
     );
   }
 
