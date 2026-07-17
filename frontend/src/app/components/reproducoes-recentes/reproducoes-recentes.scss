@@ -298,7 +298,8 @@
   }
   
   .tabela-historico {
-    min-width: 100%;
+    min-width: 0; // Remove a largura mínima de 600px que forçava o scroll
+    table-layout: fixed; // Força a tabela a respeitar exatamente os 65% e 35% de largura
     
     .col-album, .col-generos, .col-duracao {
       display: none; // Esconde tudo menos faixa e data
@@ -503,10 +504,12 @@
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
         -webkit-appearance: none;
+        appearance: none;
         margin: 0;
       }
       &[type=number] {
         -moz-appearance: textfield;
+        appearance: textfield;
       }
     }
   }
