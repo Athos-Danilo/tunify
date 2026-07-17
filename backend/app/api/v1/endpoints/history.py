@@ -69,6 +69,7 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
         return {"status": "empty"}
 
     added_count = 0
+    added_tracks_in_session = set()
     
     for item in items:
         try:
@@ -100,9 +101,9 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                 )
                 db.add(new_history)
                 
-                # Salva no TrackCache se não existir
+                # Salva no TrackCache se não existir no DB e ainda não tiver sido adicionada nesta execução
                 track_cache = db.query(TrackCache).filter(TrackCache.spotify_id == spotify_id).first()
-                if not track_cache:
+                if not track_cache and spotify_id not in added_tracks_in_session:
                     artists_str = ", ".join([a.get("name") for a in track_data.get("artists", [])])
                     images = track_data.get("album", {}).get("images", [])
                     img_url = images[0].get("url") if images else None
@@ -116,6 +117,7 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                         popularity=track_data.get("popularity", 0)
                     )
                     db.add(new_track)
+                    added_tracks_in_session.add(spotify_id)
                 
                 added_count += 1
         except Exception as e:
