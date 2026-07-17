@@ -1,5 +1,10 @@
 @use '../../../assets/mixins' as *;
 
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .historico-container {
   background: var(--azul-escuro-dk);
   border-radius: 20px;
@@ -7,6 +12,9 @@
   box-shadow: 0 10px 30px rgba(0,0,0, 0.4);
   border: 1px solid rgba(255,255,255,0.05);
   margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
   :host-context(.tema-claro) & {
     background: var(--branco-lt);
@@ -29,19 +37,28 @@
   .historico-titulo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-family: var(--fonte-destaque);
+    gap: 12px;
+    font-family: var(--fonte-especial, 'MuseoModerno', sans-serif);
+    font-style: italic;
     font-size: 1.8rem;
-    color: var(--branco-dk);
+    color: var(--azul-dk, #0285FF);
     margin: 0 0 5px 0;
+    letter-spacing: -0.5px;
 
-    .material-icons {
-      color: var(--verde-spotify-dk);
+    .icone-destaque-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .icone-destaque {
+        color: var(--azul-dk, #0285FF);
+        font-size: 1.8rem;
+      }
     }
 
     :host-context(.tema-claro) & {
-      color: var(--preto-lt);
-      .material-icons { color: var(--verde-spotify-lt); }
+      color: var(--azul-lt, #0285FF);
+      .icone-destaque { color: var(--azul-lt, #0285FF); }
     }
   }
 
@@ -50,8 +67,17 @@
     font-size: 0.95rem;
     color: var(--cinza-claro-dk);
     margin: 0;
+    line-height: 1.4;
 
-    :host-context(.tema-claro) & { color: var(--cinza-escuro-lt); }
+    strong {
+      color: var(--verde-spotify-dk, #1DB954);
+      font-weight: 600;
+    }
+
+    :host-context(.tema-claro) & { 
+      color: var(--cinza-escuro-lt);
+      strong { color: var(--verde-spotify-lt, #1DB954); }
+    }
   }
 }
 
@@ -100,13 +126,26 @@
   }
 
   .linha-tabela {
-    transition: background-color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
     border-radius: 8px; // Precisa do border-spacing pra funcionar bem em tables, mas aqui usamos no hover
+    opacity: 0;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
     &:hover {
+      transform: translateX(4px);
+
       td {
         background-color: rgba(255,255,255,0.05);
+      }
+
+      .capa-album-mini {
+        transform: scale(1.1) rotate(2deg);
+        box-shadow: 0 6px 15px rgba(30, 215, 96, 0.3);
+      }
+
+      .faixa-nome {
+        color: var(--verde-spotify);
       }
       
       :host-context(.tema-claro) & td {
@@ -130,6 +169,7 @@
         border-radius: 6px;
         object-fit: cover;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
       }
 
       .faixa-textos {
@@ -145,6 +185,7 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          transition: color 0.3s ease;
           
           :host-context(.tema-claro) & { color: var(--preto-lt); }
         }
@@ -291,14 +332,20 @@
       font-size: 1.5rem;
     }
 
+    .historico-subtitulo {
+      max-width: 280px; // Força a quebra em duas linhas harmoniosas no mobile
+      margin: 0 auto;
+    }
+
     .timer-box {
-      width: 100%;
+      width: auto;
       justify-content: center;
     }
   }
   
   .tabela-historico {
-    min-width: 100%;
+    min-width: 0; // Remove a largura mínima de 600px que forçava o scroll
+    table-layout: fixed; // Força a tabela a respeitar exatamente os 65% e 35% de largura
     
     .col-album, .col-generos, .col-duracao {
       display: none; // Esconde tudo menos faixa e data
@@ -359,6 +406,7 @@
   font-size: 0.9rem;
   color: var(--branco-dk);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  font-variant-numeric: tabular-nums; // Trava a largura dos números para não ficar tremendo
 
   :host-context(.tema-claro) & {
     background: rgba(0, 0, 0, 0.05);
@@ -502,10 +550,12 @@
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
         -webkit-appearance: none;
+        appearance: none;
         margin: 0;
       }
       &[type=number] {
         -moz-appearance: textfield;
+        appearance: textfield;
       }
     }
   }
