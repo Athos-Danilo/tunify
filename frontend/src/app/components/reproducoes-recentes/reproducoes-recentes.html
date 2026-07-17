@@ -3,9 +3,12 @@
   <div class="historico-header">
     <div class="titulos">
       <h2 class="historico-titulo">
-        <span class="material-icons">history</span> Histórico Recente
+        <div class="icone-destaque-wrapper">
+          <span class="material-icons icone-destaque">calendar_month</span>
+        </div>
+        Histórico Mensal
       </h2>
-      <p class="historico-subtitulo">As últimas músicas que tocaram no seu Tunify.</p>
+      <p class="historico-subtitulo">As músicas que você ouviu no <strong>Spotify</strong> durante este mês, sincronizadas aqui.</p>
     </div>
 
     <!-- BLOCO DO TIMER (Mostra só na primeira página) -->
@@ -44,7 +47,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of historicoPagina" class="linha-tabela">
+        <tr *ngFor="let item of historicoPagina; let i = index" class="linha-tabela" [style.animation-delay]="(i * 0.03) + 's'">
           
           <!-- COLUNA FAIXA -->
           <td class="col-faixa">
