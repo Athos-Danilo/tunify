@@ -292,7 +292,7 @@
     }
 
     .timer-box {
-      width: 100%;
+      width: auto;
       justify-content: center;
     }
   }
@@ -359,6 +359,7 @@
   font-size: 0.9rem;
   color: var(--branco-dk);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  font-variant-numeric: tabular-nums; // Trava a largura dos números para não ficar tremendo
 
   :host-context(.tema-claro) & {
     background: rgba(0, 0, 0, 0.05);

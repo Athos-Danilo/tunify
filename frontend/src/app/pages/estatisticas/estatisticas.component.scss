@@ -39,6 +39,11 @@
       display: block;
       width: 100%;
     }
+
+    // Espaço extra no mobile para a paginação não ficar escondida atrás do menu inferior
+    @media (max-width: 768px) {
+      padding-bottom: 100px;
+    }
   }
 
   // Modo Claro (acionado pela diretiva ngClass no HTML)
