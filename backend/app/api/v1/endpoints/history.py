@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import dateutil.parser
 
 from app.core.database import get_db
@@ -21,9 +21,17 @@ async def get_recent_history(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
+    # [CINTO DE SEGURANÇA] Calculamos o limite do mês atual no Brasil (UTC-3)
+    # para garantir que, caso haja sujeira no banco, o frontend nunca as receba.
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
     # Busca os registros do banco (limitando a 2000 para segurança de memória)
     history_records = db.query(MonthlyHistory).filter(
-        MonthlyHistory.user_id == user.id
+        MonthlyHistory.user_id == user.id,
+        MonthlyHistory.played_at >= corte_mes_utc
     ).order_by(desc(MonthlyHistory.played_at)).limit(2000).all()
 
     response_items = []

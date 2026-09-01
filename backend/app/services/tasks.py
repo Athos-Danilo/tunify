@@ -81,10 +81,11 @@ async def robo_rastreador_hourly():
                 after_ts = int(ultima_musica.played_at.timestamp() * 1000) if ultima_musica else None
                 faixas_recentes = []
 
+                faixas_recentes_brutas = []
                 for tentativa in range(2):
                     try:
                         # 🚨 Camada 1: Tentamos a busca otimizada com o cursor 'after'
-                        faixas_recentes = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
+                        faixas_recentes_brutas = await spotify.get_recently_played(user.access_token, after_timestamp=after_ts)
                         break 
                     except ValueError as e:
                         if str(e) == "TOKEN_EXPIRADO" and tentativa == 0:
@@ -102,29 +103,34 @@ async def robo_rastreador_hourly():
                             raise e
                     except httpx.HTTPStatusError as e:
                         # 🚨 Camada 2: A NOSSA CAMADA DE AUTO-CURA
-                        # Se o Spotify der erro 500 porque se perdeu com o nosso cursor 'after_ts', ativamos o Fallback.
                         if e.response.status_code == 500 and after_ts is not None:
                             logger.warning(f"⚠️ [RASTREADOR] Erro 500 do Spotify para {nome_usuario}. Ativando Auto-Cura (Fallback)...")
-                            # Fazemos a busca padrão geral (traz as últimas 50 sem filtro) que nunca falha com 500
                             faixas_recentes_brutas = await spotify.get_recently_played(user.access_token)
-                            
-                            faixas_recentes = []
-                            # Filtramos manualmente no Python: mantemos apenas as músicas tocadas DEPOIS da nossa ultima_musica
-                            if ultima_musica:
-                                limite_data = ultima_musica.played_at
-                                for item in faixas_recentes_brutas:
-                                    item_played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
-                                    # Se a música do Spotify for mais recente que o último registro do banco, nós a guardamos
-                                    if item_played_at > limite_data:
-                                        faixas_recentes.append(item)
-                            else:
-                                faixas_recentes = faixas_recentes_brutas
-                                
-                            logger.info(f"🛡️ [AUTO-CURA] Filtro manual aplicado. Encontradas {len(faixas_recentes)} faixas novas.")
+                            logger.info(f"🛡️ [AUTO-CURA] Busca de fallback sem cursor realizada com sucesso.")
                             break
                         else:
-                            # Se for outro erro ou já estávamos tentando sem o 'after_ts', repassa o erro para abortar o usuário
                             raise e
+
+                # 🚨 NOVA REGRA DE FUSO HORÁRIO (UTC-3): 
+                # Filtramos as faixas para garantir que NADA do mês passado entre na tabela,
+                # e consideramos o mês do Brasil, não o mês UTC global.
+                agora_utc = datetime.datetime.now(datetime.timezone.utc)
+                agora_br = agora_utc - datetime.timedelta(hours=3)
+                primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                
+                # Voltamos para UTC para poder comparar com as datas do Spotify
+                corte_mes_utc = primeiro_dia_br + datetime.timedelta(hours=3)
+                
+                # O limite de data é a última música ou o começo do mês (o que for maior)
+                limite_data = corte_mes_utc
+                if ultima_musica and ultima_musica.played_at > corte_mes_utc:
+                    limite_data = ultima_musica.played_at
+
+                faixas_recentes = []
+                for item in faixas_recentes_brutas:
+                    item_played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
+                    if item_played_at > limite_data:
+                        faixas_recentes.append(item)
 
                 # 4. Processamento das músicas e sementes de artistas
                 musicas_adicionadas_agora = set()
@@ -226,13 +232,21 @@ async def robo_agregador_mensal():
     db = SessionLocal()
     
     try:
-        hoje = datetime.datetime.now(datetime.timezone.utc)
-        primeiro_dia_atual = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        agora_utc = datetime.datetime.now(datetime.timezone.utc)
         
-        if hoje.month == 1:
-            mes_ref = f"{hoje.year - 1}-12"
+        # Ajustamos para o fuso do Brasil para saber em que mês nós de fato estamos
+        agora_br = agora_utc - datetime.timedelta(hours=3)
+        
+        # Primeiro dia do mês no horário do Brasil (00:00 UTC-3)
+        primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Convertemos de volta para UTC para deletar do banco
+        primeiro_dia_atual_utc = primeiro_dia_br + datetime.timedelta(hours=3)
+        
+        if agora_br.month == 1:
+            mes_ref = f"{agora_br.year - 1}-12"
         else:
-            mes_ref = f"{hoje.year}-{hoje.month - 1:02d}"
+            mes_ref = f"{agora_br.year}-{agora_br.month - 1:02d}"
 
         somas_por_usuario = db.query(
             MonthlyHistory.user_id,
@@ -241,7 +255,7 @@ async def robo_agregador_mensal():
         ).join(
             TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
         ).filter(
-            MonthlyHistory.played_at < primeiro_dia_atual
+            MonthlyHistory.played_at < primeiro_dia_atual_utc
         ).group_by(
             MonthlyHistory.user_id
         ).all()
@@ -257,7 +271,7 @@ async def robo_agregador_mensal():
             db.add(novo_fechamento)
 
         usuarios_com_historico = db.query(MonthlyHistory.user_id).filter(
-            MonthlyHistory.played_at < primeiro_dia_atual
+            MonthlyHistory.played_at < primeiro_dia_atual_utc
         ).distinct().all()
 
         for (u_id,) in usuarios_com_historico:
@@ -267,7 +281,7 @@ async def robo_agregador_mensal():
                 func.count(MonthlyHistory.id).label('play_count')
             ).filter(
                 MonthlyHistory.user_id == u_id,
-                MonthlyHistory.played_at < primeiro_dia_atual
+                MonthlyHistory.played_at < primeiro_dia_atual_utc
             ).group_by(MonthlyHistory.spotify_track_id).order_by(func.count(MonthlyHistory.id).desc()).limit(200).all()
 
             for rank, (track_id, play_count) in enumerate(ranking_musicas, start=1):
@@ -285,7 +299,7 @@ async def robo_agregador_mensal():
             ).join(
                 MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
             ).filter(
-                MonthlyHistory.user_id == u_id, MonthlyHistory.played_at < primeiro_dia_atual
+                MonthlyHistory.user_id == u_id, MonthlyHistory.played_at < primeiro_dia_atual_utc
             ).group_by(TrackCache.artist_name).order_by(func.sum(TrackCache.duration_ms).desc()).limit(15).all()
 
             for rank_artista, (artist_name, tempo_total_ms, capa_url) in enumerate(ranking_artistas, start=1):
@@ -295,7 +309,7 @@ async def robo_agregador_mensal():
                     minutes_listened=int(tempo_total_ms / 60000), rank_position=rank_artista
                 ))
 
-        db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual).delete()
+        db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual_utc).delete()
         db.commit()
         logger.info("✅ [AGREGADOR] Faxina concluída!")
 
