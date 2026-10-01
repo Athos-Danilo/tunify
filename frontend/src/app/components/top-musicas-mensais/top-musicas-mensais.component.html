@@ -1,0 +1,135 @@
+<div class="top-musicas-container">
+  
+  <!-- HEADER DO COMPONENTE -->
+  <div class="componente-header">
+    <div class="titulos-bloco">
+      <h2 class="titulo-destaque">
+        <div class="icone-wrapper">
+          <span class="material-icons icone">workspace_premium</span>
+        </div>
+        Top 10 Músicas
+      </h2>
+      <p class="subtitulo-destaque">
+        As músicas mais reproduzidas no seu Tunify durante o mês.
+      </p>
+    </div>
+
+    <!-- SELETOR DE MÊS -->
+    <div class="filtro-mes-wrapper" *ngIf="mesesDisponiveis.length > 0">
+      <label for="seletor-mes" class="label-filtro">
+        <span class="material-icons">filter_list</span> Mês:
+      </label>
+      <select id="seletor-mes" class="select-mes" [value]="mesSelecionado" (change)="onMesChange($event)">
+        <option *ngFor="let mes of mesesDisponiveis" [value]="mes.codigo">
+          {{ mes.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ESTADO DE CARREGANDO -->
+  <div class="estado-carregando" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando as músicas mais ouvidas...</p>
+  </div>
+
+  <!-- ESTADO DE ERRO -->
+  <div class="estado-erro" *ngIf="!carregando && erro">
+    <span class="material-icons">error_outline</span>
+    <p>{{ erro }}</p>
+  </div>
+
+  <!-- ESTADO VAZIO -->
+  <div class="estado-vazio" *ngIf="!carregando && !erro && topMusicas.length === 0">
+    <span class="material-icons">music_off</span>
+    <p>Nenhuma música registrada para este mês ainda.</p>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL (TOP MÚSICAS) -->
+  <div class="conteudo-top-musicas" *ngIf="!carregando && !erro && topMusicas.length > 0">
+    
+    <!-- PÓDIO (TOP 3) -->
+    <div class="podio-grid">
+      <ng-container *ngFor="let faixa of topMusicas.slice(0, 3)">
+        <div class="card-podio" [ngClass]="'posicao-' + faixa.rank">
+          
+          <div class="coroa-badge" *ngIf="faixa.rank === 1">
+            <span class="material-icons icone-coroa">military_tech</span>
+            <span class="texto-rank">#1</span>
+          </div>
+          <div class="coroa-badge" *ngIf="faixa.rank === 2">
+            <span class="material-icons icone-coroa">workspace_premium</span>
+            <span class="texto-rank">#2</span>
+          </div>
+          <div class="coroa-badge" *ngIf="faixa.rank === 3">
+            <span class="material-icons icone-coroa">emoji_events</span>
+            <span class="texto-rank">#3</span>
+          </div>
+
+          <div class="capa-container">
+            <img [src]="faixa.capa_url || 'assets/placeholder-album.png'" [alt]="faixa.nome" class="capa-album" />
+            
+            <!-- BADGE DE TENDÊNCIA NO PÓDIO -->
+            <div class="badge-tendencia" [ngClass]="faixa.tendencia">
+              <span class="material-icons" *ngIf="faixa.tendencia === 'sobe'">north</span>
+              <span class="material-icons" *ngIf="faixa.tendencia === 'desce'">south</span>
+              <span class="material-icons" *ngIf="faixa.tendencia === 'estavel'">remove</span>
+              <span class="material-icons" *ngIf="faixa.tendencia === 'nova'">star</span>
+              <span class="valor-tendencia" *ngIf="faixa.valorTendencia > 0">{{ faixa.valorTendencia }}</span>
+            </div>
+          </div>
+
+          <div class="podio-info">
+            <h3 class="nome-faixa" [title]="faixa.nome">{{ faixa.nome }}</h3>
+            <p class="nome-artista" [title]="faixa.artista">{{ faixa.artista }}</p>
+
+            <div class="stats-linha">
+              <span class="plays-tag">
+                <span class="material-icons">play_circle</span> {{ faixa.total_plays }} plays
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- LISTA DAS DEMAIS POSIÇÕES (4 a 10) -->
+    <div class="lista-demais-posicoes" *ngIf="topMusicas.length > 3">
+      <div class="linha-musica" *ngFor="let faixa of topMusicas.slice(3)">
+        
+        <div class="col-posicao">
+          <span class="numero-rank">#{{ faixa.rank }}</span>
+        </div>
+
+        <div class="col-capa">
+          <img [src]="faixa.capa_url || 'assets/placeholder-album.png'" [alt]="faixa.nome" class="capa-mini" />
+        </div>
+
+        <div class="col-detalhes">
+          <h4 class="nome-faixa" [title]="faixa.nome">{{ faixa.nome }}</h4>
+          <p class="nome-artista" [title]="faixa.artista">{{ faixa.artista }}</p>
+        </div>
+
+        <div class="col-tendencia">
+          <div class="badge-tendencia" [ngClass]="faixa.tendencia" [title]="'Tendência: ' + faixa.tendencia">
+            <span class="material-icons" *ngIf="faixa.tendencia === 'sobe'">north</span>
+            <span class="material-icons" *ngIf="faixa.tendencia === 'desce'">south</span>
+            <span class="material-icons" *ngIf="faixa.tendencia === 'estavel'">remove</span>
+            <span class="material-icons" *ngIf="faixa.tendencia === 'nova'">star</span>
+            <span class="valor-tendencia" *ngIf="faixa.valorTendencia > 0">{{ faixa.valorTendencia }}</span>
+          </div>
+        </div>
+
+        <div class="col-plays">
+          <span class="total-plays">{{ faixa.total_plays }} plays</span>
+        </div>
+
+        <div class="col-duracao">
+          <span>{{ formatarTempo(faixa.duracaoMs) }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

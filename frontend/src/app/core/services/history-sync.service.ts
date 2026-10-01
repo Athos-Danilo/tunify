@@ -99,4 +99,19 @@ export class HistorySyncService {
   clearCache(): void {
     SecureStorage.removeItem(this.CACHE_KEY);
   }
+
+  /**
+   * Busca a lista de meses disponíveis com dados de histórico do usuário
+   */
+  getAvailableMonths(email: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/months/${email}`);
+  }
+
+  /**
+   * Busca as Top 10 músicas de um mês específico (ou do mês atual se não informado)
+   */
+  getTopTracks(email: string, mes?: string): Observable<any> {
+    const url = mes ? `${this.backendUrl}/top-tracks/${email}?mes=${mes}` : `${this.backendUrl}/top-tracks/${email}`;
+    return this.http.get<any>(url);
+  }
 }

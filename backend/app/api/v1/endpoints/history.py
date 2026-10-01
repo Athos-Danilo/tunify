@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from datetime import datetime, timezone, timedelta
 import dateutil.parser
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.history import MonthlyHistory
+from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist
 from app.models.track import TrackCache
 
 router = APIRouter()
@@ -136,3 +136,224 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
     db.commit()
 
     return {"status": "success", "added_count": added_count}
+
+
+@router.get("/months/{email}")
+async def get_available_months(email: str, db: Session = Depends(get_db)):
+    """
+    Retorna a lista de meses disponíveis no histórico do usuário.
+    Fonte estrita de dados: tabela MonthlyTopTrack + mês atual.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    # Mês Atual no Fuso do Brasil (UTC-3)
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    # Busca meses salvos ESTRITAMENTE na tabela MonthlyTopTrack
+    meses_consolidados = db.query(MonthlyTopTrack.mes_referencia).filter(
+        MonthlyTopTrack.user_id == user.id
+    ).distinct().all()
+
+    meses_set = {m[0] for m in meses_consolidados if m[0]}
+    meses_set.add(mes_atual_codigo)
+
+    NOMES_MESES = {
+        1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+        5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+        9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+    }
+
+    meses_ordenados = sorted(list(meses_set), reverse=True)
+
+    resultado = []
+    for cod in meses_ordenados:
+        try:
+            ano, mes = map(int, cod.split("-"))
+            nome_mes = NOMES_MESES.get(mes, f"Mês {mes}")
+            is_atual = (cod == mes_atual_codigo)
+            label = f"{nome_mes} {ano}" + (" (Atual)" if is_atual else "")
+            resultado.append({
+                "codigo": cod,
+                "label": label,
+                "nome_mes": nome_mes,
+                "ano": ano,
+                "is_atual": is_atual
+            })
+        except Exception:
+            resultado.append({
+                "codigo": cod,
+                "label": cod,
+                "is_atual": (cod == mes_atual_codigo)
+            })
+
+    return resultado
+
+
+@router.get("/top-tracks/{email}")
+async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depends(get_db)):
+    """
+    Retorna o Top 10 de músicas mais ouvidas de um mês específico.
+    Se 'mes' for omitido ou for o mês atual, calcula em tempo real com tendência.
+    Se 'mes' for um mês passado, busca ESTRITAMENTE da tabela MonthlyTopTrack.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    mes_solicitado = mes if mes else mes_atual_codigo
+    is_mes_atual = (mes_solicitado == mes_atual_codigo)
+
+    if is_mes_atual:
+        # Mês Atual em Tempo Real
+        primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
+        top_tracks_raw = db.query(
+            MonthlyHistory.spotify_track_id,
+            func.count(MonthlyHistory.id).label('play_count'),
+            TrackCache.name,
+            TrackCache.artist_name,
+            TrackCache.album_cover_url,
+            TrackCache.duration_ms
+        ).join(
+            TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyHistory.user_id == user.id,
+            MonthlyHistory.played_at >= corte_mes_utc
+        ).group_by(
+            MonthlyHistory.spotify_track_id,
+            TrackCache.name,
+            TrackCache.artist_name,
+            TrackCache.album_cover_url,
+            TrackCache.duration_ms
+        ).order_by(
+            desc('play_count')
+        ).limit(10).all()
+
+        ano, m = map(int, mes_atual_codigo.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopTrack).filter(
+            MonthlyTopTrack.user_id == user.id,
+            MonthlyTopTrack.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for track in top_anterior:
+            mapa_tendencias[track.spotify_track_id] = track.rank_position
+
+        dados_formatados = []
+        for rank, item in enumerate(top_tracks_raw, start=1):
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.spotify_track_id in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.spotify_track_id]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+
+            dados_formatados.append({
+                "rank": rank,
+                "id": item.spotify_track_id,
+                "nome": item.name,
+                "artista": item.artist_name,
+                "capa_url": item.album_cover_url,
+                "total_plays": item.play_count,
+                "duracaoMs": item.duration_ms,
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        return {
+            "mes_referencia": mes_solicitado,
+            "is_atual": True,
+            "dados": dados_formatados
+        }
+    else:
+        # Mês Passado Consolidado - ESTRITAMENTE da tabela MonthlyTopTrack
+        top_consolidado = db.query(
+            MonthlyTopTrack.rank_position,
+            MonthlyTopTrack.play_count,
+            MonthlyTopTrack.spotify_track_id,
+            TrackCache.name,
+            TrackCache.artist_name,
+            TrackCache.album_cover_url,
+            TrackCache.duration_ms
+        ).join(
+            TrackCache, MonthlyTopTrack.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyTopTrack.user_id == user.id,
+            MonthlyTopTrack.mes_referencia == mes_solicitado
+        ).order_by(
+            MonthlyTopTrack.rank_position
+        ).all()
+
+        ano, m = map(int, mes_solicitado.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopTrack).filter(
+            MonthlyTopTrack.user_id == user.id,
+            MonthlyTopTrack.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for track in top_anterior:
+            mapa_tendencias[track.spotify_track_id] = track.rank_position
+
+        dados_formatados = []
+        for item in top_consolidado:
+            rank = item.rank_position
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.spotify_track_id in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.spotify_track_id]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+
+            dados_formatados.append({
+                "rank": rank,
+                "id": item.spotify_track_id,
+                "nome": item.name,
+                "artista": item.artist_name,
+                "capa_url": item.album_cover_url,
+                "total_plays": item.play_count,
+                "duracaoMs": item.duration_ms,
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        return {
+            "mes_referencia": mes_solicitado,
+            "is_atual": False,
+            "dados": dados_formatados
+        }
+

@@ -1,5 +1,4 @@
-// Importa as variáveis e mixins globais
-@import '../../../styles.scss';
+@use '../../../assets/mixins' as *;
 
 .estatisticas-container {
   min-height: 100vh;
@@ -7,13 +6,10 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  
-  // Fundo padrão Escuro (Dark Mode)
-  background-color: var(--azul-muito-escuro-dk); 
-  color: var(--branco-dk);
+  background-color: var(--azul-muito-escuro-dk, #050B14); 
+  color: var(--branco-dk, #FFFFFF);
   transition: background-color 0.3s ease, color 0.3s ease;
 
-  // Header Wrapper (para posicionar o header no topo)
   .header-wrapper {
     width: 100%;
     padding: 20px 20px 0 20px;
@@ -22,58 +18,222 @@
     justify-content: center;
   }
 
-  // Conteúdo Central
   .conteudo-central {
     flex: 1;
     display: flex;
-    justify-content: flex-start;
-    align-items: stretch;
     flex-direction: column;
-    padding: 100px 20px 20px 20px; // 100px top para compensar o header fixed
+    padding: 100px 16px 40px 16px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     box-sizing: border-box;
 
-    app-reproducoes-recentes {
-      display: block;
-      width: 100%;
-    }
-
-    // Espaço extra no mobile para a paginação não ficar escondida atrás do menu inferior
-    @media (max-width: 768px) {
-      padding-bottom: 100px;
+    @media (min-width: 768px) {
+      padding: 110px 24px 60px 24px;
     }
   }
 
-  // Modo Claro (acionado pela diretiva ngClass no HTML)
   &.tema-claro {
-    background-color: var(--branco-lt);
-    color: var(--preto-lt);
+    background-color: var(--branco-lt, #F7FAFC);
+    color: var(--preto-lt, #1A202C);
+  }
+
+  .titulo-pagina-container {
+    text-align: center;
+    margin-bottom: 30px;
   }
 
   .titulo-especial {
-    font-family: var(--fonte-especial); // Fonte MuseoModerno
-    margin: 0;
+    font-family: var(--fonte-especial, 'MuseoModerno', sans-serif);
+    font-style: italic;
+    margin: 0 0 8px 0;
     text-align: center;
-    color: var(--branco-dk); // Branco no modo escuro
-
-    // 1. Mobile (Tamanho padrão, telas pequenas)
+    color: var(--azul-dk, #0285FF);
     font-size: 2rem;
+    letter-spacing: -0.5px;
 
-    // 2. Tablet e Notebooks menores (Mixins do styles.scss)
     @include tela-media {
-      font-size: 3rem;
+      font-size: 2.8rem;
     }
 
-    // 3. Telas Grandes (Desktop/Monitores)
     @include tela-grande {
-      font-size: 4.5rem;
+      font-size: 3.5rem;
+    }
+
+    .tema-claro & {
+      color: var(--azul-lt, #0285FF);
     }
   }
 
-  // Modifica a cor do título especificamente quando o fundo estiver claro
-  &.tema-claro .titulo-especial {
-    color: var(--preto-lt); // Preto (ou cinza escuro) no modo claro
+  .subtitulo-pagina {
+    font-family: var(--fonte-principal, sans-serif);
+    font-size: 0.95rem;
+    color: var(--cinza-claro-dk, #A0AEC0);
+    margin: 0;
+
+    .tema-claro & {
+      color: var(--cinza-escuro-lt, #4A5568);
+    }
+  }
+
+  /* ====================================================== */
+  /* PAINEL DE GAVETAS (ACCORDION) - MOBILE FIRST           */
+  /* ====================================================== */
+  .painel-gavetas {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .gaveta-item {
+    background: var(--azul-escuro-dk, #0B111E);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .tema-claro & {
+      background: var(--branco-lt, #FFFFFF);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    &.aberta {
+      border-color: rgba(2, 133, 255, 0.3);
+
+      .tema-claro & {
+        border-color: rgba(2, 133, 255, 0.3);
+      }
+    }
+
+    .gaveta-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 20px;
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      text-align: left;
+      outline: none;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.02);
+
+        .tema-claro & {
+          background: rgba(0, 0, 0, 0.02);
+        }
+      }
+
+      .gaveta-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .icone-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        .material-icons {
+          font-size: 1.5rem;
+        }
+
+        &.azul {
+          background: rgba(2, 133, 255, 0.15);
+          color: var(--azul-dk, #0285FF);
+        }
+
+        &.dourado {
+          background: rgba(255, 215, 0, 0.15);
+          color: #FFD700;
+        }
+      }
+
+      .gaveta-textos {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .gaveta-titulo {
+          font-family: var(--fonte-especial, 'MuseoModerno', sans-serif);
+          font-style: italic;
+          font-size: 1.25rem;
+          margin: 0;
+          color: var(--branco-dk, #FFFFFF);
+
+          .tema-claro & {
+            color: var(--preto-lt, #1A202C);
+          }
+        }
+
+        .gaveta-resumo {
+          font-family: var(--fonte-principal, sans-serif);
+          font-size: 0.8rem;
+          color: var(--cinza-claro-dk, #A0AEC0);
+
+          .tema-claro & {
+            color: var(--cinza-escuro-lt, #4A5568);
+          }
+        }
+      }
+
+      .gaveta-acoes {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .badge-status {
+          display: none;
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+
+          @media (min-width: 600px) {
+            display: inline-block;
+          }
+
+          &.verde {
+            background: rgba(30, 215, 96, 0.15);
+            color: #1DB954;
+          }
+
+          &.dourado {
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+          }
+        }
+
+        .chevron-icone {
+          font-size: 1.8rem;
+          color: var(--cinza-claro-dk, #A0AEC0);
+          transition: transform 0.3s ease;
+
+          .tema-claro & {
+            color: var(--cinza-escuro-lt, #4A5568);
+          }
+        }
+      }
+    }
+
+    .gaveta-corpo {
+      padding: 0 16px 20px 16px;
+
+      @media (min-width: 600px) {
+        padding: 0 24px 24px 24px;
+      }
+    }
   }
 }
+
