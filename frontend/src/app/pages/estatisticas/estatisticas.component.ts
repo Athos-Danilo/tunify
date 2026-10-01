@@ -20,9 +20,9 @@ export class EstatisticasComponent implements OnInit {
   nomeUsuario: string = 'Carregando...';
   fotoPerfil: string = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
 
-  // Controle do estado das Gavetas (Accordions)
-  gavetaHistoricoAberta: boolean = true;
-  gavetaTopMusicasAberta: boolean = true;
+  // Controle do estado das Gavetas (Accordions) - Inicia todas FECHADAS
+  gavetaHistoricoAberta: boolean = false;
+  gavetaTopMusicasAberta: boolean = false;
 
   private authService = inject(AuthService);
   private spotifyService = inject(SpotifyService);
