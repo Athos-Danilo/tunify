@@ -14,8 +14,6 @@ from app.api.v1.endpoints import auth, spotify, dashboard, selos, history
 from app.api_tunify_liricys.api import letras as letras_router
 
 
-from sqlalchemy import text
-
 # Importa o motor do banco de dados e a classe Base.
 from app.core.database import engine, Base
 
@@ -46,14 +44,6 @@ async def lifespan(app: FastAPI):
     
     # Sincronização: O SQLAlchemy olha para todos os modelos importados e cria as tabelas se não existirem.
     Base.metadata.create_all(bind=engine)
-    
-    # Auto-migração DDL segura: garante que a coluna album_name exista na tabela tracks_cache
-    try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE tracks_cache ADD COLUMN IF NOT EXISTS album_name VARCHAR;"))
-        print("> Auto-migração: Coluna 'album_name' verificada/criada em 'tracks_cache'.")
-    except Exception as e:
-        print(f"⚠️ Warning ao verificar coluna album_name: {e}")
     
     # Inicializa o client do MongoDB
     db.client = AsyncIOMotorClient(settings.MONGO_URI)

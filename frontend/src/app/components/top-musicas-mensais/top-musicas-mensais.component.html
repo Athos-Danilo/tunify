@@ -83,9 +83,7 @@
       <!-- COLUNA TÍTULO E ARTISTA -->
       <div class="coluna-meta">
         <h4 class="faixa-nome-tile" [title]="faixa.nome">{{ faixa.nome }}</h4>
-        <p class="faixa-artista-tile" [title]="faixa.artista + (faixa.album && faixa.album !== '-' ? ' • ' + faixa.album : '')">
-          {{ faixa.artista }}<span class="separador-album" *ngIf="faixa.album && faixa.album !== '-'"> • {{ faixa.album }}</span>
-        </p>
+        <p class="faixa-artista-tile" [title]="faixa.artista">{{ faixa.artista }}</p>
       </div>
 
       <!-- COLUNA STATS (PLAYS & DURAÇÃO) -->
