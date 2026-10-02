@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HistorySyncService } from '../../core/services/history-sync.service';
 
@@ -17,9 +17,19 @@ export class TopMusicasMensaisComponent implements OnInit {
   erro: string | null = null;
   isMesAtual: boolean = true;
   userEmail: string = '';
+  totalPlaysMes: number = 0;
+  dropdownAberto: boolean = false;
 
   private historySyncService = inject(HistorySyncService);
   private cdr = inject(ChangeDetectorRef);
+  private elementRef = inject(ElementRef);
+
+  @HostListener('document:click', ['$event'])
+  onClickFora(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.dropdownAberto = false;
+    }
+  }
 
   ngOnInit(): void {
     if (typeof window !== 'undefined') {
@@ -72,6 +82,7 @@ export class TopMusicasMensaisComponent implements OnInit {
       next: (res) => {
         this.topMusicas = res.dados || [];
         this.isMesAtual = res.is_atual ?? false;
+        this.totalPlaysMes = this.topMusicas.reduce((acc, t) => acc + (t.total_plays || 0), 0);
         this.carregando = false;
         this.cdr.detectChanges();
       },
@@ -84,12 +95,23 @@ export class TopMusicasMensaisComponent implements OnInit {
     });
   }
 
-  onMesChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    if (target && target.value) {
-      this.mesSelecionado = target.value;
+  toggleDropdown(event: Event): void {
+    event.stopPropagation();
+    this.dropdownAberto = !this.dropdownAberto;
+  }
+
+  selecionarMes(codigo: string, event: Event): void {
+    event.stopPropagation();
+    this.dropdownAberto = false;
+    if (codigo !== this.mesSelecionado) {
+      this.mesSelecionado = codigo;
       this.carregarTopMusicas(this.mesSelecionado);
     }
+  }
+
+  getLabelMesSelecionado(): string {
+    const mesObj = this.mesesDisponiveis.find(m => m.codigo === this.mesSelecionado);
+    return mesObj ? mesObj.label : 'Selecionar mês';
   }
 
   formatarTempo(ms: number): string {
@@ -99,4 +121,9 @@ export class TopMusicasMensaisComponent implements OnInit {
     const segundos = totalSegundos % 60;
     return `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
   }
+
+  formatarRank(rank: number): string {
+    return rank < 10 ? `0${rank}` : `${rank}`;
+  }
 }
+

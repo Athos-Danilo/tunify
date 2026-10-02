@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  background-color: var(--azul-muito-escuro-dk, #050B14); 
+  background-color: var(--azul-muito-escuro-dk, #0B1120); 
   color: var(--branco-dk, #FFFFFF);
   transition: background-color 0.3s ease, color 0.3s ease;
 
@@ -33,11 +33,6 @@
     }
   }
 
-  &.tema-claro {
-    background-color: var(--branco-lt, #F7FAFC);
-    color: var(--preto-lt, #1A202C);
-  }
-
   .titulo-pagina-container {
     text-align: center;
     margin-bottom: 30px;
@@ -59,21 +54,13 @@
     @include tela-grande {
       font-size: 3.5rem;
     }
-
-    .tema-claro & {
-      color: var(--azul-lt, #0285FF);
-    }
   }
 
   .subtitulo-pagina {
     font-family: var(--fonte-principal, sans-serif);
     font-size: 0.95rem;
-    color: var(--cinza-claro-dk, #A0AEC0);
+    color: var(--cinza-claro-dk, #B3B3B3);
     margin: 0;
-
-    .tema-claro & {
-      color: var(--cinza-escuro-lt, #4A5568);
-    }
   }
 
   /* ====================================================== */
@@ -87,25 +74,15 @@
   }
 
   .gaveta-item {
-    background: var(--azul-escuro-dk, #0B111E);
+    background: var(--azul-escuro-dk, #151E32);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-
-    .tema-claro & {
-      background: var(--branco-lt, #FFFFFF);
-      border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-    }
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 
     &.aberta {
-      border-color: rgba(2, 133, 255, 0.3);
-
-      .tema-claro & {
-        border-color: rgba(2, 133, 255, 0.3);
-      }
+      border-color: rgba(2, 133, 255, 0.4);
     }
 
     .gaveta-header {
@@ -123,11 +100,7 @@
       transition: background 0.2s ease;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.02);
-
-        .tema-claro & {
-          background: rgba(0, 0, 0, 0.02);
-        }
+        background: rgba(255, 255, 255, 0.03);
       }
 
       .gaveta-info {
@@ -171,20 +144,14 @@
           font-size: 1.25rem;
           margin: 0;
           color: var(--branco-dk, #FFFFFF);
-
-          .tema-claro & {
-            color: var(--preto-lt, #1A202C);
-          }
+          transition: color 0.3s ease;
         }
 
         .gaveta-resumo {
           font-family: var(--fonte-principal, sans-serif);
           font-size: 0.8rem;
-          color: var(--cinza-claro-dk, #A0AEC0);
-
-          .tema-claro & {
-            color: var(--cinza-escuro-lt, #4A5568);
-          }
+          color: var(--cinza-claro-dk, #B3B3B3);
+          transition: color 0.3s ease;
         }
       }
 
@@ -217,12 +184,8 @@
 
         .chevron-icone {
           font-size: 1.8rem;
-          color: var(--cinza-claro-dk, #A0AEC0);
-          transition: transform 0.3s ease;
-
-          .tema-claro & {
-            color: var(--cinza-escuro-lt, #4A5568);
-          }
+          color: var(--cinza-claro-dk, #B3B3B3);
+          transition: transform 0.3s ease, color 0.3s ease;
         }
       }
     }
@@ -235,5 +198,53 @@
       }
     }
   }
-}
 
+  /* ====================================================== */
+  /* REGRAS DO MODO CLARO (LIGHT MODE OVERRIDES)            */
+  /* ====================================================== */
+  &.tema-claro,
+  :host-context(.tema-claro) & {
+    background-color: var(--branco-lt, #FFFFFF);
+    color: var(--preto-lt, #0B1120);
+
+    .titulo-especial {
+      color: var(--azul-lt, #0285FF);
+    }
+
+    .subtitulo-pagina {
+      color: var(--cinza-escuro-lt, #474952);
+    }
+
+    .gaveta-item {
+      background: var(--branco-lt, #FFFFFF);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+      &.aberta {
+        border-color: rgba(2, 133, 255, 0.3);
+      }
+
+      .gaveta-header {
+        &:hover {
+          background: rgba(0, 0, 0, 0.03);
+        }
+
+        .gaveta-textos {
+          .gaveta-titulo {
+            color: var(--preto-lt, #0B1120);
+          }
+
+          .gaveta-resumo {
+            color: var(--cinza-escuro-lt, #474952);
+          }
+        }
+
+        .gaveta-acoes {
+          .chevron-icone {
+            color: var(--cinza-escuro-lt, #474952);
+          }
+        }
+      }
+    }
+  }
+}
