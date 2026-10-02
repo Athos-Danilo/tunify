@@ -6,11 +6,12 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { AuthService } from '../../core/services/auth.service';
 import { SpotifyService } from '../../core/services/spotify.service';
 import { ReproducoesRecentes } from '../../components/reproducoes-recentes/reproducoes-recentes';
+import { TopMusicasMensaisComponent } from '../../components/top-musicas-mensais/top-musicas-mensais.component';
 
 @Component({
   selector: 'app-estatisticas',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes],
+  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes, TopMusicasMensaisComponent],
   templateUrl: './estatisticas.component.html',
   styleUrls: ['./estatisticas.component.scss']
 })
@@ -18,6 +19,10 @@ export class EstatisticasComponent implements OnInit {
   modoEscuro: boolean = true;
   nomeUsuario: string = 'Carregando...';
   fotoPerfil: string = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+  // Controle do estado das Gavetas (Accordions) - Inicia todas FECHADAS
+  gavetaHistoricoAberta: boolean = false;
+  gavetaTopMusicasAberta: boolean = false;
 
   private authService = inject(AuthService);
   private spotifyService = inject(SpotifyService);
@@ -90,6 +95,14 @@ export class EstatisticasComponent implements OnInit {
       document.body.classList.add('tema-claro');
       localStorage.setItem('tunify_tema', 'claro');
     }
+  }
+
+  alternarGavetaHistorico() {
+    this.gavetaHistoricoAberta = !this.gavetaHistoricoAberta;
+  }
+
+  alternarGavetaTopMusicas() {
+    this.gavetaTopMusicasAberta = !this.gavetaTopMusicasAberta;
   }
 
   fazerLogout() {

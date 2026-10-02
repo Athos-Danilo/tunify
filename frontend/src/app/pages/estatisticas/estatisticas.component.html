@@ -11,8 +11,62 @@
   </div>
 
   <div class="conteudo-central">
-    <h1 class="titulo-especial">Estatisticas Mensais</h1>
-    <app-reproducoes-recentes></app-reproducoes-recentes>
+    <div class="titulo-pagina-container">
+      <h1 class="titulo-especial">Estatísticas do Seu Tunify</h1>
+      <p class="subtitulo-pagina">Explore seu histórico de reproduções e os rankings das suas músicas preferidas.</p>
+    </div>
+
+    <!-- PAINEL DE GAVETAS (ACCORDION) -->
+    <div class="painel-gavetas">
+      
+      <!-- GAVETA 1: HISTÓRICO RECENTE -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaHistoricoAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaHistorico()">
+          <div class="gaveta-info">
+            <div class="icone-badge azul">
+              <span class="material-icons">history</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Histórico Recente</h2>
+              <span class="gaveta-resumo">As últimas faixas tocadas em tempo real</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status verde">Ao Vivo</span>
+            <span class="material-icons chevron-icone">{{ gavetaHistoricoAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaHistoricoAberta">
+          <app-reproducoes-recentes></app-reproducoes-recentes>
+        </div>
+      </div>
+
+      <!-- GAVETA 2: TOP 10 MÚSICAS MENSAIS -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopMusicasAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaTopMusicas()">
+          <div class="gaveta-info">
+            <div class="icone-badge dourado">
+              <span class="material-icons">workspace_premium</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Top Músicas Mensais</h2>
+              <span class="gaveta-resumo">Ranking das 10 faixas mais ouvidas no mês</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status dourado">Top 10</span>
+            <span class="material-icons chevron-icone">{{ gavetaTopMusicasAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaTopMusicasAberta">
+          <app-top-musicas-mensais></app-top-musicas-mensais>
+        </div>
+      </div>
+
+    </div>
   </div>
 
 </main>
+

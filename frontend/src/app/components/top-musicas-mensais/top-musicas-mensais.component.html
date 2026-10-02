@@ -1,0 +1,101 @@
+<div class="top-musicas-wrapper">
+  
+  <!-- BARRA DE CONTROLE E MÉTRICAS (ESTILO APPLE / GLASS) -->
+  <div class="barra-controle">
+    <div class="metricas-chips">
+      <div class="chip-metrica dourado">
+        <span class="material-icons">emoji_events</span>
+        <span>Top 10 Faixas</span>
+      </div>
+      
+      <div class="chip-metrica azul" *ngIf="!carregando && topMusicas.length > 0">
+        <span class="material-icons">equalizer</span>
+        <span>{{ totalPlaysMes }} reproduções</span>
+      </div>
+
+      <div class="chip-metrica" [ngClass]="isMesAtual ? 'verde' : 'cinza'" *ngIf="!carregando">
+        <span class="ponto-status" [ngClass]="{'pulsando': isMesAtual}"></span>
+        <span>{{ isMesAtual ? 'Tempo Real' : 'Consolidado' }}</span>
+      </div>
+    </div>
+
+    <!-- SELETOR GLASSMORPHIC CUSTOMIZADO DE MÊS -->
+    <div class="seletor-mes-custom" *ngIf="mesesDisponiveis.length > 0">
+      <button 
+        type="button" 
+        class="btn-trigger-glass" 
+        [class.ativo]="dropdownAberto" 
+        (click)="toggleDropdown($event)">
+        <span class="material-icons icone-calendario">calendar_today</span>
+        <span class="label-mes-selecionado">{{ getLabelMesSelecionado() }}</span>
+        <span class="material-icons icone-seta" [class.rotacionado]="dropdownAberto">expand_more</span>
+      </button>
+
+      <!-- MENU SUSPENSO PREMIUM GLASS -->
+      <div class="menu-dropdown-glass" *ngIf="dropdownAberto">
+        <div 
+          class="item-opcao-mes" 
+          *ngFor="let mes of mesesDisponiveis" 
+          [class.selecionado]="mes.codigo === mesSelecionado"
+          (click)="selecionarMes(mes.codigo, $event)">
+          <span class="texto-opcao">{{ mes.label }}</span>
+          <span class="material-icons icone-check" *ngIf="mes.codigo === mesSelecionado">check</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADO DE CARREGANDO -->
+  <div class="estado-carregando" *ngIf="carregando">
+    <div class="spinner-futurista">
+      <div class="anel-externo"></div>
+      <div class="anel-interno"></div>
+    </div>
+    <p class="texto-loading">Calculando ranking musical...</p>
+  </div>
+
+  <!-- ESTADO DE ERRO -->
+  <div class="estado-erro" *ngIf="!carregando && erro">
+    <span class="material-icons">error_outline</span>
+    <p>{{ erro }}</p>
+  </div>
+
+  <!-- ESTADO VAZIO -->
+  <div class="estado-vazio" *ngIf="!carregando && !erro && topMusicas.length === 0">
+    <span class="material-icons">graphic_eq</span>
+    <p>Nenhuma reprodução registrada para o período selecionado.</p>
+  </div>
+
+  <!-- LISTA UNIFICADA VERTICAL DE RANKING (1 AO 10 IGUAIS E UNIFORMES) -->
+  <div class="lista-ranking-vertical" *ngIf="!carregando && !erro && topMusicas.length > 0">
+    <div class="tile-faixa-unificada" *ngFor="let faixa of topMusicas">
+      
+      <!-- COLUNA RANK NÚMERO (PADRONIZADO DEDICADO DO 01 AO 10) -->
+      <div class="coluna-rank">
+        <span class="rank-index">{{ formatarRank(faixa.rank) }}</span>
+      </div>
+
+      <!-- COLUNA THUMB ÁLBUM -->
+      <div class="coluna-thumb">
+        <img [src]="faixa.capa_url || 'assets/placeholder-album.png'" [alt]="faixa.nome" class="thumb-img" />
+      </div>
+
+      <!-- COLUNA TÍTULO E ARTISTA -->
+      <div class="coluna-meta">
+        <h4 class="faixa-nome-tile" [title]="faixa.nome">{{ faixa.nome }}</h4>
+        <p class="faixa-artista-tile" [title]="faixa.artista">{{ faixa.artista }}</p>
+      </div>
+
+      <!-- COLUNA STATS (PLAYS & DURAÇÃO) -->
+      <div class="coluna-stats">
+        <span class="stat-plays-pill">
+          <span class="material-icons">play_circle_filled</span>
+          {{ faixa.total_plays }} {{ faixa.total_plays === 1 ? 'play' : 'plays' }}
+        </span>
+        <span class="stat-duracao">{{ formatarTempo(faixa.duracaoMs) }}</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
