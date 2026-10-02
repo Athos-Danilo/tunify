@@ -437,6 +437,111 @@ async def robo_semeador_letras():
 
 
 
+# 🚨 [NOVO] Robô 5: O Faxineiro de Álbuns (Manutenção Segura do Spotify)
+# 1) Roda diariamente às 06:00 da manhã.
+# 2) Seleciona até 50 músicas aleatórias que não possuem álbum no banco.
+# 3) Processa em mini-lotes de 5 músicas com pausa de 1 min e 30s (90s) entre cada lote.
+# 4) Possui proteção total contra Rate Limits e erros de conexão.
+# -------------------------------------------------------------------------------------- #
+async def robo_faxineiro_albuns():
+    logger.info("🧹 [FAXINEIRO ÁLBUNS] Iniciando manutenção de álbuns pendentes...")
+    db = SessionLocal()
+    spotify = SpotifyService()
+
+    try:
+        # Busca um usuário ativo com refresh_token para autenticação no Spotify
+        user = db.query(User).filter(User.refresh_token.isnot(None)).first()
+        if not user:
+            logger.warning("⚠️ [FAXINEIRO ÁLBUNS] Nenhum usuário com token ativo encontrado.")
+            return
+
+        # Seleciona até 50 faixas aleatórias onde album_name é nulo
+        faixas_pendentes = db.query(TrackCache).filter(
+            TrackCache.album_name.is_(None)
+        ).order_by(func.random()).limit(50).all()
+
+        if not faixas_pendentes:
+            logger.info("✅ [FAXINEIRO ÁLBUNS] Nenhuma música pendente de álbum no banco.")
+            return
+
+        logger.info(f"🔄 [FAXINEIRO ÁLBUNS] Encontradas {len(faixas_pendentes)} músicas pendentes. Iniciando fila em lotes de 5...")
+
+        # Garante token válido do usuário
+        access_token = user.access_token
+        try:
+            novos_tokens = await spotify.atualizar_token(
+                user.refresh_token,
+                settings.SPOTIFY_CLIENT_ID,
+                settings.SPOTIFY_CLIENT_SECRET
+            )
+            access_token = novos_tokens['access_token']
+            user.access_token = access_token
+            if 'refresh_token' in novos_tokens:
+                user.refresh_token = novos_tokens['refresh_token']
+            db.commit()
+        except Exception as t_err:
+            logger.warning(f"⚠️ [FAXINEIRO ÁLBUNS] Não foi possível renovar token do usuário: {t_err}")
+
+        # Quebra as faixas em mini-lotes de 5
+        tamanho_lote = 5
+        lotes = [faixas_pendentes[i:i + tamanho_lote] for i in range(0, len(faixas_pendentes), tamanho_lote)]
+
+        for index_lote, lote in enumerate(lotes, start=1):
+            ids_lote = [f.spotify_id for f in lote]
+            logger.info(f"📦 [FAXINEIRO ÁLBUNS] Processando lote {index_lote}/{len(lotes)} ({len(ids_lote)} faixas)...")
+
+            try:
+                dados_spotify = await spotify.get_tracks(access_token, ids_lote)
+                tracks_retornadas = dados_spotify.get("tracks", [])
+
+                mapa_albuns = {}
+                for t in tracks_retornadas:
+                    if t and t.get("id") and t.get("album"):
+                        mapa_albuns[t["id"]] = t["album"].get("name")
+
+                # Atualiza cada faixa no banco
+                atualizadas_lote = 0
+                for f in lote:
+                    if f.spotify_id in mapa_albuns and mapa_albuns[f.spotify_id]:
+                        f.album_name = mapa_albuns[f.spotify_id]
+                        atualizadas_lote += 1
+
+                db.commit()
+                logger.info(f"✨ [FAXINEIRO ÁLBUNS] Lote {index_lote} concluído (+{atualizadas_lote} álbuns salvos).")
+
+            except ValueError as ve:
+                if str(ve) == "TOKEN_EXPIRADO":
+                    logger.warning("⚠️ [FAXINEIRO ÁLBUNS] Token expirado durante lote. Tentando renovar...")
+                    try:
+                        novos_tokens = await spotify.atualizar_token(
+                            user.refresh_token,
+                            settings.SPOTIFY_CLIENT_ID,
+                            settings.SPOTIFY_CLIENT_SECRET
+                        )
+                        access_token = novos_tokens['access_token']
+                        user.access_token = access_token
+                        db.commit()
+                    except Exception:
+                        pass
+                db.rollback()
+            except Exception as batch_err:
+                logger.error(f"❌ [FAXINEIRO ÁLBUNS] Erro ao processar lote {index_lote}: {batch_err}")
+                db.rollback()
+
+            # Se ainda houver mais lotes para processar, aguarda 1min 30s (90 segundos)
+            if index_lote < len(lotes):
+                logger.info("⏳ [FAXINEIRO ÁLBUNS] Aguardando 1min 30s de intervalo de segurança...")
+                await asyncio.sleep(90)
+
+        logger.info("🎉 [FAXINEIRO ÁLBUNS] Manutenção diária de álbuns concluída com sucesso!")
+
+    except Exception as e:
+        logger.error(f"❌ [FAXINEIRO ÁLBUNS] Erro crítico na faxina de álbuns: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 # ======> Função de Ignição
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
@@ -476,5 +581,14 @@ def iniciar_robos():
         replace_existing=True
     )
 
+    # 💿 Robô 5: Todo dia às 6 da manhã (Faxineiro de Álbuns)
+    scheduler.add_job(
+        robo_faxineiro_albuns,
+        trigger=CronTrigger(hour=6, minute=0),
+        id="faxineiro_albuns",
+        name="Atualiza nomes de álbuns pendentes no cache",
+        replace_existing=True
+    )
+
     scheduler.start()
-    logger.info("Central de Robôs do Tunify iniciada com Integração Genius e Letras! 🚀")
+    logger.info("Central de Robôs do Tunify iniciada com Integração Genius, Letras e Faxineiro de Álbuns! 🚀")

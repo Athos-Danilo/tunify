@@ -88,6 +88,30 @@ class SpotifyService:
             # Devolve o JSON completo (que contém uma chave "artists" com a lista)
             return response.json()
 
+    # ======> Rota: Buscar Múltiplas Músicas (Lote/Batch)
+    # Permite buscar até 50 músicas por vez para recuperar metadados como nome do álbum.
+    # -------------------------------------------------------------------------------------- #
+    async def get_tracks(self, access_token: str, track_ids: List[str]) -> Dict[str, Any]:
+        ids_string = ",".join(track_ids)
+        url = f"{self.base_url}/tracks?ids={ids_string}"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Tunify/1.0 (Windows NT 10.0; Win64; x64)" 
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            
+            if response.status_code == 401:
+                raise ValueError("TOKEN_EXPIRADO")
+                
+            if response.status_code == 429:
+                raise Exception("RATE_LIMIT_ATINGIDO")
+
+            response.raise_for_status()
+            return response.json()
+
     # ======> Rota: Renovar o Crachá (Refresh Token)
     # 1) O Token do Spotify morre em 1 hora.
     # 2) Essa função usa o refresh_token (que não morre) para pegar um novo access_token.
