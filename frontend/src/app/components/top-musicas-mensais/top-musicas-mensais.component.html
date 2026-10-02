@@ -86,17 +86,6 @@
         <p class="faixa-artista-tile" [title]="faixa.artista">{{ faixa.artista }}</p>
       </div>
 
-      <!-- COLUNA TENDÊNCIA -->
-      <div class="coluna-tendencia">
-        <div class="badge-tendencia-glass" [ngClass]="faixa.tendencia" [title]="'Tendência: ' + faixa.tendencia">
-          <span class="material-icons" *ngIf="faixa.tendencia === 'sobe'">north</span>
-          <span class="material-icons" *ngIf="faixa.tendencia === 'desce'">south</span>
-          <span class="material-icons" *ngIf="faixa.tendencia === 'estavel'">remove</span>
-          <span class="material-icons" *ngIf="faixa.tendencia === 'nova'">auto_awesome</span>
-          <span class="val-tendencia" *ngIf="faixa.valorTendencia > 0">{{ faixa.valorTendencia }}</span>
-        </div>
-      </div>
-
       <!-- COLUNA STATS (PLAYS & DURAÇÃO) -->
       <div class="coluna-stats">
         <span class="stat-plays-pill">
