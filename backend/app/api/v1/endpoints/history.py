@@ -50,7 +50,7 @@ async def get_recent_history(email: str, db: Session = Depends(get_db)):
                     "nome": track.name,
                     "artistas": track.artist_name,
                     "imagem": track.album_cover_url,
-                    "album": "-", # Poderíamos salvar o nome do álbum no cache no futuro
+                    "album": track.album_name or "-",
                     "generos": ", ".join(track.genres) if track.genres else "-",
                     "tocadaEm": record.played_at.isoformat(),
                     "duracaoMs": track.duration_ms,
@@ -116,11 +116,13 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                     images = track_data.get("album", {}).get("images", [])
                     img_url = images[0].get("url") if images else None
 
+                    album_name_val = track_data.get("album", {}).get("name")
                     new_track = TrackCache(
                         spotify_id=spotify_id,
                         name=track_data.get("name"),
                         artist_name=artists_str,
                         album_cover_url=img_url,
+                        album_name=album_name_val,
                         duration_ms=track_data.get("duration_ms", 0),
                         popularity=track_data.get("popularity", 0)
                     )

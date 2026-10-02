@@ -27,6 +27,9 @@ class TrackCache(Base):
     # Salvamos o link da imagem (geralmente uma URL que começa com 'i.scdn.co')
     album_cover_url = Column(String, nullable=True)
 
+    # 4b. Nome do Álbum
+    album_name = Column(String, nullable=True)
+
     # 5. Duração da Música
     # Salva o tempo total da música em milissegundos para uso no Dashboard.
     duration_ms = Column(Integer, nullable=False, default=0)
