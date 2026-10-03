@@ -166,11 +166,13 @@ async def robo_rastreador_hourly():
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
                         capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
+                        nome_do_album = track_data['album']['name'] if 'album' in track_data and 'name' in track_data['album'] else None
                         
                         novo_cache = TrackCache(
                             spotify_id=track_id,
                             name=track_data['name'],
                             artist_name=nomes_artistas,
+                            album_name=nome_do_album,
                             album_cover_url=capa_url,
                             duration_ms=track_data.get('duration_ms', 0)
                         )
