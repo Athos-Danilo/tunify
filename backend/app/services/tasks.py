@@ -437,6 +437,88 @@ async def robo_semeador_letras():
 
 
 
+# ======> Robô 5: O Restaurador de Álbuns (Trabalho Formiguinha)
+# 1) Roda diariamente às 06:00 da manhã.
+# 2) Pega 50 músicas sem álbum do banco.
+# 3) Processa em blocos de 10 com pausas de 70 segundos para evitar Rate Limit.
+# -------------------------------------------------------------------------------------- #
+async def robo_preenchedor_albuns():
+    logger.info("💿 [RESTAURADOR] Acordando para preencher álbuns antigos...")
+    db = SessionLocal()
+    spotify = SpotifyService()
+    
+    try:
+        # Pega as 50 primeiras músicas sem álbum
+        faixas_sem_album = db.query(TrackCache).filter(TrackCache.album_name == None).limit(50).all()
+        if not faixas_sem_album:
+            logger.info("✅ [RESTAURADOR] Trabalho concluído! Todas as músicas já possuem álbum.")
+            return
+            
+        # Precisamos de um crachá emprestado para bater na porta do Spotify.
+        # Vamos pegar o primeiro usuário do banco que tem um refresh token válido.
+        user = db.query(User).filter(User.refresh_token.isnot(None)).first()
+        if not user:
+            logger.error("❌ [RESTAURADOR] Nenhum usuário com token disponível para acessar o Spotify.")
+            return
+            
+        logger.info(f"🔄 [RESTAURADOR] Encontradas {len(faixas_sem_album)} faixas. Processando de 10 em 10 com pausas de 70s.")
+        
+        # Divide a lista de 50 em blocos de 10
+        tamanho_bloco = 10
+        blocos = [faixas_sem_album[i:i + tamanho_bloco] for i in range(0, len(faixas_sem_album), tamanho_bloco)]
+        
+        for index, bloco in enumerate(blocos):
+            track_ids = [f.spotify_id for f in bloco]
+            
+            # Tentativas com renovação de token se o crachá estiver expirado
+            for tentativa in range(2):
+                try:
+                    # Envia os 10 IDs de uma vez só!
+                    dados = await spotify.get_tracks_batch(user.access_token, track_ids)
+                    tracks_retorno = dados.get('tracks', [])
+                    
+                    # Atualiza os 10 registros no banco
+                    for track_data in tracks_retorno:
+                        if track_data:
+                            track_id = track_data['id']
+                            nome_do_album = track_data['album']['name'] if 'album' in track_data else None
+                            
+                            if nome_do_album:
+                                # Aqui não fazemos commit individual, deixamos para comitar o bloco todo!
+                                db.query(TrackCache).filter(TrackCache.spotify_id == track_id).update({"album_name": nome_do_album})
+                    
+                    db.commit()
+                    logger.info(f"✅ [RESTAURADOR] Bloco {index+1}/{len(blocos)} concluído com sucesso.")
+                    break # Sai do loop de tentativa, já que deu certo!
+                    
+                except ValueError as e:
+                    if str(e) == "TOKEN_EXPIRADO" and tentativa == 0:
+                        logger.warning("⚠️ [RESTAURADOR] O crachá expirou! Renovando token...")
+                        novos_tokens = await spotify.atualizar_token(
+                            user.refresh_token, 
+                            settings.SPOTIFY_CLIENT_ID, 
+                            settings.SPOTIFY_CLIENT_SECRET
+                        )
+                        user.access_token = novos_tokens['access_token']
+                        if 'refresh_token' in novos_tokens:
+                            user.refresh_token = novos_tokens['refresh_token']
+                        db.commit()
+                    else:
+                        raise e
+                        
+            # Se não for o último bloco da fila, tira a soneca de 70 segundos!
+            if index < len(blocos) - 1:
+                logger.info("⏳ [RESTAURADOR] Tirando uma soneca de 70 segundos para despistar o Spotify...")
+                await asyncio.sleep(70)
+                
+    except Exception as e:
+        logger.error(f"❌ [RESTAURADOR] Erro durante a operação: {e}")
+        db.rollback()
+    finally:
+        db.close()
+        logger.info("💿 [RESTAURADOR] Turno encerrado.")
+
+
 # ======> Função de Ignição
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
@@ -473,6 +555,15 @@ def iniciar_robos():
         trigger=CronTrigger(hour=5, minute=0),
         id="semeador_letras",
         name="Alimenta a fila do MongoDB para o microserviço Go",
+        replace_existing=True
+    )
+
+    # 💿 Robô 5: Todo dia às 6 da manhã (Restaurador de Álbuns)
+    scheduler.add_job(
+        robo_preenchedor_albuns,
+        trigger=CronTrigger(hour=6, minute=0),
+        id="restaurador_albuns",
+        name="Atualiza retroativamente os álbuns no banco",
         replace_existing=True
     )
 
