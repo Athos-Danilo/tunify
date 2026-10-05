@@ -50,7 +50,7 @@ async def get_recent_history(email: str, db: Session = Depends(get_db)):
                     "nome": track.name,
                     "artistas": track.artist_name,
                     "imagem": track.album_cover_url,
-                    "album": "-", # Poderíamos salvar o nome do álbum no cache no futuro
+                    "album": track.album_name or "-",
                     "generos": ", ".join(track.genres) if track.genres else "-",
                     "tocadaEm": record.played_at.isoformat(),
                     "duracaoMs": track.duration_ms,
@@ -111,6 +111,8 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                 
                 # Salva no TrackCache se não existir no DB e ainda não tiver sido adicionada nesta execução
                 track_cache = db.query(TrackCache).filter(TrackCache.spotify_id == spotify_id).first()
+                album_name = track_data.get("album", {}).get("name")
+                
                 if not track_cache and spotify_id not in added_tracks_in_session:
                     artists_str = ", ".join([a.get("name") for a in track_data.get("artists", [])])
                     images = track_data.get("album", {}).get("images", [])
@@ -120,12 +122,16 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                         spotify_id=spotify_id,
                         name=track_data.get("name"),
                         artist_name=artists_str,
+                        album_name=album_name,
                         album_cover_url=img_url,
                         duration_ms=track_data.get("duration_ms", 0),
                         popularity=track_data.get("popularity", 0)
                     )
                     db.add(new_track)
                     added_tracks_in_session.add(spotify_id)
+                elif track_cache and track_cache.album_name is None and album_name:
+                    # 🌿 CRESCIMENTO ORGÂNICO no envio Delta pelo Frontend
+                    track_cache.album_name = album_name
                 
                 added_count += 1
         except Exception as e:
