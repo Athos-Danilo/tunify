@@ -163,10 +163,11 @@ async def robo_rastreador_hourly():
 
                     # Cache da Música
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
+                    nome_do_album = track_data['album']['name'] if 'album' in track_data and 'name' in track_data['album'] else None
+                    
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
                         capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
-                        nome_do_album = track_data['album']['name'] if 'album' in track_data and 'name' in track_data['album'] else None
                         
                         novo_cache = TrackCache(
                             spotify_id=track_id,
@@ -179,6 +180,11 @@ async def robo_rastreador_hourly():
                         db.add(novo_cache)
                         musicas_adicionadas_agora.add(track_id) 
                         logger.info(f"📦 [CACHE] Música catalogada: {track_data['name']}")
+                        
+                    elif musica_no_cache and musica_no_cache.album_name is None and nome_do_album:
+                        # 🌿 CRESCIMENTO ORGÂNICO: A música existe no banco antigo, mas não tinha o álbum
+                        musica_no_cache.album_name = nome_do_album
+                        logger.info(f"🌿 [CRESCIMENTO ORGÂNICO] Álbum '{nome_do_album}' preenchido para '{track_data['name']}'!")
                     
                     # Histórico
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
