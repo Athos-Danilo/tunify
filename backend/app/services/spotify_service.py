@@ -145,3 +145,23 @@ class SpotifyService:
             
             # Devolve o novo Access Token (e às vezes um novo Refresh Token)
             return response.json()
+
+    # ======> Rota: Pegar Token do Aplicativo (Client Credentials)
+    # 1) Diferente do token de usuário, este serve para acessar dados genéricos (ex: /tracks)
+    # 2) Não exige que nenhum usuário esteja logado.
+    # -------------------------------------------------------------------------------------- #
+    async def obter_token_do_aplicativo(self, client_id: str, client_secret: str) -> str:
+        url = "https://accounts.spotify.com/api/token"
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        data = {
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, data=data)
+            response.raise_for_status()
+            return response.json().get("access_token")

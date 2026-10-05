@@ -80,10 +80,13 @@
         <img [src]="faixa.capa_url || 'assets/placeholder-album.png'" [alt]="faixa.nome" class="thumb-img" />
       </div>
 
-      <!-- COLUNA TÍTULO E ARTISTA -->
+      <!-- COLUNA TÍTULO, ARTISTA E ÁLBUM -->
       <div class="coluna-meta">
         <h4 class="faixa-nome-tile" [title]="faixa.nome">{{ faixa.nome }}</h4>
         <p class="faixa-artista-tile" [title]="faixa.artista">{{ faixa.artista }}</p>
+        <p class="faixa-album-tile" *ngIf="faixa.album" [title]="faixa.album">
+          <span class="material-icons icone-album">album</span> {{ faixa.album }}
+        </p>
       </div>
 
       <!-- COLUNA STATS (PLAYS & DURAÇÃO) -->

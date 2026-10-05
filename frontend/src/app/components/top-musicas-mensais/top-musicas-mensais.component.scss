@@ -485,6 +485,32 @@
         color: var(--cinza-escuro-lt, #474952);
       }
     }
+
+    .faixa-album-tile {
+      font-family: var(--fonte-principal, sans-serif);
+      font-size: 0.68rem;
+      color: var(--cinza-claro-dk, #B3B3B3);
+      margin: 2px 0 0 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      opacity: 0.85;
+
+      .icone-album {
+        font-size: 0.75rem;
+      }
+
+      @media (min-width: 600px) {
+        font-size: 0.72rem;
+      }
+
+      :host-context(.tema-claro) & {
+        color: var(--cinza-escuro-lt, #474952);
+      }
+    }
   }
 
   /* COLUNA STATS (PLAYS & DURAÇÃO) */

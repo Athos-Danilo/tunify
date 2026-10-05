@@ -222,7 +222,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).join(
             TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
         ).filter(
@@ -233,7 +234,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).order_by(
             desc('play_count')
         ).limit(10).all()
@@ -276,13 +278,14 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "nome": item.name,
                 "artista": item.artist_name,
                 "capa_url": item.album_cover_url,
+                "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
 
-        return {
+        resultado = {
             "mes_referencia": mes_solicitado,
             "is_atual": True,
             "dados": dados_formatados
@@ -296,7 +299,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).join(
             TrackCache, MonthlyTopTrack.spotify_track_id == TrackCache.spotify_id
         ).filter(
@@ -345,15 +349,18 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "nome": item.name,
                 "artista": item.artist_name,
                 "capa_url": item.album_cover_url,
+                "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
 
-        return {
+        resultado = {
             "mes_referencia": mes_solicitado,
             "is_atual": False,
             "dados": dados_formatados
         }
+
+    return resultado
 
