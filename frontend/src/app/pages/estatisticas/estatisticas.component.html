@@ -88,6 +88,29 @@
         </div>
       </div>
 
+      <!-- GAVETA 4: GRÁFICO DE MINUTOS OUVIDOS -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopMinutosAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaTopMinutos()">
+          <div class="gaveta-info">
+            <div class="icone-badge cinza">
+              <span class="material-icons">bar_chart</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Gráfico de Imersão</h2>
+              <span class="gaveta-resumo">Evolução do tempo que você passa ouvindo música</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status cinza">Gráfico</span>
+            <span class="material-icons chevron-icone">{{ gavetaTopMinutosAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaTopMinutosAberta">
+          <app-graficos-minutos-meses></app-graficos-minutos-meses>
+        </div>
+      </div>
+
     </div>
   </div>
 

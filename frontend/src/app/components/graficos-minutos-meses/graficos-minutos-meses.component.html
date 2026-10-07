@@ -1,0 +1,81 @@
+<div class="grafico-wrapper">
+  
+  <!-- CABEÇALHO DO GRÁFICO -->
+  <div class="grafico-header">
+    <div class="titulo-area">
+      <span class="material-icons icone-titulo">bar_chart</span>
+      <h3 class="titulo-texto">Tempo de Imersão</h3>
+    </div>
+    <div class="legenda-area" *ngIf="!carregando && dados.length > 0">
+      <span class="badge-maximo">Maior marca: {{ formatarTempo(maxMinutos) }}</span>
+    </div>
+  </div>
+
+  <!-- ESTADO DE CARREGANDO -->
+  <div class="estado-carregando" *ngIf="carregando">
+    <div class="spinner-futurista">
+      <div class="anel-externo"></div>
+      <div class="anel-interno"></div>
+    </div>
+    <p>Construindo gráficos temporais...</p>
+  </div>
+
+  <!-- ESTADO DE ERRO -->
+  <div class="estado-erro" *ngIf="!carregando && erro">
+    <span class="material-icons">error_outline</span>
+    <p>{{ erro }}</p>
+  </div>
+
+  <!-- ESTADO VAZIO -->
+  <div class="estado-vazio" *ngIf="!carregando && !erro && dados.length === 0">
+    <span class="material-icons">music_off</span>
+    <p>Nenhum histórico de tempo encontrado.</p>
+  </div>
+
+  <!-- ÁREA DO GRÁFICO (SCROLL HORIZONTAL SE NECESSÁRIO) -->
+  <div class="area-grafico-scroll" *ngIf="!carregando && !erro && dados.length > 0">
+    <div class="grafico-inner">
+      
+      <!-- Eixo Y (Legendas laterais e linhas de grade) -->
+      <div class="eixo-y-container">
+        <div class="linha-guia" *ngFor="let step of linhasGuia" [style.bottom.%]="step.percent">
+          <span class="label-guia">{{ formatarTempo(step.valor) }}</span>
+          <div class="linha-tracejada"></div>
+        </div>
+      </div>
+
+      <div class="container-barras">
+        
+        <!-- BARRAS -->
+        <div class="coluna-mes" *ngFor="let item of dados">
+          
+          <!-- TOOLTIP FLUTUANTE (APARECE NO HOVER) -->
+          <div class="tooltip-bar">
+            <span class="tooltip-minutos">{{ formatarTempo(item.minutos) }}</span>
+            <span class="tooltip-label" *ngIf="item.is_atual">Ao Vivo</span>
+          </div>
+
+          <!-- A BARRA EM SI -->
+          <div class="trilho-barra">
+            <div 
+              class="preenchimento-barra" 
+              [class.atual]="item.is_atual"
+              [style.height.%]="(item.minutos / maxMinutos) * 100">
+              <!-- GLOW NO TOPO DA BARRA -->
+              <div class="barra-glow"></div>
+            </div>
+          </div>
+
+          <!-- LABEL DO MÊS NO RODAPÉ -->
+          <div class="label-mes" [class.destaque]="item.is_atual">
+            {{ item.label }}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>

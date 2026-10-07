@@ -517,3 +517,66 @@ async def get_monthly_top_artists(email: str, mes: str = None, db: Session = Dep
         }
 
     return resultado
+
+@router.get("/minutes-history/{email}")
+async def get_minutes_history(email: str, db: Session = Depends(get_db)):
+    """
+    Retorna o histórico de minutos ouvidos por mês.
+    Combina os meses consolidados na tabela MinutesListened com o cálculo ao vivo do mês atual.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    # 1. Busca histórico consolidado (meses passados)
+    historico_consolidado = db.query(MinutesListened).filter(
+        MinutesListened.user_id == user.id
+    ).all()
+
+    mapa_minutos = { item.mes_referencia: item.total_minutes for item in historico_consolidado }
+
+    # 2. Calcula mês atual ao vivo
+    primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
+    minutos_mes_atual = db.query(
+        func.sum(TrackCache.duration_ms)
+    ).join(
+        MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+    ).filter(
+        MonthlyHistory.user_id == user.id,
+        MonthlyHistory.played_at >= corte_mes_utc
+    ).scalar() or 0
+
+    mapa_minutos[mes_atual_codigo] = int(minutos_mes_atual / 60000)
+
+    # 3. Formatar e ordenar (do mais recente para o mais antigo)
+    NOMES_MESES = {
+        1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr",
+        5: "Mai", 6: "Jun", 7: "Jul", 8: "Ago",
+        9: "Set", 10: "Out", 11: "Nov", 12: "Dez"
+    }
+
+    meses_ordenados = sorted(mapa_minutos.keys(), reverse=True)
+    
+    resultado = []
+    for cod in meses_ordenados:
+        try:
+            ano, mes = map(int, cod.split("-"))
+            nome_mes = NOMES_MESES.get(mes, f"Mês {mes}")
+            label = f"{nome_mes} '{str(ano)[-2:]}" # Ex: Jan '26
+        except:
+            label = cod
+            
+        resultado.append({
+            "codigo": cod,
+            "label": label,
+            "minutos": mapa_minutos[cod],
+            "is_atual": (cod == mes_atual_codigo)
+        })
+
+    return resultado

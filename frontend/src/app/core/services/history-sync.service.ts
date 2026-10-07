@@ -122,4 +122,11 @@ export class HistorySyncService {
     const url = mes ? `${this.backendUrl}/top-artists/${email}?mes=${mes}` : `${this.backendUrl}/top-artists/${email}`;
     return this.http.get<any>(url);
   }
+
+  /**
+   * Busca o histórico de minutos ouvidos por mês
+   */
+  getMinutesHistory(email: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/minutes-history/${email}`);
+  }
 }
