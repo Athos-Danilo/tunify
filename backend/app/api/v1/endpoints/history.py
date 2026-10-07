@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist
 from app.models.track import TrackCache
+from app.models.artist import ArtistCache
 
 router = APIRouter()
 
@@ -370,3 +371,149 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
 
     return resultado
 
+@router.get("/top-artists/{email}")
+async def get_monthly_top_artists(email: str, mes: str = None, db: Session = Depends(get_db)):
+    """
+    Retorna o Top 15 de artistas mais ouvidos de um mês específico.
+    Se 'mes' for omitido ou for o mês atual, calcula em tempo real com tendência.
+    Se 'mes' for um mês passado, busca da tabela MonthlyTopArtist.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    mes_solicitado = mes if mes else mes_atual_codigo
+    is_mes_atual = (mes_solicitado == mes_atual_codigo)
+
+    if is_mes_atual:
+        # Mês Atual em Tempo Real
+        primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
+        top_artists_raw = db.query(
+            TrackCache.artist_name,
+            func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
+            func.max(TrackCache.album_cover_url).label('capa_album_exemplo')
+        ).join(
+            MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyHistory.user_id == user.id,
+            MonthlyHistory.played_at >= corte_mes_utc
+        ).group_by(
+            TrackCache.artist_name
+        ).order_by(
+            desc('tempo_total_ms')
+        ).limit(15).all()
+
+        ano, m = map(int, mes_atual_codigo.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for artista in top_anterior:
+            mapa_tendencias[artista.artist_name] = artista.rank_position
+
+        dados_formatados = []
+        for rank, item in enumerate(top_artists_raw, start=1):
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.artist_name in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.artist_name]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+            
+            # Buscar foto do artista real, se houver
+            foto_oficial = db.query(ArtistCache.profile_image_url).filter(ArtistCache.name == item.artist_name).first()
+            img_url = foto_oficial[0] if foto_oficial and foto_oficial[0] else item.capa_album_exemplo
+
+            dados_formatados.append({
+                "rank": rank,
+                "nome": item.artist_name,
+                "imagem": img_url,
+                "minutos": int(item.tempo_total_ms / 60000),
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        resultado = {
+            "mes_referencia": mes_solicitado,
+            "is_atual": True,
+            "dados": dados_formatados
+        }
+    else:
+        # Mês Passado Consolidado
+        top_consolidado = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_solicitado
+        ).order_by(
+            MonthlyTopArtist.rank_position
+        ).all()
+
+        ano, m = map(int, mes_solicitado.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for artista in top_anterior:
+            mapa_tendencias[artista.artist_name] = artista.rank_position
+
+        dados_formatados = []
+        for item in top_consolidado:
+            rank = item.rank_position
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.artist_name in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.artist_name]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+
+            dados_formatados.append({
+                "rank": rank,
+                "nome": item.artist_name,
+                "imagem": item.artist_image_url,
+                "minutos": item.minutes_listened,
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        resultado = {
+            "mes_referencia": mes_solicitado,
+            "is_atual": False,
+            "dados": dados_formatados
+        }
+
+    return resultado

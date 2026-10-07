@@ -65,6 +65,29 @@
         </div>
       </div>
 
+      <!-- GAVETA 3: TOP 15 ARTISTAS MENSAIS -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopArtistasAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaTopArtistas()">
+          <div class="gaveta-info">
+            <div class="icone-badge verde">
+              <span class="material-icons">star</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Top Artistas Mensais</h2>
+              <span class="gaveta-resumo">Ranking dos 15 artistas que você mais escutou</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status verde">Top 15</span>
+            <span class="material-icons chevron-icone">{{ gavetaTopArtistasAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaTopArtistasAberta">
+          <app-top-artistas-mensais></app-top-artistas-mensais>
+        </div>
+      </div>
+
     </div>
   </div>
 
