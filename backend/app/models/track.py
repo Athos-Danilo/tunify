@@ -23,6 +23,9 @@ class TrackCache(Base):
     # 3. Nome do Artista (ou artistas, separados por vírgula)
     artist_name = Column(String, nullable=False)
 
+    # 3.5 Nome do Álbum
+    album_name = Column(String, nullable=True)
+
     # 4. URL da Capa do Álbum
     # Salvamos o link da imagem (geralmente uma URL que começa com 'i.scdn.co')
     album_cover_url = Column(String, nullable=True)

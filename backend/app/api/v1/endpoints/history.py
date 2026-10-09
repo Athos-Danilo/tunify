@@ -6,8 +6,9 @@ import dateutil.parser
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist
+from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist, DailyMinutesListened
 from app.models.track import TrackCache
+from app.models.artist import ArtistCache
 
 router = APIRouter()
 
@@ -50,7 +51,7 @@ async def get_recent_history(email: str, db: Session = Depends(get_db)):
                     "nome": track.name,
                     "artistas": track.artist_name,
                     "imagem": track.album_cover_url,
-                    "album": "-", # Poderíamos salvar o nome do álbum no cache no futuro
+                    "album": track.album_name or "-",
                     "generos": ", ".join(track.genres) if track.genres else "-",
                     "tocadaEm": record.played_at.isoformat(),
                     "duracaoMs": track.duration_ms,
@@ -108,9 +109,30 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                     played_at=played_at_dt
                 )
                 db.add(new_history)
+
+                # Atualiza o cache diário de minutos
+                dia_br = (played_at_dt - timedelta(hours=3)).strftime("%Y-%m-%d")
+                duracao_ms = track_data.get("duration_ms", 0)
+                
+                registro_diario = db.query(DailyMinutesListened).filter(
+                    DailyMinutesListened.user_id == user.id,
+                    DailyMinutesListened.date_referencia == dia_br
+                ).first()
+                
+                if registro_diario:
+                    registro_diario.total_ms += duracao_ms
+                else:
+                    novo_diario = DailyMinutesListened(
+                        user_id=user.id,
+                        date_referencia=dia_br,
+                        total_ms=duracao_ms
+                    )
+                    db.add(novo_diario)
                 
                 # Salva no TrackCache se não existir no DB e ainda não tiver sido adicionada nesta execução
                 track_cache = db.query(TrackCache).filter(TrackCache.spotify_id == spotify_id).first()
+                album_name = track_data.get("album", {}).get("name")
+                
                 if not track_cache and spotify_id not in added_tracks_in_session:
                     artists_str = ", ".join([a.get("name") for a in track_data.get("artists", [])])
                     images = track_data.get("album", {}).get("images", [])
@@ -120,12 +142,16 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                         spotify_id=spotify_id,
                         name=track_data.get("name"),
                         artist_name=artists_str,
+                        album_name=album_name,
                         album_cover_url=img_url,
                         duration_ms=track_data.get("duration_ms", 0),
                         popularity=track_data.get("popularity", 0)
                     )
                     db.add(new_track)
                     added_tracks_in_session.add(spotify_id)
+                elif track_cache and track_cache.album_name is None and album_name:
+                    # 🌿 CRESCIMENTO ORGÂNICO no envio Delta pelo Frontend
+                    track_cache.album_name = album_name
                 
                 added_count += 1
         except Exception as e:
@@ -222,7 +248,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).join(
             TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
         ).filter(
@@ -233,7 +260,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).order_by(
             desc('play_count')
         ).limit(10).all()
@@ -276,13 +304,14 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "nome": item.name,
                 "artista": item.artist_name,
                 "capa_url": item.album_cover_url,
+                "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
 
-        return {
+        resultado = {
             "mes_referencia": mes_solicitado,
             "is_atual": True,
             "dados": dados_formatados
@@ -296,7 +325,8 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
-            TrackCache.duration_ms
+            TrackCache.duration_ms,
+            TrackCache.album_name
         ).join(
             TrackCache, MonthlyTopTrack.spotify_track_id == TrackCache.spotify_id
         ).filter(
@@ -345,15 +375,316 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "nome": item.name,
                 "artista": item.artist_name,
                 "capa_url": item.album_cover_url,
+                "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
 
-        return {
+        resultado = {
             "mes_referencia": mes_solicitado,
             "is_atual": False,
             "dados": dados_formatados
         }
 
+    return resultado
+
+@router.get("/top-artists/{email}")
+async def get_monthly_top_artists(email: str, mes: str = None, db: Session = Depends(get_db)):
+    """
+    Retorna o Top 15 de artistas mais ouvidos de um mês específico.
+    Se 'mes' for omitido ou for o mês atual, calcula em tempo real com tendência.
+    Se 'mes' for um mês passado, busca da tabela MonthlyTopArtist.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    mes_solicitado = mes if mes else mes_atual_codigo
+    is_mes_atual = (mes_solicitado == mes_atual_codigo)
+
+    if is_mes_atual:
+        # Mês Atual em Tempo Real
+        primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
+        top_artists_raw = db.query(
+            TrackCache.artist_name,
+            func.sum(TrackCache.duration_ms).label('tempo_total_ms'),
+            func.max(TrackCache.album_cover_url).label('capa_album_exemplo')
+        ).join(
+            MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+        ).filter(
+            MonthlyHistory.user_id == user.id,
+            MonthlyHistory.played_at >= corte_mes_utc
+        ).group_by(
+            TrackCache.artist_name
+        ).order_by(
+            desc('tempo_total_ms')
+        ).limit(15).all()
+
+        ano, m = map(int, mes_atual_codigo.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for artista in top_anterior:
+            mapa_tendencias[artista.artist_name] = artista.rank_position
+
+        dados_formatados = []
+        for rank, item in enumerate(top_artists_raw, start=1):
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.artist_name in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.artist_name]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+            
+            # Buscar foto do artista real, se houver
+            foto_oficial = db.query(ArtistCache.profile_image_url).filter(ArtistCache.name == item.artist_name).first()
+            img_url = foto_oficial[0] if foto_oficial and foto_oficial[0] else item.capa_album_exemplo
+
+            dados_formatados.append({
+                "rank": rank,
+                "nome": item.artist_name,
+                "imagem": img_url,
+                "minutos": int(item.tempo_total_ms / 60000),
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        resultado = {
+            "mes_referencia": mes_solicitado,
+            "is_atual": True,
+            "dados": dados_formatados
+        }
+    else:
+        # Mês Passado Consolidado
+        top_consolidado = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_solicitado
+        ).order_by(
+            MonthlyTopArtist.rank_position
+        ).all()
+
+        ano, m = map(int, mes_solicitado.split("-"))
+        mes_ant_ano = ano if m > 1 else ano - 1
+        mes_ant_m = m - 1 if m > 1 else 12
+        mes_anterior_codigo = f"{mes_ant_ano}-{mes_ant_m:02d}"
+
+        mapa_tendencias = {}
+        top_anterior = db.query(MonthlyTopArtist).filter(
+            MonthlyTopArtist.user_id == user.id,
+            MonthlyTopArtist.mes_referencia == mes_anterior_codigo
+        ).all()
+
+        for artista in top_anterior:
+            mapa_tendencias[artista.artist_name] = artista.rank_position
+
+        dados_formatados = []
+        for item in top_consolidado:
+            rank = item.rank_position
+            tendencia = 'nova'
+            valor_tendencia = 0
+
+            if item.artist_name in mapa_tendencias:
+                pos_ant = mapa_tendencias[item.artist_name]
+                diff = pos_ant - rank
+                if diff > 0:
+                    tendencia = 'sobe'
+                    valor_tendencia = diff
+                elif diff < 0:
+                    tendencia = 'desce'
+                    valor_tendencia = abs(diff)
+                else:
+                    tendencia = 'estavel'
+                    valor_tendencia = 0
+
+            dados_formatados.append({
+                "rank": rank,
+                "nome": item.artist_name,
+                "imagem": item.artist_image_url,
+                "minutos": item.minutes_listened,
+                "tendencia": tendencia,
+                "valorTendencia": valor_tendencia
+            })
+
+        resultado = {
+            "mes_referencia": mes_solicitado,
+            "is_atual": False,
+            "dados": dados_formatados
+        }
+
+    return resultado
+
+@router.get("/minutes-history/{email}")
+async def get_minutes_history(email: str, db: Session = Depends(get_db)):
+    """
+    Retorna o histórico de minutos ouvidos por mês.
+    Combina os meses consolidados na tabela MinutesListened com o cálculo ao vivo do mês atual.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_utc = datetime.now(timezone.utc)
+    agora_br = agora_utc - timedelta(hours=3)
+    mes_atual_codigo = f"{agora_br.year}-{agora_br.month:02d}"
+
+    # 1. Busca histórico consolidado (meses passados)
+    historico_consolidado = db.query(MinutesListened).filter(
+        MinutesListened.user_id == user.id
+    ).all()
+
+    mapa_minutos = { item.mes_referencia: item.total_minutes for item in historico_consolidado }
+
+    # 2. Calcula mês atual ao vivo
+    primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
+
+    minutos_mes_atual = db.query(
+        func.sum(TrackCache.duration_ms)
+    ).join(
+        MonthlyHistory, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
+    ).filter(
+        MonthlyHistory.user_id == user.id,
+        MonthlyHistory.played_at >= corte_mes_utc
+    ).scalar() or 0
+
+    mapa_minutos[mes_atual_codigo] = int(minutos_mes_atual / 60000)
+
+    # 3. Formatar e ordenar (do mais recente para o mais antigo)
+    NOMES_MESES = {
+        1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr",
+        5: "Mai", 6: "Jun", 7: "Jul", 8: "Ago",
+        9: "Set", 10: "Out", 11: "Nov", 12: "Dez"
+    }
+
+    meses_ordenados = sorted(mapa_minutos.keys(), reverse=True)
+    
+    resultado = []
+    for cod in meses_ordenados:
+        try:
+            ano, mes = map(int, cod.split("-"))
+            nome_mes = NOMES_MESES.get(mes, f"Mês {mes}")
+            label = f"{nome_mes} '{str(ano)[-2:]}" # Ex: Jan '26
+        except:
+            label = cod
+            
+        resultado.append({
+            "codigo": cod,
+            "label": label,
+            "minutos": mapa_minutos[cod],
+            "is_atual": (cod == mes_atual_codigo)
+        })
+
+    return resultado
+
+@router.get("/daily-minutes/{email}")
+async def get_daily_minutes(email: str, db: Session = Depends(get_db)):
+    """
+    Retorna o histórico diário de minutos para o mês atual.
+    Injeta dias vazios (zero) caso não haja histórico no banco para construir a escadinha completa.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_br = datetime.now(timezone.utc) - timedelta(hours=3)
+    primeiro_dia_mes = agora_br.replace(day=1)
+
+    registros = db.query(DailyMinutesListened).filter(
+        DailyMinutesListened.user_id == user.id,
+        DailyMinutesListened.date_referencia >= primeiro_dia_mes.strftime("%Y-%m-%d")
+    ).all()
+
+    mapa_diario = { r.date_referencia: r.total_ms for r in registros }
+
+    resultado = []
+    dia_atual = agora_br.day
+
+    # Constrói o array do dia 1 até Hoje
+    for i in range(1, dia_atual + 1):
+        data_str = agora_br.replace(day=i).strftime("%Y-%m-%d")
+        total_ms = mapa_diario.get(data_str, 0)
+        minutos = int(total_ms / 60000)
+
+        resultado.append({
+            "data": data_str,
+            "label": f"{i:02d}/{agora_br.month:02d}",
+            "minutos": minutos,
+            "is_atual": (i == dia_atual)
+        })
+
+    return resultado
+
+# =================================================================================
+# 🚨 ROTA TEMPORÁRIA: MIGRAÇÃO RETROATIVA (REMOVER APÓS O MERGE PARA A MAIN) 🚨
+# =================================================================================
+@router.post("/retroativo-diario")
+async def processar_retroativo_diario(db: Session = Depends(get_db)):
+    """
+    Recalcula os minutos diários retroativos do mês atual.
+    Varre o MonthlyHistory desde o dia 1º, soma as durações e recria a tabela DailyMinutesListened.
+    """
+    try:
+        agora_br = datetime.now(timezone.utc) - timedelta(hours=3)
+        primeiro_dia_mes_utc = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # 1. Pega todo o histórico do mês atual
+        historicos = db.query(MonthlyHistory).filter(MonthlyHistory.played_at >= primeiro_dia_mes_utc).all()
+        
+        # 2. Busca todas as músicas em lote para não fazer mil queries no banco
+        spotify_ids = {h.spotify_track_id for h in historicos}
+        tracks = db.query(TrackCache).filter(TrackCache.spotify_id.in_(spotify_ids)).all()
+        track_map = {t.spotify_id: t.duration_ms for t in tracks}
+        
+        # 3. Agrupa por usuário e por dia (no fuso BR)
+        agrupado = {} # (user_id, "YYYY-MM-DD") -> total_ms
+        
+        for h in historicos:
+            if h.spotify_track_id in track_map:
+                dia_br = (h.played_at - timedelta(hours=3)).strftime("%Y-%m-%d")
+                chave = (h.user_id, dia_br)
+                duracao = track_map[h.spotify_track_id]
+                agrupado[chave] = agrupado.get(chave, 0) + duracao
+                
+        # 4. Limpa a tabela atual por segurança
+        db.query(DailyMinutesListened).delete()
+        
+        # 5. Insere os dados recalculados
+        for (user_id, dia_br), total_ms in agrupado.items():
+            db.add(DailyMinutesListened(
+                user_id=user_id,
+                date_referencia=dia_br,
+                total_ms=total_ms
+            ))
+            
+        db.commit()
+        return {
+            "status": "sucesso", 
+            "message": f"Migração retroativa concluída! Foram processados {len(historicos)} plays e recriados {len(agrupado)} dias únicos."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

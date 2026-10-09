@@ -42,8 +42,23 @@ async def lifespan(app: FastAPI):
     # ---- [STARTUP]: O que roda ao ligar o servidor ----
     print("> Conectando ao Banco de Dados e verificando tabelas...")
     
-    # Sincronização: O SQLAlchemy olha para todos os modelos importados e cria as tabelas se não existirem.
-    Base.metadata.create_all(bind=engine)
+    # 🚨 [SUBSTITUÍDO PELO ALEMBIC]: O SQLAlchemy puro só criava tabelas novas.
+    # Agora usamos o Alembic para aplicar as migrações (criação e alteração de colunas) automaticamente!
+    from alembic import command
+    from alembic.config import Config
+    import os
+    
+    try:
+        # Aponta para o arquivo alembic.ini do projeto
+        caminho_ini = os.path.join(os.path.dirname(os.path.abspath(__file__)), "alembic.ini")
+        alembic_cfg = Config(caminho_ini)
+        
+        # Executa o equivalente a "alembic upgrade head" no terminal
+        command.upgrade(alembic_cfg, "head")
+        print(">> Migrações aplicadas com sucesso pelo Alembic!")
+    except Exception as e:
+        print(f">> [ERRO CRÍTICO] Falha ao aplicar migrações do Alembic: {e}")
+        raise e
     
     # Inicializa o client do MongoDB
     db.client = AsyncIOMotorClient(settings.MONGO_URI)

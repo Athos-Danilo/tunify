@@ -22,7 +22,7 @@ import time
 import datetime
 from app.core.database import SessionLocal 
 from app.models.user import User
-from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, DailyMinutesListened
 from app.models.system import SystemMetadata
 from app.services.spotify_service import SpotifyService
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
@@ -163,6 +163,8 @@ async def robo_rastreador_hourly():
 
                     # Cache da Música
                     musica_no_cache = db.query(TrackCache).filter(TrackCache.spotify_id == track_id).first()
+                    nome_do_album = track_data['album']['name'] if 'album' in track_data and 'name' in track_data['album'] else None
+                    
                     if not musica_no_cache and track_id not in musicas_adicionadas_agora:
                         nomes_artistas = ", ".join([artista['name'] for artista in track_data['artists']])
                         capa_url = track_data['album']['images'][0]['url'] if track_data['album']['images'] else None
@@ -171,12 +173,18 @@ async def robo_rastreador_hourly():
                             spotify_id=track_id,
                             name=track_data['name'],
                             artist_name=nomes_artistas,
+                            album_name=nome_do_album,
                             album_cover_url=capa_url,
                             duration_ms=track_data.get('duration_ms', 0)
                         )
                         db.add(novo_cache)
                         musicas_adicionadas_agora.add(track_id) 
                         logger.info(f"📦 [CACHE] Música catalogada: {track_data['name']}")
+                        
+                    elif musica_no_cache and musica_no_cache.album_name is None and nome_do_album:
+                        # 🌿 CRESCIMENTO ORGÂNICO: A música existe no banco antigo, mas não tinha o álbum
+                        musica_no_cache.album_name = nome_do_album
+                        logger.info(f"🌿 [CRESCIMENTO ORGÂNICO] Álbum '{nome_do_album}' preenchido para '{track_data['name']}'!")
                     
                     # Histórico
                     played_at = datetime.datetime.fromisoformat(item['played_at'].replace('Z', '+00:00'))
@@ -186,6 +194,25 @@ async def robo_rastreador_hourly():
                         played_at=played_at
                     )
                     db.add(novo_historico)
+
+                    # Atualiza o cache diário de minutos
+                    dia_br = (played_at - datetime.timedelta(hours=3)).strftime("%Y-%m-%d")
+                    duracao_ms = track_data.get("duration_ms", 0)
+                    
+                    registro_diario = db.query(DailyMinutesListened).filter(
+                        DailyMinutesListened.user_id == user.id,
+                        DailyMinutesListened.date_referencia == dia_br
+                    ).first()
+                    
+                    if registro_diario:
+                        registro_diario.total_ms += duracao_ms
+                    else:
+                        novo_diario = DailyMinutesListened(
+                            user_id=user.id,
+                            date_referencia=dia_br,
+                            total_ms=duracao_ms
+                        )
+                        db.add(novo_diario)
 
                 db.commit()
 
@@ -310,6 +337,11 @@ async def robo_agregador_mensal():
                 ))
 
         db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual_utc).delete()
+        
+        # Limpa cache diário antigo (do mês passado)
+        dia_limite_str = primeiro_dia_atual_utc.strftime("%Y-%m-%d")
+        db.query(DailyMinutesListened).filter(DailyMinutesListened.date_referencia < dia_limite_str).delete()
+        
         db.commit()
         logger.info("✅ [AGREGADOR] Faxina concluída!")
 

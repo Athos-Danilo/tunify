@@ -610,3 +610,8 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+.thumb-redonda {
+  border-radius: 50% !important;
+}

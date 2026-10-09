@@ -7,11 +7,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { SpotifyService } from '../../core/services/spotify.service';
 import { ReproducoesRecentes } from '../../components/reproducoes-recentes/reproducoes-recentes';
 import { TopMusicasMensaisComponent } from '../../components/top-musicas-mensais/top-musicas-mensais.component';
+import { TopArtistasMensaisComponent } from '../../components/top-artistas-mensais/top-artistas-mensais.component';
+import { GraficosMinutosMesesComponent } from '../../components/graficos-minutos-meses/graficos-minutos-meses.component';
+import { GraficoMinutosDiariosComponent } from '../../components/grafico-minutos-diarios/grafico-minutos-diarios.component';
 
 @Component({
   selector: 'app-estatisticas',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes, TopMusicasMensaisComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes, TopMusicasMensaisComponent, TopArtistasMensaisComponent, GraficosMinutosMesesComponent, GraficoMinutosDiariosComponent],
   templateUrl: './estatisticas.component.html',
   styleUrls: ['./estatisticas.component.scss']
 })
@@ -23,6 +26,9 @@ export class EstatisticasComponent implements OnInit {
   // Controle do estado das Gavetas (Accordions) - Inicia todas FECHADAS
   gavetaHistoricoAberta: boolean = false;
   gavetaTopMusicasAberta: boolean = false;
+  gavetaTopArtistasAberta: boolean = false;
+  gavetaTopMinutosAberta: boolean = false;
+  gavetaGraficoDiarioAberta: boolean = false;
 
   private authService = inject(AuthService);
   private spotifyService = inject(SpotifyService);
@@ -103,6 +109,18 @@ export class EstatisticasComponent implements OnInit {
 
   alternarGavetaTopMusicas() {
     this.gavetaTopMusicasAberta = !this.gavetaTopMusicasAberta;
+  }
+
+  alternarGavetaTopArtistas() {
+    this.gavetaTopArtistasAberta = !this.gavetaTopArtistasAberta;
+  }
+
+  alternarGavetaTopMinutos() {
+    this.gavetaTopMinutosAberta = !this.gavetaTopMinutosAberta;
+  }
+
+  alternarGavetaGraficoDiario() {
+    this.gavetaGraficoDiarioAberta = !this.gavetaGraficoDiarioAberta;
   }
 
   fazerLogout() {

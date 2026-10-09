@@ -1,0 +1,71 @@
+<div class="grafico-wrapper">
+  
+  <div class="grafico-header">
+    <div class="titulo-area">
+      <span class="material-icons icone-titulo">stacked_line_chart</span>
+      <h3 class="titulo-texto">Seu Mês Atual (Progresso Diário)</h3>
+    </div>
+    <div class="legenda-area" *ngIf="!carregando && dados.length > 0">
+      <span class="badge-maximo">Maior dia: {{ formatarTempo(maxMinutos) }}</span>
+    </div>
+  </div>
+
+  <div class="estado-carregando" *ngIf="carregando">
+    <div class="spinner-futurista">
+      <div class="anel-externo"></div>
+      <div class="anel-interno"></div>
+    </div>
+    <p>Sincronizando dias do mês...</p>
+  </div>
+
+  <div class="estado-erro" *ngIf="!carregando && erro">
+    <span class="material-icons">error_outline</span>
+    <p>{{ erro }}</p>
+  </div>
+
+  <div class="estado-vazio" *ngIf="!carregando && !erro && dados.length === 0">
+    <span class="material-icons">calendar_today</span>
+    <p>Nenhum dado encontrado para o mês atual.</p>
+  </div>
+
+  <div class="area-grafico-scroll" *ngIf="!carregando && !erro && dados.length > 0" #scrollContainer>
+    <div class="grafico-inner">
+      
+      <div class="eixo-y-container">
+        <div class="linha-guia" *ngFor="let step of linhasGuia" [style.bottom.%]="step.percent">
+          <span class="label-guia">{{ formatarTempo(step.valor) }}</span>
+          <div class="linha-tracejada"></div>
+        </div>
+      </div>
+
+      <div class="container-barras">
+        
+        <div class="coluna-dia" *ngFor="let item of dados">
+          
+          <div class="tooltip-bar">
+            <span class="tooltip-minutos">{{ formatarTempo(item.minutos) }}</span>
+            <span class="tooltip-label" *ngIf="item.is_atual">Hoje</span>
+          </div>
+
+          <div class="trilho-barra">
+            <div 
+              class="preenchimento-barra" 
+              [class.atual]="item.is_atual"
+              [class.zerado]="item.minutos === 0"
+              [style.height.%]="(item.minutos / maxMinutos) * 100">
+              <div class="barra-glow" *ngIf="item.minutos > 0"></div>
+            </div>
+          </div>
+
+          <div class="label-dia" [class.destaque]="item.is_atual">
+            {{ item.label }}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>

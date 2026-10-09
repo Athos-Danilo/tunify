@@ -114,4 +114,26 @@ export class HistorySyncService {
     const url = mes ? `${this.backendUrl}/top-tracks/${email}?mes=${mes}` : `${this.backendUrl}/top-tracks/${email}`;
     return this.http.get<any>(url);
   }
+
+  /**
+   * Busca os Top 15 artistas de um mês específico (ou do mês atual se não informado)
+   */
+  getTopArtists(email: string, mes?: string): Observable<any> {
+    const url = mes ? `${this.backendUrl}/top-artists/${email}?mes=${mes}` : `${this.backendUrl}/top-artists/${email}`;
+    return this.http.get<any>(url);
+  }
+
+  /**
+   * Busca o histórico de minutos ouvidos por mês
+   */
+  getMinutesHistory(email: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/minutes-history/${email}`);
+  }
+
+  /**
+   * Busca o histórico diário de minutos para o mês atual
+   */
+  getDailyMinutes(email: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/daily-minutes/${email}`);
+  }
 }

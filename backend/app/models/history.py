@@ -172,3 +172,27 @@ class MonthlyTopTrack(Base):
 
     # 7. Relacionamento Virtual
     user = relationship("User", backref="top_monthly_tracks_history")
+
+
+# ======> O Molde da Tabela de Minutos Diários (Cache do Mês Atual).
+# Guarda a soma de milissegundos ouvidos a cada dia, facilitando a geração do gráfico de colunas em tempo real.
+# É limpa no dia 1º de cada mês, assim como o MonthlyHistory.
+# -------------------------------------------------------------------------------------- #
+class DailyMinutesListened(Base):
+    __tablename__ = "daily_minutes_listened"
+
+    # 1. Chave Primária (ID)
+    id = Column(Integer, primary_key=True, index=True)
+
+    # 2. ID do Usuário (Chave Estrangeira)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    # 3. Data de Referência (Formato YYYY-MM-DD, ex: "2026-10-09")
+    date_referencia = Column(String, index=True, nullable=False)
+
+    # 4. Total de Milissegundos Ouvidos no Dia
+    # Usamos ms para evitar arredondamentos repetitivos nas frações de minuto.
+    total_ms = Column(Integer, nullable=False, default=0)
+
+    # 5. Relacionamento Virtual
+    user = relationship("User")

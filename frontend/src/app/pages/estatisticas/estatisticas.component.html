@@ -65,6 +65,75 @@
         </div>
       </div>
 
+      <!-- GAVETA 3: TOP 15 ARTISTAS MENSAIS -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopArtistasAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaTopArtistas()">
+          <div class="gaveta-info">
+            <div class="icone-badge verde">
+              <span class="material-icons">star</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Top Artistas Mensais</h2>
+              <span class="gaveta-resumo">Ranking dos 15 artistas que você mais escutou</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status verde">Top 15</span>
+            <span class="material-icons chevron-icone">{{ gavetaTopArtistasAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaTopArtistasAberta">
+          <app-top-artistas-mensais></app-top-artistas-mensais>
+        </div>
+      </div>
+
+      <!-- GAVETA 4: GRÁFICO DE MINUTOS OUVIDOS -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopMinutosAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaTopMinutos()">
+          <div class="gaveta-info">
+            <div class="icone-badge cinza">
+              <span class="material-icons">bar_chart</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Gráfico de Imersão</h2>
+              <span class="gaveta-resumo">Evolução do tempo que você passa ouvindo música</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status cinza">Gráfico</span>
+            <span class="material-icons chevron-icone">{{ gavetaTopMinutosAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaTopMinutosAberta">
+          <app-graficos-minutos-meses></app-graficos-minutos-meses>
+        </div>
+      </div>
+
+      <!-- GAVETA 5: GRÁFICO DIÁRIO -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaGraficoDiarioAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaGraficoDiario()">
+          <div class="gaveta-info">
+            <div class="icone-badge roxo">
+              <span class="material-icons">show_chart</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Jornada Diária</h2>
+              <span class="gaveta-resumo">Seu ritmo de imersão dia após dia no mês atual</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status roxo">Hoje</span>
+            <span class="material-icons chevron-icone">{{ gavetaGraficoDiarioAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaGraficoDiarioAberta">
+          <app-grafico-minutos-diarios></app-grafico-minutos-diarios>
+        </div>
+      </div>
+
     </div>
   </div>
 
