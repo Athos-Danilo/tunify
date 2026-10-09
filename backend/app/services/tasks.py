@@ -22,7 +22,7 @@ import time
 import datetime
 from app.core.database import SessionLocal 
 from app.models.user import User
-from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack
+from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, DailyMinutesListened
 from app.models.system import SystemMetadata
 from app.services.spotify_service import SpotifyService
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
@@ -195,6 +195,25 @@ async def robo_rastreador_hourly():
                     )
                     db.add(novo_historico)
 
+                    # Atualiza o cache diário de minutos
+                    dia_br = (played_at - datetime.timedelta(hours=3)).strftime("%Y-%m-%d")
+                    duracao_ms = track_data.get("duration_ms", 0)
+                    
+                    registro_diario = db.query(DailyMinutesListened).filter(
+                        DailyMinutesListened.user_id == user.id,
+                        DailyMinutesListened.date_referencia == dia_br
+                    ).first()
+                    
+                    if registro_diario:
+                        registro_diario.total_ms += duracao_ms
+                    else:
+                        novo_diario = DailyMinutesListened(
+                            user_id=user.id,
+                            date_referencia=dia_br,
+                            total_ms=duracao_ms
+                        )
+                        db.add(novo_diario)
+
                 db.commit()
 
                 if faixas_recentes:
@@ -318,6 +337,11 @@ async def robo_agregador_mensal():
                 ))
 
         db.query(MonthlyHistory).filter(MonthlyHistory.played_at < primeiro_dia_atual_utc).delete()
+        
+        # Limpa cache diário antigo (do mês passado)
+        dia_limite_str = primeiro_dia_atual_utc.strftime("%Y-%m-%d")
+        db.query(DailyMinutesListened).filter(DailyMinutesListened.date_referencia < dia_limite_str).delete()
+        
         db.commit()
         logger.info("✅ [AGREGADOR] Faxina concluída!")
 

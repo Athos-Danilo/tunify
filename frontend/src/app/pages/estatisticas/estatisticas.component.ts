@@ -9,11 +9,12 @@ import { ReproducoesRecentes } from '../../components/reproducoes-recentes/repro
 import { TopMusicasMensaisComponent } from '../../components/top-musicas-mensais/top-musicas-mensais.component';
 import { TopArtistasMensaisComponent } from '../../components/top-artistas-mensais/top-artistas-mensais.component';
 import { GraficosMinutosMesesComponent } from '../../components/graficos-minutos-meses/graficos-minutos-meses.component';
+import { GraficoMinutosDiariosComponent } from '../../components/grafico-minutos-diarios/grafico-minutos-diarios.component';
 
 @Component({
   selector: 'app-estatisticas',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes, TopMusicasMensaisComponent, TopArtistasMensaisComponent, GraficosMinutosMesesComponent],
+  imports: [CommonModule, RouterModule, HeaderComponent, ReproducoesRecentes, TopMusicasMensaisComponent, TopArtistasMensaisComponent, GraficosMinutosMesesComponent, GraficoMinutosDiariosComponent],
   templateUrl: './estatisticas.component.html',
   styleUrls: ['./estatisticas.component.scss']
 })
@@ -27,6 +28,7 @@ export class EstatisticasComponent implements OnInit {
   gavetaTopMusicasAberta: boolean = false;
   gavetaTopArtistasAberta: boolean = false;
   gavetaTopMinutosAberta: boolean = false;
+  gavetaGraficoDiarioAberta: boolean = false;
 
   private authService = inject(AuthService);
   private spotifyService = inject(SpotifyService);
@@ -115,6 +117,10 @@ export class EstatisticasComponent implements OnInit {
 
   alternarGavetaTopMinutos() {
     this.gavetaTopMinutosAberta = !this.gavetaTopMinutosAberta;
+  }
+
+  alternarGavetaGraficoDiario() {
+    this.gavetaGraficoDiarioAberta = !this.gavetaGraficoDiarioAberta;
   }
 
   fazerLogout() {

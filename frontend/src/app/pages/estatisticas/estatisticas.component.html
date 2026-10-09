@@ -111,6 +111,29 @@
         </div>
       </div>
 
+      <!-- GAVETA 5: GRÁFICO DIÁRIO -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaGraficoDiarioAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaGraficoDiario()">
+          <div class="gaveta-info">
+            <div class="icone-badge roxo">
+              <span class="material-icons">show_chart</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Jornada Diária</h2>
+              <span class="gaveta-resumo">Seu ritmo de imersão dia após dia no mês atual</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status roxo">Hoje</span>
+            <span class="material-icons chevron-icone">{{ gavetaGraficoDiarioAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaGraficoDiarioAberta">
+          <app-grafico-minutos-diarios></app-grafico-minutos-diarios>
+        </div>
+      </div>
+
     </div>
   </div>
 

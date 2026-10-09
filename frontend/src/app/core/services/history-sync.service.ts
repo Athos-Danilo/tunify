@@ -129,4 +129,11 @@ export class HistorySyncService {
   getMinutesHistory(email: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.backendUrl}/minutes-history/${email}`);
   }
+
+  /**
+   * Busca o histórico diário de minutos para o mês atual
+   */
+  getDailyMinutes(email: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.backendUrl}/daily-minutes/${email}`);
+  }
 }

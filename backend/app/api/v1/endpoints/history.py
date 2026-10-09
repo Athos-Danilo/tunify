@@ -6,7 +6,7 @@ import dateutil.parser
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist
+from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist, DailyMinutesListened
 from app.models.track import TrackCache
 from app.models.artist import ArtistCache
 
@@ -109,6 +109,25 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                     played_at=played_at_dt
                 )
                 db.add(new_history)
+
+                # Atualiza o cache diário de minutos
+                dia_br = (played_at_dt - timedelta(hours=3)).strftime("%Y-%m-%d")
+                duracao_ms = track_data.get("duration_ms", 0)
+                
+                registro_diario = db.query(DailyMinutesListened).filter(
+                    DailyMinutesListened.user_id == user.id,
+                    DailyMinutesListened.date_referencia == dia_br
+                ).first()
+                
+                if registro_diario:
+                    registro_diario.total_ms += duracao_ms
+                else:
+                    novo_diario = DailyMinutesListened(
+                        user_id=user.id,
+                        date_referencia=dia_br,
+                        total_ms=duracao_ms
+                    )
+                    db.add(novo_diario)
                 
                 # Salva no TrackCache se não existir no DB e ainda não tiver sido adicionada nesta execução
                 track_cache = db.query(TrackCache).filter(TrackCache.spotify_id == spotify_id).first()
@@ -577,6 +596,44 @@ async def get_minutes_history(email: str, db: Session = Depends(get_db)):
             "label": label,
             "minutos": mapa_minutos[cod],
             "is_atual": (cod == mes_atual_codigo)
+        })
+
+    return resultado
+
+@router.get("/daily-minutes/{email}")
+async def get_daily_minutes(email: str, db: Session = Depends(get_db)):
+    """
+    Retorna o histórico diário de minutos para o mês atual.
+    Injeta dias vazios (zero) caso não haja histórico no banco para construir a escadinha completa.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    agora_br = datetime.now(timezone.utc) - timedelta(hours=3)
+    primeiro_dia_mes = agora_br.replace(day=1)
+
+    registros = db.query(DailyMinutesListened).filter(
+        DailyMinutesListened.user_id == user.id,
+        DailyMinutesListened.date_referencia >= primeiro_dia_mes.strftime("%Y-%m-%d")
+    ).all()
+
+    mapa_diario = { r.date_referencia: r.total_ms for r in registros }
+
+    resultado = []
+    dia_atual = agora_br.day
+
+    # Constrói o array do dia 1 até Hoje
+    for i in range(1, dia_atual + 1):
+        data_str = agora_br.replace(day=i).strftime("%Y-%m-%d")
+        total_ms = mapa_diario.get(data_str, 0)
+        minutos = int(total_ms / 60000)
+
+        resultado.append({
+            "data": data_str,
+            "label": f"{i:02d}/{agora_br.month:02d}",
+            "minutos": minutos,
+            "is_atual": (i == dia_atual)
         })
 
     return resultado

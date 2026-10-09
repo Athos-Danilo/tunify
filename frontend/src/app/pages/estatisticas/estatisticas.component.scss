@@ -131,6 +131,25 @@
           background: rgba(255, 215, 0, 0.15);
           color: #FFD700;
         }
+
+        &.verde {
+          background: rgba(30, 215, 96, 0.15);
+          color: #1DB954;
+        }
+
+        &.cinza {
+          background: rgba(255, 255, 255, 0.1);
+          color: #B3B3B3;
+          :host-context(.tema-claro) & {
+            background: rgba(0, 0, 0, 0.05);
+            color: #474952;
+          }
+        }
+
+        &.roxo {
+          background: rgba(186, 104, 200, 0.15);
+          color: #ba68c8;
+        }
       }
 
       .gaveta-textos {
@@ -179,6 +198,20 @@
           &.dourado {
             background: rgba(255, 215, 0, 0.15);
             color: #FFD700;
+          }
+
+          &.cinza {
+            background: rgba(255, 255, 255, 0.1);
+            color: #B3B3B3;
+            :host-context(.tema-claro) & {
+              background: rgba(0, 0, 0, 0.05);
+              color: #474952;
+            }
+          }
+
+          &.roxo {
+            background: rgba(186, 104, 200, 0.15);
+            color: #ba68c8;
           }
         }
 
