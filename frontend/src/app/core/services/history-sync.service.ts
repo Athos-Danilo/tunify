@@ -17,6 +17,9 @@ export class HistorySyncService {
   // Chave do cache e TTL (Time To Live) de 5 minutos
   private CACHE_KEY = 'tunify_history_cache';
   private CACHE_TTL_MS = 5 * 60 * 1000;
+  
+  // Cache de memória para o Horário de Pico (evita queries no banco se o usuário abrir e fechar a gaveta)
+  private peakTimeCache: any = null;
 
   /**
    * Ponto de entrada principal da tela.
@@ -135,5 +138,18 @@ export class HistorySyncService {
    */
   getDailyMinutes(email: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.backendUrl}/daily-minutes/${email}`);
+  }
+
+  /**
+   * Busca o período de maior imersão musical no dia
+   * Usa cache em memória para não martelar o banco de dados
+   */
+  getPeakTime(email: string): Observable<any> {
+    if (this.peakTimeCache) {
+      return of(this.peakTimeCache);
+    }
+    return this.http.get<any>(`${this.backendUrl}/peak-time/${email}`).pipe(
+      tap(res => this.peakTimeCache = res)
+    );
   }
 }

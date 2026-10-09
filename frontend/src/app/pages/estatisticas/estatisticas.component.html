@@ -134,6 +134,29 @@
         </div>
       </div>
 
+      <!-- GAVETA 6: HORÁRIO DE PICO -->
+      <div class="gaveta-item" [ngClass]="{'aberta': gavetaHorarioPicoAberta}">
+        <button class="gaveta-header" (click)="alternarGavetaHorarioPico()">
+          <div class="gaveta-info">
+            <div class="icone-badge laranja">
+              <span class="material-icons">lightbulb</span>
+            </div>
+            <div class="gaveta-textos">
+              <h2 class="gaveta-titulo">Horário de Pico</h2>
+              <span class="gaveta-resumo">Em qual turno você mais ouviu música este mês?</span>
+            </div>
+          </div>
+          <div class="gaveta-acoes">
+            <span class="badge-status laranja">Vibe</span>
+            <span class="material-icons chevron-icone">{{ gavetaHorarioPicoAberta ? 'expand_less' : 'expand_more' }}</span>
+          </div>
+        </button>
+
+        <div class="gaveta-corpo" *ngIf="gavetaHorarioPicoAberta">
+          <app-grafico-horario-pico></app-grafico-horario-pico>
+        </div>
+      </div>
+
     </div>
   </div>
 

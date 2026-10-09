@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, text
 from datetime import datetime, timezone, timedelta
 import dateutil.parser
 
@@ -637,4 +637,54 @@ async def get_daily_minutes(email: str, db: Session = Depends(get_db)):
         })
 
     return resultado
+
+# =================================================================================
+# 6. ROTA DE HORÁRIO DE PICO (PEAK TIME)
+# =================================================================================
+@router.get("/peak-time/{email}")
+async def get_peak_time(email: str, db: Session = Depends(get_db)):
+    """
+    Analisa todos os plays do mês atual e conta quantas músicas foram escutadas
+    em cada período do dia (Madrugada, Manhã, Tarde, Noite).
+    Usa um SQL puro otimizado para o PostgreSQL.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+
+    # Pega o primeiro dia do mês no UTC
+    primeiro_dia_mes_utc = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # A mágica do PostgreSQL: Conta as linhas em 1 único milissegundo.
+    # Converte o timestamp salvo (UTC) para o fuso brasileiro antes de extrair a hora.
+    query = text("""
+        SELECT 
+            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 0 AND 5 THEN 1 ELSE 0 END) AS madrugada,
+            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 6 AND 11 THEN 1 ELSE 0 END) AS manha,
+            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 12 AND 17 THEN 1 ELSE 0 END) AS tarde,
+            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 18 AND 23 THEN 1 ELSE 0 END) AS noite
+        FROM monthly_history
+        WHERE user_id = :uid AND played_at >= :inicio_mes
+    """)
+
+    resultado = db.execute(query, {"uid": user.id, "inicio_mes": primeiro_dia_mes_utc}).fetchone()
+    
+    # Prepara a contagem (trata nulls caso o usuário não tenha nenhum play)
+    counts = {
+        "madrugada": int(resultado[0] or 0) if resultado else 0,
+        "manha": int(resultado[1] or 0) if resultado else 0,
+        "tarde": int(resultado[2] or 0) if resultado else 0,
+        "noite": int(resultado[3] or 0) if resultado else 0,
+    }
+
+    # Calcula qual é o período favorito
+    dominante = max(counts, key=counts.get)
+    if counts[dominante] == 0:
+        dominante = "nenhum"
+
+    return {
+        "periodos": counts,
+        "dominante": dominante,
+        "total_plays": sum(counts.values())
+    }
 
