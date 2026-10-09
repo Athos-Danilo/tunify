@@ -637,3 +637,54 @@ async def get_daily_minutes(email: str, db: Session = Depends(get_db)):
         })
 
     return resultado
+
+# =================================================================================
+# 🚨 ROTA TEMPORÁRIA: MIGRAÇÃO RETROATIVA (REMOVER APÓS O MERGE PARA A MAIN) 🚨
+# =================================================================================
+@router.post("/retroativo-diario")
+async def processar_retroativo_diario(db: Session = Depends(get_db)):
+    """
+    Recalcula os minutos diários retroativos do mês atual.
+    Varre o MonthlyHistory desde o dia 1º, soma as durações e recria a tabela DailyMinutesListened.
+    """
+    try:
+        agora_br = datetime.now(timezone.utc) - timedelta(hours=3)
+        primeiro_dia_mes_utc = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # 1. Pega todo o histórico do mês atual
+        historicos = db.query(MonthlyHistory).filter(MonthlyHistory.played_at >= primeiro_dia_mes_utc).all()
+        
+        # 2. Busca todas as músicas em lote para não fazer mil queries no banco
+        spotify_ids = {h.spotify_track_id for h in historicos}
+        tracks = db.query(TrackCache).filter(TrackCache.spotify_id.in_(spotify_ids)).all()
+        track_map = {t.spotify_id: t.duration_ms for t in tracks}
+        
+        # 3. Agrupa por usuário e por dia (no fuso BR)
+        agrupado = {} # (user_id, "YYYY-MM-DD") -> total_ms
+        
+        for h in historicos:
+            if h.spotify_track_id in track_map:
+                dia_br = (h.played_at - timedelta(hours=3)).strftime("%Y-%m-%d")
+                chave = (h.user_id, dia_br)
+                duracao = track_map[h.spotify_track_id]
+                agrupado[chave] = agrupado.get(chave, 0) + duracao
+                
+        # 4. Limpa a tabela atual por segurança
+        db.query(DailyMinutesListened).delete()
+        
+        # 5. Insere os dados recalculados
+        for (user_id, dia_br), total_ms in agrupado.items():
+            db.add(DailyMinutesListened(
+                user_id=user_id,
+                date_referencia=dia_br,
+                total_ms=total_ms
+            ))
+            
+        db.commit()
+        return {
+            "status": "sucesso", 
+            "message": f"Migração retroativa concluída! Foram processados {len(historicos)} plays e recriados {len(agrupado)} dias únicos."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
