@@ -19,6 +19,7 @@ export class TopMusicasMensaisComponent implements OnInit {
   userEmail: string = '';
   totalPlaysMes: number = 0;
   dropdownAberto: boolean = false;
+  modoOrdenacao: string = 'plays';
 
   private historySyncService = inject(HistorySyncService);
   private cdr = inject(ChangeDetectorRef);
@@ -78,7 +79,7 @@ export class TopMusicasMensaisComponent implements OnInit {
     this.erro = null;
     this.cdr.detectChanges();
 
-    this.historySyncService.getTopTracks(this.userEmail, mesCodigo).subscribe({
+    this.historySyncService.getTopTracks(this.userEmail, mesCodigo, this.modoOrdenacao).subscribe({
       next: (res) => {
         this.topMusicas = res.dados || [];
         this.isMesAtual = res.is_atual ?? false;
@@ -98,6 +99,14 @@ export class TopMusicasMensaisComponent implements OnInit {
   toggleDropdown(event: Event): void {
     event.stopPropagation();
     this.dropdownAberto = !this.dropdownAberto;
+  }
+
+  toggleModoOrdenacao(modo: string): void {
+    if (!this.isMesAtual) return;
+    if (this.modoOrdenacao !== modo) {
+      this.modoOrdenacao = modo;
+      this.carregarTopMusicas(this.mesSelecionado);
+    }
   }
 
   selecionarMes(codigo: string, event: Event): void {
@@ -120,6 +129,17 @@ export class TopMusicasMensaisComponent implements OnInit {
     const minutos = Math.floor(totalSegundos / 60);
     const segundos = totalSegundos % 60;
     return `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+  }
+
+  formatarTempoTotal(ms: number): string {
+    if (!ms || ms <= 0) return '0m';
+    const totalMinutos = Math.floor(ms / 60000);
+    const horas = Math.floor(totalMinutos / 60);
+    const minutos = totalMinutos % 60;
+    if (horas > 0) {
+      return `${horas}h ${minutos}m`;
+    }
+    return `${minutos}m`;
   }
 
   formatarRank(rank: number): string {

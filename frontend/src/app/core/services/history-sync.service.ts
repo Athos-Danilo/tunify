@@ -113,9 +113,9 @@ export class HistorySyncService {
   /**
    * Busca as Top 10 músicas de um mês específico (ou do mês atual se não informado)
    */
-  getTopTracks(email: string, mes?: string): Observable<any> {
-    const url = mes ? `${this.backendUrl}/top-tracks/${email}?mes=${mes}` : `${this.backendUrl}/top-tracks/${email}`;
-    return this.http.get<any>(url);
+  getTopTracks(email: string, mes?: string, sortBy: string = 'plays'): Observable<any> {
+    const params = mes ? `?mes=${mes}&sort_by=${sortBy}` : `?sort_by=${sortBy}`;
+    return this.http.get<any>(`${this.backendUrl}/top-tracks/${email}${params}`);
   }
 
   /**

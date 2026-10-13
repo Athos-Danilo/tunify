@@ -220,7 +220,7 @@ async def get_available_months(email: str, db: Session = Depends(get_db)):
 
 
 @router.get("/top-tracks/{email}")
-async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depends(get_db)):
+async def get_monthly_top_tracks(email: str, mes: str = None, sort_by: str = 'plays', db: Session = Depends(get_db)):
     """
     Retorna o Top 10 de músicas mais ouvidas de um mês específico.
     Se 'mes' for omitido ou for o mês atual, calcula em tempo real com tendência.
@@ -242,14 +242,15 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
         primeiro_dia_br = agora_br.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         corte_mes_utc = primeiro_dia_br + timedelta(hours=3)
 
-        top_tracks_raw = db.query(
+        query = db.query(
             MonthlyHistory.spotify_track_id,
             func.count(MonthlyHistory.id).label('play_count'),
             TrackCache.name,
             TrackCache.artist_name,
             TrackCache.album_cover_url,
             TrackCache.duration_ms,
-            TrackCache.album_name
+            TrackCache.album_name,
+            func.sum(TrackCache.duration_ms).label('tempo_total_ms')
         ).join(
             TrackCache, MonthlyHistory.spotify_track_id == TrackCache.spotify_id
         ).filter(
@@ -262,9 +263,12 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
             TrackCache.album_cover_url,
             TrackCache.duration_ms,
             TrackCache.album_name
-        ).order_by(
-            desc('play_count')
-        ).limit(10).all()
+        )
+
+        if sort_by == 'time':
+            top_tracks_raw = query.order_by(desc('tempo_total_ms')).limit(10).all()
+        else:
+            top_tracks_raw = query.order_by(desc('play_count')).limit(10).all()
 
         ano, m = map(int, mes_atual_codigo.split("-"))
         mes_ant_ano = ano if m > 1 else ano - 1
@@ -307,6 +311,7 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
+                "tempo_total_ms": item.tempo_total_ms,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
@@ -378,6 +383,7 @@ async def get_monthly_top_tracks(email: str, mes: str = None, db: Session = Depe
                 "album": item.album_name,
                 "total_plays": item.play_count,
                 "duracaoMs": item.duration_ms,
+                "tempo_total_ms": item.play_count * item.duration_ms if item.play_count and item.duration_ms else 0,
                 "tendencia": tendencia,
                 "valorTendencia": valor_tendencia
             })
