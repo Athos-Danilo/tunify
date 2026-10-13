@@ -1,0 +1,257 @@
+<section class="sync-card-container" [ngClass]="{'tema-claro': !modoEscuro}">
+
+  <!-- Fundo com Orbes Luminosos Dinâmicos -->
+  <div class="sync-glow-orb orb-primary"></div>
+  <div class="sync-glow-orb orb-secondary"></div>
+
+  <!-- Cabeçalho do Card com Título e Seletor de Abas -->
+  <div class="sync-header">
+    <div class="header-info">
+      <div class="badge-vibe">
+        <span class="pulse-dot"></span>
+        <span class="badge-text">TUNIFY SYNC &bull; MATCH DE VIBE</span>
+      </div>
+      <h2 class="sync-title">Conexão Musical P2P</h2>
+      <p class="sync-subtitle">
+        Conecte-se com seus amigos para comparar suas vibes e disputar o Pódio da Casa com privacidade total.
+      </p>
+    </div>
+
+    <!-- Navegação de Abas -->
+    <div class="sync-tabs">
+      <button 
+        class="tab-btn" 
+        [class.ativo]="abaAtiva === 'convidar'" 
+        (click)="abaAtiva = 'convidar'"
+        type="button">
+        <span class="tab-icon">✨</span>
+        <span>Gerar Convite</span>
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.ativo]="abaAtiva === 'amigos'" 
+        (click)="abaAtiva = 'amigos'"
+        type="button">
+        <span class="tab-icon">👥</span>
+        <span>Amigos ({{ amigosConectados.length }})</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ABA 1: GERAR CONVITE COM PERMISSÕES                            -->
+  <!-- ============================================================== -->
+  <div class="sync-body" *ngIf="abaAtiva === 'convidar'">
+
+    <!-- Alertas de Feedback -->
+    <div class="sync-alert sucesso" *ngIf="mensagemSucesso">
+      <span class="alert-icon">✓</span>
+      <span>{{ mensagemSucesso }}</span>
+    </div>
+
+    <div class="sync-alert erro" *ngIf="mensagemErro">
+      <span class="alert-icon">⚠️</span>
+      <span>{{ mensagemErro }}</span>
+    </div>
+
+    <div class="permissions-intro">
+      <div class="intro-tag">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Privacidade por Design</span>
+      </div>
+      <p class="intro-text">
+        Selecione exatamente o que você deseja liberar para o amigo que aceitar este convite:
+      </p>
+    </div>
+
+    <!-- Grid dos 4 Toggles de Permissão -->
+    <div class="permissions-grid">
+
+      <!-- 1. Minutos Ouvidos -->
+      <div 
+        class="perm-card" 
+        [class.ativo]="permissoes.share_minutes" 
+        (click)="alternarPermissao('share_minutes')">
+        <div class="perm-icon-wrapper minutes">
+          <span class="perm-emoji">⏱️</span>
+        </div>
+        <div class="perm-content">
+          <h4 class="perm-title">Pódio da Casa</h4>
+          <p class="perm-desc">Compartilha seus minutos mensais para disputar a coroa de Audiófilo do Mês.</p>
+        </div>
+        <div class="perm-toggle">
+          <span class="switch" [class.on]="permissoes.share_minutes"></span>
+        </div>
+      </div>
+
+      <!-- 2. Top 10 Músicas -->
+      <div 
+        class="perm-card" 
+        [class.ativo]="permissoes.share_top_tracks" 
+        (click)="alternarPermissao('share_top_tracks')">
+        <div class="perm-icon-wrapper tracks">
+          <span class="perm-emoji">🎵</span>
+        </div>
+        <div class="perm-content">
+          <h4 class="perm-title">Top 10 Músicas</h4>
+          <p class="perm-desc">Permite que seu amigo veja suas faixas mais ouvidas e variações de tendência.</p>
+        </div>
+        <div class="perm-toggle">
+          <span class="switch" [class.on]="permissoes.share_top_tracks"></span>
+        </div>
+      </div>
+
+      <!-- 3. Top 15 Artistas -->
+      <div 
+        class="perm-card" 
+        [class.ativo]="permissoes.share_top_artists" 
+        (click)="alternarPermissao('share_top_artists')">
+        <div class="perm-icon-wrapper artists">
+          <span class="perm-emoji">🎤</span>
+        </div>
+        <div class="perm-content">
+          <h4 class="perm-title">Top 15 Artistas</h4>
+          <p class="perm-desc">Exibe seus artistas favoritos e a quantidade de músicas diferentes exploradas.</p>
+        </div>
+        <div class="perm-toggle">
+          <span class="switch" [class.on]="permissoes.share_top_artists"></span>
+        </div>
+      </div>
+
+      <!-- 4. Horário de Pico -->
+      <div 
+        class="perm-card" 
+        [class.ativo]="permissoes.share_peak_time" 
+        (click)="alternarPermissao('share_peak_time')">
+        <div class="perm-icon-wrapper peak">
+          <span class="perm-emoji">🌙</span>
+        </div>
+        <div class="perm-content">
+          <h4 class="perm-title">Horário de Pico</h4>
+          <p class="perm-desc">Revela seu turno favorito para escutar música (Madrugada, Tarde ou Noite).</p>
+        </div>
+        <div class="perm-toggle">
+          <span class="switch" [class.on]="permissoes.share_peak_time"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Seção de Ação: Criar Convite OU Exibir Link Ativo -->
+    <div class="sync-actions-zone">
+
+      <!-- Cenário A: Ainda não tem convite ativo gerado -->
+      <div class="generate-box" *ngIf="!conviteAtivo">
+        <button 
+          class="btn-gerar" 
+          [disabled]="gerandoConvite"
+          (click)="gerarNovoConvite()" 
+          type="button">
+          <span *ngIf="!gerandoConvite" class="btn-text">
+            <span>⚡ Gerar Link de Convite Único</span>
+          </span>
+          <span *ngIf="gerandoConvite" class="btn-loading">
+            <span class="spinner"></span> Gerando link seguro...
+          </span>
+        </button>
+      </div>
+
+      <!-- Cenário B: Convite Ativo Pronto para Compartilhar -->
+      <div class="active-invite-box" *ngIf="conviteAtivo">
+        <div class="invite-status-header">
+          <div class="status-badge ativo">
+            <span class="badge-dot"></span>
+            <span>Link Ativo &bull; Válido por 7 dias</span>
+          </div>
+
+          <button class="btn-revogar" (click)="revogarConviteAtual()" title="Cancelar este link" type="button">
+            Cancelar Link
+          </button>
+        </div>
+
+        <div class="link-display-row">
+          <div class="link-input-wrapper">
+            <input 
+              type="text" 
+              class="link-input" 
+              [value]="conviteAtivo.invite_url" 
+              readonly>
+          </div>
+
+          <button 
+            class="btn-copiar" 
+            [class.copiado]="linkCopiado"
+            (click)="copiarLink()" 
+            type="button">
+            <span *ngIf="!linkCopiado">📋 Copiar</span>
+            <span *ngIf="linkCopiado">✓ Copiado!</span>
+          </button>
+
+          <button 
+            class="btn-whatsapp" 
+            (click)="compartilharWhatsApp()" 
+            type="button" 
+            title="Enviar no WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.031 2C6.514 2 2.029 6.485 2.029 12.002c0 1.956.564 3.782 1.54 5.333L2.247 22l4.821-1.265c1.488.814 3.197 1.269 4.963 1.269 5.518 0 10.003-4.485 10.003-10.002C22.034 6.485 17.549 2 12.031 2zm5.82 14.286c-.244.685-1.218 1.257-1.996 1.424-.533.114-1.23.205-3.567-.763-2.986-1.237-4.912-4.275-5.06-4.474-.148-.198-1.209-1.611-1.209-3.072 0-1.462.766-2.18 1.039-2.477.273-.297.597-.371.796-.371.199 0 .398.002.57.01.183.008.43-.07.671.509.248.594.845 2.067.92 2.216.074.148.124.322.025.52-.099.198-.148.322-.297.495-.149.173-.313.387-.447.52-.149.148-.305.309-.131.607.174.298.775 1.278 1.662 2.069 1.141 1.018 2.103 1.334 2.401 1.483.298.149.472.124.646-.074.174-.199.745-.867.943-1.165.199-.297.397-.248.67-.148.273.099 1.739.82 2.037.969.298.149.497.223.571.347.075.124.075.719-.169 1.404z"/>
+            </svg>
+            <span>WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ABA 2: AMIGOS CONECTADOS                                       -->
+  <!-- ============================================================== -->
+  <div class="sync-body" *ngIf="abaAtiva === 'amigos'">
+
+    <!-- Estado Vazio -->
+    <div class="empty-friends" *ngIf="amigosConectados.length === 0">
+      <div class="empty-icon-art">
+        <span class="icon-orb">🎧</span>
+      </div>
+      <h3 class="empty-title">Nenhum amigo conectado ainda</h3>
+      <p class="empty-desc">
+        Gere um link na aba de convites e envie para quem você divide o fone de ouvido.
+      </p>
+      <button class="btn-gerar-empty" (click)="abaAtiva = 'convidar'" type="button">
+        Convidar Meu Primeiro Amigo
+      </button>
+    </div>
+
+    <!-- Lista de Amigos Sincronizados -->
+    <div class="friends-list" *ngIf="amigosConectados.length > 0">
+      <div class="friend-card" *ngFor="let conexao of amigosConectados">
+        <div class="friend-avatar">
+          <img 
+            [src]="conexao.amigo.foto_perfil || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" 
+            [alt]="conexao.amigo.nome" 
+            class="avatar-img">
+          <span class="online-indicator"></span>
+        </div>
+
+        <div class="friend-info">
+          <h4 class="friend-name">{{ conexao.amigo.nome }}</h4>
+          <span class="friend-status-badge">Sincronizado &bull; Ativo</span>
+
+          <div class="friend-perms-summary">
+            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_minutes">⏱️ Pódio</span>
+            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_tracks">🎵 Top Músicas</span>
+            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_artists">🎤 Top Artistas</span>
+            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_peak_time">🌙 Pico</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>

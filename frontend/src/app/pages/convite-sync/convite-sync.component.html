@@ -1,0 +1,183 @@
+<main class="convite-page" [ngClass]="{'tema-claro': !modoEscuro}">
+
+  <div class="glow-bg-orb orb-1"></div>
+  <div class="glow-bg-orb orb-2"></div>
+
+  <div class="convite-wrapper">
+
+    <!-- 1. Estado de Carregamento -->
+    <div class="convite-card loading-card" *ngIf="carregando">
+      <div class="spinner-neon"></div>
+      <p class="loading-text">Conectando às frequências do Tunify Sync...</p>
+    </div>
+
+    <!-- 2. Estado de Erro -->
+    <div class="convite-card error-card" *ngIf="!carregando && erroMensagem && !conectadoComSucesso">
+      <div class="card-icon-art">⚠️</div>
+      <h2 class="card-title">Ops! Não foi possível conectar</h2>
+      <p class="card-desc">{{ erroMensagem }}</p>
+      <button class="btn-primary" (click)="irParaDashboard()" type="button">
+        Voltar para o Início
+      </button>
+    </div>
+
+    <!-- 3. Sucesso: Vibes Sincronizadas -->
+    <div class="convite-card success-card" *ngIf="conectadoComSucesso">
+      <div class="card-icon-art celebration">🎉</div>
+      <div class="badge-pill">CONEXÃO ESTABELECIDA</div>
+      <h2 class="card-title">Vibes Sincronizadas!</h2>
+      <p class="card-desc">
+        Você e <strong>{{ convite?.sender?.nome }}</strong> agora estão conectados no Tunify Sync.
+      </p>
+
+      <div class="success-avatars-row">
+        <div class="avatar-bubble">
+          <span>🎧</span>
+          <span class="bubble-name">{{ nomeUsuarioLogado || 'Você' }}</span>
+        </div>
+        <div class="connection-sparkle">⚡</div>
+        <div class="avatar-bubble">
+          <span>🎵</span>
+          <span class="bubble-name">{{ convite?.sender?.nome }}</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" (click)="irParaDashboard()" type="button">
+        Explorar no Dashboard
+      </button>
+    </div>
+
+    <!-- 4. Dono do Convite (Tentou abrir o próprio link) -->
+    <div class="convite-card owner-card" *ngIf="!carregando && convite && convite.is_owner && !conectadoComSucesso">
+      <div class="card-icon-art">🔗</div>
+      <div class="badge-pill">SEU PRÓPRIO LINK</div>
+      <h2 class="card-title">Este é o seu convite!</h2>
+      <p class="card-desc">
+        Envie este link para um amigo para que ele possa conectar a vibe musical dele com a sua.
+      </p>
+      <div class="link-preview-box">
+        <code>{{ codigoConvite }}</code>
+      </div>
+      <button class="btn-primary" (click)="irParaDashboard()" type="button">
+        Ir para o Meu Dashboard
+      </button>
+    </div>
+
+    <!-- 5. Convite Válido para Aceitar -->
+    <div class="convite-card main-invite-card" *ngIf="!carregando && convite && !convite.is_owner && !conectadoComSucesso && convite.is_valid">
+
+      <div class="badge-pill">TUNIFY SYNC &bull; CONVITE P2P</div>
+
+      <!-- Perfil do Remetente -->
+      <div class="sender-hero">
+        <div class="sender-avatar-glow">
+          <img 
+            [src]="convite.sender.foto_perfil || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" 
+            [alt]="convite.sender.nome" 
+            class="sender-avatar">
+          <span class="vibe-ring"></span>
+        </div>
+        <h1 class="sender-headline">
+          <strong>{{ convite.sender.nome }}</strong> quer sincronizar vibes com você!
+        </h1>
+        <p class="sender-sub">
+          Ele liberou acesso às seguintes informações do perfil dele:
+        </p>
+      </div>
+
+      <!-- O que o remetente liberou -->
+      <div class="sender-perms-row">
+        <span class="perm-chip" *ngIf="convite.permissions.share_minutes">⏱️ Pódio da Casa</span>
+        <span class="perm-chip" *ngIf="convite.permissions.share_top_tracks">🎵 Top Músicas</span>
+        <span class="perm-chip" *ngIf="convite.permissions.share_top_artists">🎤 Top Artistas</span>
+        <span class="perm-chip" *ngIf="convite.permissions.share_peak_time">🌙 Horário de Pico</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Cenário A: Usuário NÃO está logado -->
+      <div class="unauth-zone" *ngIf="!estaLogado">
+        <p class="unauth-text">
+          Para conectar e comparar seus gostos musicais, faça login com sua conta do Spotify:
+        </p>
+        <button class="btn-spotify-login" (click)="fazerLoginParaAceitar()" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <span>Entrar com Spotify para Aceitar</span>
+        </button>
+      </div>
+
+      <!-- Cenário B: Usuário ESTÁ logado -> Configura permissões de volta -->
+      <div class="auth-zone" *ngIf="estaLogado">
+        <h3 class="auth-section-title">
+          Escolha o que você deseja compartilhar de volta com {{ convite.sender.nome }}:
+        </h3>
+
+        <div class="interactive-perms-list">
+
+          <div 
+            class="mini-perm-card" 
+            [class.on]="minhasPermissoes.share_minutes" 
+            (click)="alternarPermissao('share_minutes')">
+            <span class="mini-icon">⏱️</span>
+            <div class="mini-info">
+              <span class="mini-name">Pódio da Casa</span>
+              <span class="mini-sub">Minutos totais ouvidos</span>
+            </div>
+            <span class="mini-switch" [class.checked]="minhasPermissoes.share_minutes"></span>
+          </div>
+
+          <div 
+            class="mini-perm-card" 
+            [class.on]="minhasPermissoes.share_top_tracks" 
+            (click)="alternarPermissao('share_top_tracks')">
+            <span class="mini-icon">🎵</span>
+            <div class="mini-info">
+              <span class="mini-name">Top 10 Músicas</span>
+              <span class="mini-sub">Faixas mais ouvidas no mês</span>
+            </div>
+            <span class="mini-switch" [class.checked]="minhasPermissoes.share_top_tracks"></span>
+          </div>
+
+          <div 
+            class="mini-perm-card" 
+            [class.on]="minhasPermissoes.share_top_artists" 
+            (click)="alternarPermissao('share_top_artists')">
+            <span class="mini-icon">🎤</span>
+            <div class="mini-info">
+              <span class="mini-name">Top 15 Artistas</span>
+              <span class="mini-sub">Artistas favoritos</span>
+            </div>
+            <span class="mini-switch" [class.checked]="minhasPermissoes.share_top_artists"></span>
+          </div>
+
+          <div 
+            class="mini-perm-card" 
+            [class.on]="minhasPermissoes.share_peak_time" 
+            (click)="alternarPermissao('share_peak_time')">
+            <span class="mini-icon">🌙</span>
+            <div class="mini-info">
+              <span class="mini-name">Horário de Pico</span>
+              <span class="mini-sub">Turno que mais escuta</span>
+            </div>
+            <span class="mini-switch" [class.checked]="minhasPermissoes.share_peak_time"></span>
+          </div>
+
+        </div>
+
+        <button 
+          class="btn-conectar-vibe" 
+          [disabled]="aceitando" 
+          (click)="aceitarConexao()" 
+          type="button">
+          <span *ngIf="!aceitando">⚡ Sincronizar Nossas Vibes!</span>
+          <span *ngIf="aceitando">Conectando...</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>

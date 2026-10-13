@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 
 # Importa as rotas.
-from app.api.v1.endpoints import auth, spotify, dashboard, selos, history
+from app.api.v1.endpoints import auth, spotify, dashboard, selos, history, sync
 
 # Importa a nova rota isolada de Letras
 from app.api_tunify_liricys.api import letras as letras_router
@@ -23,7 +23,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 # Importa os moldes para o SQLAlchemy saber quais tabelas precisam ser criadas.
 # 🚨 [AJUSTE] Adicionamos o ArtistCache aqui para o banco criar a tabela de fotos oficiais!
-from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata, SeloCatalog, UserSelo
+from app.models import User, MonthlyHistory, TopTwoHundred, TrackCache, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, SystemMetadata, SeloCatalog, UserSelo, SyncInvite, SyncConnection
 from app.models.artist import ArtistCache 
 
 
@@ -118,6 +118,7 @@ app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboar
 app.include_router(selos.router, prefix="/api/v1/selos", tags=["Selos"])
 app.include_router(history.router, prefix="/api/v1/history", tags=["History"])
 app.include_router(letras_router.router, prefix="/api/v1/letras", tags=["Letras (Tunify Liricys)"])
+app.include_router(sync.router, prefix="/api/v1/sync", tags=["Tunify Sync"])
 
 
 # ======> Rota Raiz.

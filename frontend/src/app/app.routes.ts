@@ -29,6 +29,10 @@ export const routes: Routes = [
     path: 'login', 
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent) 
   },
+  { 
+    path: 'sync/convite/:codigo', 
+    loadComponent: () => import('./pages/convite-sync/convite-sync.component').then(m => m.ConviteSyncComponent) 
+  },
 
   // ---------------------------------------------------------
   // 🎧 ÁREA VIP (Protegida pelo authGuard)

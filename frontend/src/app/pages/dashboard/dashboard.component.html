@@ -31,6 +31,14 @@
       <app-top-artistas *ngIf="emailUsuario" [email]="emailUsuario"></app-top-artistas>
 
     </div>
+
+    <!-- Seção Tunify Sync (Conexão Social P2P & Convites com Permissões) -->
+    <app-sync-card 
+      *ngIf="emailUsuario" 
+      [email]="emailUsuario" 
+      [modoEscuro]="modoEscuro">
+    </app-sync-card>
+
   </div>
 
   <app-player-container></app-player-container>

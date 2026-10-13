@@ -18,3 +18,6 @@ from .system import SystemMetadata
 # Importa os modelos de Selos e Conquistas
 from .selo import SeloCatalog, UserSelo
 
+# Importa os modelos do Tunify Sync (Conexão Social e Convites)
+from .sync import SyncInvite, SyncConnection
+
