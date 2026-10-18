@@ -12,3 +12,6 @@ dist/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Scripts locais de inicialização
+start.bat
