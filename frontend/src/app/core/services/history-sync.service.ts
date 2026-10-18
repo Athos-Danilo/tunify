@@ -17,6 +17,9 @@ export class HistorySyncService {
   // Chave do cache e TTL (Time To Live) de 5 minutos
   private CACHE_KEY = 'tunify_history_cache';
   private CACHE_TTL_MS = 5 * 60 * 1000;
+  
+  // Cache de memória para o Horário de Pico (evita queries no banco se o usuário abrir e fechar a gaveta)
+  private peakTimeCache: any = null;
 
   /**
    * Ponto de entrada principal da tela.
@@ -110,9 +113,9 @@ export class HistorySyncService {
   /**
    * Busca as Top 10 músicas de um mês específico (ou do mês atual se não informado)
    */
-  getTopTracks(email: string, mes?: string): Observable<any> {
-    const url = mes ? `${this.backendUrl}/top-tracks/${email}?mes=${mes}` : `${this.backendUrl}/top-tracks/${email}`;
-    return this.http.get<any>(url);
+  getTopTracks(email: string, mes?: string, sortBy: string = 'plays'): Observable<any> {
+    const params = mes ? `?mes=${mes}&sort_by=${sortBy}` : `?sort_by=${sortBy}`;
+    return this.http.get<any>(`${this.backendUrl}/top-tracks/${email}${params}`);
   }
 
   /**
@@ -135,5 +138,18 @@ export class HistorySyncService {
    */
   getDailyMinutes(email: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.backendUrl}/daily-minutes/${email}`);
+  }
+
+  /**
+   * Busca o período de maior imersão musical no dia
+   * Usa cache em memória para não martelar o banco de dados
+   */
+  getPeakTime(email: string): Observable<any> {
+    if (this.peakTimeCache) {
+      return of(this.peakTimeCache);
+    }
+    return this.http.get<any>(`${this.backendUrl}/peak-time/${email}`).pipe(
+      tap(res => this.peakTimeCache = res)
+    );
   }
 }

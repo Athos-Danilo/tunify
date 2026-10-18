@@ -1,0 +1,62 @@
+<div class="horario-wrapper">
+
+  <div class="estado-carregando" *ngIf="carregando">
+    <div class="spinner-neon"></div>
+    <p>Analisando seus horários...</p>
+  </div>
+
+  <div class="estado-erro" *ngIf="!carregando && erro">
+    <span class="material-icons">error_outline</span>
+    <p>{{ erro }}</p>
+  </div>
+
+  <div class="estado-vazio" *ngIf="!carregando && !erro && totalPlays === 0">
+    <span class="material-icons">schedule</span>
+    <p>Nenhuma música ouvida neste mês ainda.</p>
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro && totalPlays > 0">
+    
+    <!-- CARD DE DESTAQUE (VENCEDOR) -->
+    <div class="destaque-dominante">
+      <div class="icone-destaque" [ngClass]="dominanteInfo.classe">
+        <span class="material-icons">{{ dominanteInfo.icone }}</span>
+      </div>
+      <div class="texto-destaque">
+        <h4>Sua vibe é da {{ dominanteInfo.nome }}</h4>
+        <p>{{ dominanteInfo.mensagem }}</p>
+      </div>
+    </div>
+
+    <!-- LISTA DE BARRAS -->
+    <div class="cards-periodos">
+      
+      <div class="card-periodo" *ngFor="let p of listaPeriodos" [class.vencedor]="p.id === dados.dominante">
+        
+        <div class="header-card">
+          <div class="titulo-grupo">
+            <span class="material-icons icone-card" [ngClass]="p.classe">{{ p.icone }}</span>
+            <span class="nome-card">{{ p.nome }}</span>
+          </div>
+          <div class="stats-grupo">
+            <span class="quantidade">{{ p.quantidade }} faixas</span>
+            <span class="porcentagem">{{ p.porcentagem | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+
+        <div class="barra-progresso-fundo">
+          <div 
+            class="barra-progresso-preenchimento" 
+            [ngClass]="p.classe" 
+            [style.width.%]="p.porcentagem">
+            <div class="barra-glow"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</div>

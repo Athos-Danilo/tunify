@@ -150,6 +150,11 @@
           background: rgba(186, 104, 200, 0.15);
           color: #ba68c8;
         }
+
+        &.laranja {
+          background: rgba(251, 140, 0, 0.15);
+          color: #fb8c00;
+        }
       }
 
       .gaveta-textos {
@@ -212,6 +217,11 @@
           &.roxo {
             background: rgba(186, 104, 200, 0.15);
             color: #ba68c8;
+          }
+
+          &.laranja {
+            background: rgba(251, 140, 0, 0.15);
+            color: #fb8c00;
           }
         }
 

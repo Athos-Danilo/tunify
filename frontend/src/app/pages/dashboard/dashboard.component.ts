@@ -11,6 +11,7 @@ import { MinutesListenedComponent } from '../../components/minutes-listened/minu
 import { CardPerfilComponent } from '../../components/card-perfil/card-perfil.component';
 import { TopArtistasComponent } from '../../components/top-artistas/top-artistas.component';
 import { PlayerContainerComponent } from '../../components/player-container/player-container.component';
+import { SyncCardComponent } from '../../components/sync-card/sync-card.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,7 +23,8 @@ import { PlayerContainerComponent } from '../../components/player-container/play
     MinutesListenedComponent,
     CardPerfilComponent,
     TopArtistasComponent,
-    PlayerContainerComponent
+    PlayerContainerComponent,
+    SyncCardComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'

@@ -19,6 +19,16 @@
       </div>
     </div>
 
+    <!-- SELETOR FÃ RAIZ (SÓ MÊS ATUAL) -->
+    <div class="toggle-ordenacao" *ngIf="isMesAtual">
+      <button class="btn-toggle" [class.ativo]="modoOrdenacao === 'plays'" (click)="toggleModoOrdenacao('plays')">
+        Por Plays
+      </button>
+      <button class="btn-toggle" [class.ativo]="modoOrdenacao === 'time'" (click)="toggleModoOrdenacao('time')">
+        Por minutos
+      </button>
+    </div>
+
     <!-- SELETOR GLASSMORPHIC CUSTOMIZADO DE MÊS -->
     <div class="seletor-mes-custom" *ngIf="mesesDisponiveis.length > 0">
       <button 
@@ -95,7 +105,10 @@
           <span class="material-icons">play_circle_filled</span>
           {{ faixa.total_plays }} {{ faixa.total_plays === 1 ? 'play' : 'plays' }}
         </span>
-        <span class="stat-duracao">{{ formatarTempo(faixa.duracaoMs) }}</span>
+        <span class="stat-duracao" *ngIf="modoOrdenacao === 'plays' || !isMesAtual">{{ formatarTempo(faixa.duracaoMs) }}</span>
+        <span class="stat-duracao-total" *ngIf="modoOrdenacao === 'time' && isMesAtual && faixa.tempo_total_ms">
+          Total: {{ formatarTempoTotal(faixa.tempo_total_ms) }}
+        </span>
       </div>
 
     </div>
