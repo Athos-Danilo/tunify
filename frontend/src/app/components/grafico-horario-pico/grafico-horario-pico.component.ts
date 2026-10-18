@@ -35,6 +35,8 @@ export class GraficoHorarioPicoComponent implements OnInit {
   listaPeriodos: PeriodoInfo[] = [];
   dominanteInfo: any = null;
   totalPlays: number = 0;
+  dominantes: string[] = [];
+  nomesDominantes: string = '';
 
   private historySyncService = inject(HistorySyncService);
   private cdr = inject(ChangeDetectorRef);
@@ -61,24 +63,33 @@ export class GraficoHorarioPicoComponent implements OnInit {
   }
 
   carregarDados(): void {
+    this.carregando = true;
+    this.erro = null;
+    this.dominanteInfo = null;
+    this.listaPeriodos = [];
+    this.dominantes = [];
+    this.nomesDominantes = '';
+    this.totalPlays = 0;
     this.historySyncService.getPeakTime(this.userEmail).subscribe({
       next: (res) => {
         this.dados = res;
-        this.totalPlays = res.total_plays || 0;
-
-        if (this.totalPlays > 0 && res.dominante && res.dominante !== 'nenhum') {
-          this.dominanteInfo = CONFIG_PERIODOS[res.dominante];
-
-          // Constrói a lista ordenada pela ordem temporal do dia
-          const ordem = ['madrugada', 'manha', 'tarde', 'noite'];
-          this.listaPeriodos = ordem.map(chave => {
-            const qtd = res.periodos[chave] || 0;
-            return {
-              ...CONFIG_PERIODOS[chave],
-              quantidade: qtd,
-              porcentagem: (qtd / this.totalPlays) * 100
-            };
-          });
+        const ordem = ['madrugada', 'manha', 'tarde', 'noite'];
+        this.totalPlays = ordem.reduce((total, chave) => total + (res.periodos[chave] || 0), 0);
+        this.listaPeriodos = ordem.map(chave => {
+          const qtd = res.periodos[chave] || 0;
+          return {
+            ...CONFIG_PERIODOS[chave],
+            quantidade: qtd,
+            porcentagem: this.totalPlays > 0 ? (qtd / this.totalPlays) * 100 : 0
+          };
+        });
+        if (this.totalPlays > 0) {
+          const maior = Math.max(...this.listaPeriodos.map(p => p.quantidade));
+          this.dominantes = this.listaPeriodos.filter(p => p.quantidade === maior).map(p => p.id);
+          this.nomesDominantes = this.dominantes.map(id => CONFIG_PERIODOS[id].nome).join(' e ');
+          if (this.dominantes.length === 1) {
+            this.dominanteInfo = CONFIG_PERIODOS[this.dominantes[0]];
+          }
         }
 
         this.carregando = false;

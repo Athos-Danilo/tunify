@@ -208,7 +208,7 @@
     animation: growHorizontal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     transform-origin: left;
     position: relative;
-    min-width: 4px; /* garante que o 0% apareça um pontinho */
+    min-width: 0;
 
     &.cor-madrugada { background: linear-gradient(90deg, #5e35b1, #b39ddb); }
     &.cor-manha { background: linear-gradient(90deg, #f57c00, #ffcc80); }
