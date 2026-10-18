@@ -1,7 +1,7 @@
 import datetime
 
 # Ferramentas do SQLAlchemy para definir o tipo de cada coluna no banco de dados.
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
 
 # Ferramenta para criar os relacionamentos virtuais (JOINs) entre as tabelas no Python.
 from sqlalchemy.orm import relationship
@@ -17,6 +17,7 @@ from app.core.database import Base
 # -------------------------------------------------------------------------------------- #
 class MonthlyHistory(Base):
     __tablename__ = "monthly_history"
+    __table_args__ = (UniqueConstraint("user_id", "spotify_track_id", "played_at", name="uq_monthly_history_play"),)
 
     # 1. Chave Primária (ID)
     id = Column(Integer, primary_key=True, index=True)
@@ -180,6 +181,7 @@ class MonthlyTopTrack(Base):
 # -------------------------------------------------------------------------------------- #
 class DailyMinutesListened(Base):
     __tablename__ = "daily_minutes_listened"
+    __table_args__ = (UniqueConstraint("user_id", "date_referencia", name="uq_daily_minutes_user_date"),)
 
     # 1. Chave Primária (ID)
     id = Column(Integer, primary_key=True, index=True)
