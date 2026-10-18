@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, forkJoin, throwError } from 'rxjs';
-import { map, switchMap, catchError, retry, tap } from 'rxjs/operators';
+import { map, switchMap, catchError, retry } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SpotifyService } from './spotify.service';
 import { SecureStorage } from '../utils/secure-storage';
@@ -18,9 +18,6 @@ export class HistorySyncService {
   private CACHE_KEY = 'tunify_history_cache';
   private CACHE_TTL_MS = 5 * 60 * 1000;
   
-  // Cache de memória para o Horário de Pico (evita queries no banco se o usuário abrir e fechar a gaveta)
-  private peakTimeCache: any = null;
-
   /**
    * Ponto de entrada principal da tela.
    * Verifica o cache seguro primeiro. Se não existir ou expirou, 
@@ -140,16 +137,8 @@ export class HistorySyncService {
     return this.http.get<any[]>(`${this.backendUrl}/daily-minutes/${email}`);
   }
 
-  /**
-   * Busca o período de maior imersão musical no dia
-   * Usa cache em memória para não martelar o banco de dados
-   */
+  /** Consulta o histórico mensal atualizado sempre que a gaveta é aberta. */
   getPeakTime(email: string): Observable<any> {
-    if (this.peakTimeCache) {
-      return of(this.peakTimeCache);
-    }
-    return this.http.get<any>(`${this.backendUrl}/peak-time/${email}`).pipe(
-      tap(res => this.peakTimeCache = res)
-    );
+    return this.http.get<any>(`${this.backendUrl}/peak-time/${encodeURIComponent(email)}`);
   }
 }

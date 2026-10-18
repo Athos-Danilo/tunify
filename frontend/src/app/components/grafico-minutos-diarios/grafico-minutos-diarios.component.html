@@ -15,7 +15,7 @@
       <div class="anel-externo"></div>
       <div class="anel-interno"></div>
     </div>
-    <p>Sincronizando dias do mês...</p>
+    <p>Carregando dias do mês...</p>
   </div>
 
   <div class="estado-erro" *ngIf="!carregando && erro">
@@ -52,7 +52,7 @@
               class="preenchimento-barra" 
               [class.atual]="item.is_atual"
               [class.zerado]="item.minutos === 0"
-              [style.height.%]="(item.minutos / maxMinutos) * 100">
+              [style.height.%]="maxMinutos > 0 ? (item.minutos / maxMinutos) * 100 : 0">
               <div class="barra-glow" *ngIf="item.minutos > 0"></div>
             </div>
           </div>

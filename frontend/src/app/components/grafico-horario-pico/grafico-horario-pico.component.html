@@ -12,13 +12,13 @@
 
   <div class="estado-vazio" *ngIf="!carregando && !erro && totalPlays === 0">
     <span class="material-icons">schedule</span>
-    <p>Nenhuma música ouvida neste mês ainda.</p>
+    <p>Nenhuma reprodução registrada neste mês ainda.</p>
   </div>
 
   <ng-container *ngIf="!carregando && !erro && totalPlays > 0">
     
     <!-- CARD DE DESTAQUE (VENCEDOR) -->
-    <div class="destaque-dominante">
+    <div class="destaque-dominante" *ngIf="dominanteInfo">
       <div class="icone-destaque" [ngClass]="dominanteInfo.classe">
         <span class="material-icons">{{ dominanteInfo.icone }}</span>
       </div>
@@ -28,10 +28,18 @@
       </div>
     </div>
 
+    <div class="destaque-dominante" *ngIf="dominantes.length > 1">
+      <div class="texto-destaque">
+        <h4>Seus horários de pico estão empatados</h4>
+        <p>{{ nomesDominantes }} têm a mesma quantidade de reproduções.</p>
+      </div>
+    </div>
+    <p>Reproduções registradas neste mês, no horário de Brasília (UTC-3).</p>
+
     <!-- LISTA DE BARRAS -->
     <div class="cards-periodos">
       
-      <div class="card-periodo" *ngFor="let p of listaPeriodos" [class.vencedor]="p.id === dados.dominante">
+      <div class="card-periodo" *ngFor="let p of listaPeriodos" [class.vencedor]="dominantes.includes(p.id)">
         
         <div class="header-card">
           <div class="titulo-grupo">
@@ -39,7 +47,7 @@
             <span class="nome-card">{{ p.nome }}</span>
           </div>
           <div class="stats-grupo">
-            <span class="quantidade">{{ p.quantidade }} faixas</span>
+            <span class="quantidade">{{ p.quantidade }} reproduções</span>
             <span class="porcentagem">{{ p.porcentagem | number:'1.0-0' }}%</span>
           </div>
         </div>

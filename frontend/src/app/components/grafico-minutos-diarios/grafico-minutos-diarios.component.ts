@@ -13,7 +13,7 @@ export class GraficoMinutosDiariosComponent implements OnInit, AfterViewChecked 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   
   dados: any[] = [];
-  maxMinutos: number = 1;
+  maxMinutos: number = 0;
   linhasGuia: { valor: number, percent: number }[] = [];
   carregando: boolean = true;
   erro: string | null = null;
@@ -53,13 +53,15 @@ export class GraficoMinutosDiariosComponent implements OnInit, AfterViewChecked 
   }
 
   carregarDados(): void {
+    this.carregando = true;
+    this.erro = null;
     this.historySyncService.getDailyMinutes(this.userEmail).subscribe({
       next: (res) => {
         this.dados = res;
         
         if (this.dados.length > 0) {
           this.maxMinutos = Math.max(...this.dados.map(d => d.minutos));
-          if (this.maxMinutos === 0) this.maxMinutos = 1; // previne divisão por 0
+
           
           this.linhasGuia = [
             { valor: this.maxMinutos, percent: 100 },

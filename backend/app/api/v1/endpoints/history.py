@@ -9,6 +9,8 @@ from app.models.user import User
 from app.models.history import MonthlyHistory, MonthlyTopTrack, TopTwoHundred, MinutesListened, MonthlyTopArtist, DailyMinutesListened
 from app.models.track import TrackCache
 from app.models.artist import ArtistCache
+from app.services.listening_history import record_play, BRAZIL_TZ
+from app.services.peak_time import PEAK_TIME_QUERY, month_window, summarize_periods
 
 router = APIRouter()
 
@@ -94,41 +96,7 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
             # Parsing seguro da data UTC ISO8601
             played_at_dt = dateutil.parser.isoparse(played_at_str)
 
-            # Verifica se já não existe no banco para evitar duplicidade
-            exists = db.query(MonthlyHistory).filter(
-                MonthlyHistory.user_id == user.id,
-                MonthlyHistory.spotify_track_id == spotify_id,
-                MonthlyHistory.played_at == played_at_dt
-            ).first()
-
-            if not exists:
-                # Cria a entrada no histórico
-                new_history = MonthlyHistory(
-                    user_id=user.id,
-                    spotify_track_id=spotify_id,
-                    played_at=played_at_dt
-                )
-                db.add(new_history)
-
-                # Atualiza o cache diário de minutos
-                dia_br = (played_at_dt - timedelta(hours=3)).strftime("%Y-%m-%d")
-                duracao_ms = track_data.get("duration_ms", 0)
-                
-                registro_diario = db.query(DailyMinutesListened).filter(
-                    DailyMinutesListened.user_id == user.id,
-                    DailyMinutesListened.date_referencia == dia_br
-                ).first()
-                
-                if registro_diario:
-                    registro_diario.total_ms += duracao_ms
-                else:
-                    novo_diario = DailyMinutesListened(
-                        user_id=user.id,
-                        date_referencia=dia_br,
-                        total_ms=duracao_ms
-                    )
-                    db.add(novo_diario)
-                
+            if record_play(db, user.id, spotify_id, played_at_dt, track_data.get("duration_ms", 0)):
                 # Salva no TrackCache se não existir no DB e ainda não tiver sido adicionada nesta execução
                 track_cache = db.query(TrackCache).filter(TrackCache.spotify_id == spotify_id).first()
                 album_name = track_data.get("album", {}).get("name")
@@ -155,8 +123,10 @@ async def save_recent_delta(email: str, data: dict = Body(...), db: Session = De
                 
                 added_count += 1
         except Exception as e:
-            print(f"[ERROR] Falha ao salvar música Delta: {e}")
-            pass
+            db.rollback()
+            if isinstance(e, (ValueError, TypeError, KeyError)):
+                raise HTTPException(status_code=422, detail="Reprodução inválida no lote.") from e
+            raise
 
     # Efetiva todas as adições de uma vez
     db.commit()
@@ -616,13 +586,17 @@ async def get_daily_minutes(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    agora_br = datetime.now(timezone.utc) - timedelta(hours=3)
+    agora_br = datetime.now(BRAZIL_TZ)
     primeiro_dia_mes = agora_br.replace(day=1)
 
-    registros = db.query(DailyMinutesListened).filter(
+    registros = db.query(
+        DailyMinutesListened.date_referencia,
+        func.sum(DailyMinutesListened.total_ms).label("total_ms"),
+    ).filter(
         DailyMinutesListened.user_id == user.id,
-        DailyMinutesListened.date_referencia >= primeiro_dia_mes.strftime("%Y-%m-%d")
-    ).all()
+        DailyMinutesListened.date_referencia >= primeiro_dia_mes.strftime("%Y-%m-%d"),
+        DailyMinutesListened.date_referencia <= agora_br.strftime("%Y-%m-%d"),
+    ).group_by(DailyMinutesListened.date_referencia).all()
 
     mapa_diario = { r.date_referencia: r.total_ms for r in registros }
 
@@ -658,39 +632,8 @@ async def get_peak_time(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
-    # Pega o primeiro dia do mês no UTC
-    primeiro_dia_mes_utc = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-    # A mágica do PostgreSQL: Conta as linhas em 1 único milissegundo.
-    # Converte o timestamp salvo (UTC) para o fuso brasileiro antes de extrair a hora.
-    query = text("""
-        SELECT 
-            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 0 AND 5 THEN 1 ELSE 0 END) AS madrugada,
-            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 6 AND 11 THEN 1 ELSE 0 END) AS manha,
-            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 12 AND 17 THEN 1 ELSE 0 END) AS tarde,
-            SUM(CASE WHEN EXTRACT(HOUR FROM played_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Sao_Paulo') BETWEEN 18 AND 23 THEN 1 ELSE 0 END) AS noite
-        FROM monthly_history
-        WHERE user_id = :uid AND played_at >= :inicio_mes
-    """)
-
-    resultado = db.execute(query, {"uid": user.id, "inicio_mes": primeiro_dia_mes_utc}).fetchone()
-    
-    # Prepara a contagem (trata nulls caso o usuário não tenha nenhum play)
-    counts = {
-        "madrugada": int(resultado[0] or 0) if resultado else 0,
-        "manha": int(resultado[1] or 0) if resultado else 0,
-        "tarde": int(resultado[2] or 0) if resultado else 0,
-        "noite": int(resultado[3] or 0) if resultado else 0,
-    }
-
-    # Calcula qual é o período favorito
-    dominante = max(counts, key=counts.get)
-    if counts[dominante] == 0:
-        dominante = "nenhum"
-
-    return {
-        "periodos": counts,
-        "dominante": dominante,
-        "total_plays": sum(counts.values())
-    }
-
+    inicio_mes, agora = month_window()
+    resultado = db.execute(
+        PEAK_TIME_QUERY, {"uid": user.id, "inicio_mes": inicio_mes, "agora": agora}
+    ).one()
+    return summarize_periods(resultado)
