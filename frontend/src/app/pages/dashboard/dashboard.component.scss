@@ -53,45 +53,56 @@
 
   /* 📱 MOBILE (Mobile-First): 1 Coluna */
   grid-template-columns: 1fr;
-  gap: 2rem;
+  --dashboard-gap-y: 2rem;
+  gap: var(--dashboard-gap-y);
   align-items: center;
 
   /* 💻 TABLET: 2 Colunas (Esquerda menor, Direita livre) */
   @include tela-media {
     grid-template-columns: minmax(250px, 290px) 1fr; 
-    column-gap: 2.5rem;  /* 👈 Mantém o respiro lateral com as músicas */
-    row-gap: 1.2rem;     /* 👈 Reduz pela metade a cratera vertical! */
+    --dashboard-gap-x: 2.5rem;
+    column-gap: var(--dashboard-gap-x);
+    --dashboard-gap-y: 1.2rem;
+    row-gap: var(--dashboard-gap-y);     /* 👈 Reduz pela metade a cratera vertical! */
     align-items: start; /* Para os cards não esticarem para baixo sozinhos */
   }
 
   /* 🖥️ DESKTOP: 3 Colunas (Laterais fixas, Meio livre) */
   @include tela-grande {
     grid-template-columns: minmax(250px, 290px) 1fr minmax(280px, 350px);
-    column-gap: 3rem;
-    row-gap: 20px; /* 👈 AJUSTE: Aqui definimos os 20px de distância vertical */
+    --dashboard-gap-x: 3rem;
+    column-gap: var(--dashboard-gap-x);
+    --dashboard-gap-y: 20px;
+    row-gap: var(--dashboard-gap-y); /* 👈 AJUSTE: Aqui definimos os 20px de distância vertical */
   }
 }
 
 /*-------------------- BLOCOS DO GRID --------------------*/
 
-app-card-perfil {
-  display: block; 
-  
-  /* Mobile: Força a ser o 1º da fila */
-  order: 1; 
+// On larger screens the profile and Sync form an independent stack: the
+// height of the music/artists columns must not create empty space between them.
+.profile-column {
+  display: contents;
 
   @include tela-media {
-    /* 💻 Tablet: Coluna 1 (Esquerda), Linha 1 (Topo) */
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
-    order: unset; 
+    display: flex;
+    flex-direction: column;
+    gap: var(--dashboard-gap-x);
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    min-width: 0;
   }
 
   @include tela-grande {
-    /* 🖥️ Desktop: Mantém na Coluna 1, mas ocupa 2 linhas! */
-    grid-column: 1 / 2;
-    grid-row: 1 / 3; /* 👈 A MÁGICA AQUI: Mudamos de 1/2 para 1/3 */
+    grid-row: 1 / 3;
   }
+}
+
+app-card-perfil {
+  display: block;
+  order: 1;
+  @include tela-media { order: unset; }
 }
 
 app-minutes-listened {
@@ -163,4 +174,13 @@ app-top-artistas {
     justify-self: stretch;
     align-self: start; 
   }
+}
+/* On phones, Sync follows the artists; on desktop it sits beneath the profile. */
+app-sync-card {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  order: 5;
+  justify-self: center;
+  @include tela-media { order: unset; max-width: none; }
 }

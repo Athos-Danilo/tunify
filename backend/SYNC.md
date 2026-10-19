@@ -59,11 +59,13 @@ válida impede a inicialização. O login continua válido por sete dias.
 - O dashboard atualiza convites e conexões a cada 30 segundos enquanto aberto.
 
 A atualização exige um novo login para sessões antigas que guardavam somente o
-token Spotify. Não requer migração de banco adicional. As tabelas e a migração
-social já existentes são reutilizadas.
+token Spotify. A migração `b82fa031c9de` adiciona a foto do perfil ao usuário e é aplicada pelo
+backend na inicialização. O login Spotify e a atualização do próprio perfil no
+dashboard mantêm essa foto atualizada; amigos não são consultados individualmente.
 
-Esta etapa não consulta estatísticas musicais dos amigos e não altera as rotas
-de leitura do dashboard. Quando essa consulta for implementada, ela precisará
+Esta etapa não consulta estatísticas musicais dos amigos. A consulta ao próprio
+perfil passou a salvar a foto recebida, sem mudar as estatísticas retornadas.
+Quando a consulta de dados entre amigos for implementada, ela precisará
 validar a conexão ativa e a permissão correspondente em cada requisição.
 
 ## Validação
@@ -80,3 +82,15 @@ backend/venv/Scripts/python.exe -m pytest backend/tests/test_sync.py backend/tes
 
 No frontend, execute os testes de sessão, callback e página de convite. O build
 de desenvolvimento e o de produção verificam os respectivos ambientes.
+
+
+## Interface do círculo musical
+
+O dashboard mostra somente um bloco compacto com mensagens alternadas, discos,
+avatares e movimentos suaves. O painel usa um diálogo modal nativo: mantém o foco
+no conteúdo, aceita Esc, permite fechar pelo fundo e devolve o foco ao bloco.
+Em celulares, o painel entra pela parte inferior. Há filtros para os dois sentidos
+de compartilhamento, busca em círculos maiores, edição individual, confirmação
+para desconexão e abertura de links/códigos recebidos. As animações respeitam a
+preferência de movimento reduzido e o carrossel pausa durante interação e com a
+página em segundo plano.

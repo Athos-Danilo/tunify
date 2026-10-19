@@ -204,6 +204,8 @@ def callback_spotify(
         spotify_id = user_profile.get("id")
         display_name = user_profile.get("display_name") or user_profile.get("id")
         email = user_profile.get("email")
+        images = user_profile.get("images") or []
+        foto_perfil = images[0].get("url") if images else None
         if not spotify_id or not email:
             raise HTTPException(status_code=400, detail="O Spotify não informou a identidade da conta.")
 
@@ -220,6 +222,7 @@ def callback_spotify(
                 db_user.refresh_token = refresh_token
             db_user.display_name = display_name
             db_user.email = email
+            db_user.foto_perfil = foto_perfil
             
             # O commit "salva" as alterações no banco de fato.
             db.commit()
@@ -230,6 +233,7 @@ def callback_spotify(
             novo_usuario = User(
                 spotify_id=spotify_id,
                 display_name=display_name,
+                foto_perfil=foto_perfil,
                 email=email,
                 access_token=access_token,
                 refresh_token=refresh_token

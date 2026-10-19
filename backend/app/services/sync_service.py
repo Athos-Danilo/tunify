@@ -117,7 +117,7 @@ class SyncService:
             sender=UserPublicInfo(
                 id=sender.id,
                 nome=sender_nome,
-                foto_perfil=None # O frontend hidrata caso tenha em cache ou busca do Spotify
+                foto_perfil=sender.foto_perfil,
             ),
             permissions=SyncPermissionsSchema.model_validate(convite.permissions or {}),
             expires_at=convite.expires_at,
@@ -276,7 +276,7 @@ class SyncService:
             amigo=UserPublicInfo(
                 id=amigo.id,
                 nome=amigo.display_name or (amigo.email.split("@")[0] if amigo.email else "Amigo Tunify"),
-                foto_perfil=None,
+                foto_perfil=amigo.foto_perfil,
             ),
             minhas_permissoes_para_ele=SyncPermissionsSchema.model_validate(minhas_permissoes),
             permissoes_dele_para_mim=SyncPermissionsSchema.model_validate(permissoes_amigo),

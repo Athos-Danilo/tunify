@@ -217,7 +217,7 @@ def test_oauth_state_validation_and_separate_session(lab):
         post.assert_not_called()
         post.return_value.json.return_value = {'access_token': 'spotify', 'refresh_token': 'refresh'}
         get.return_value.status_code = 200
-        get.return_value.json.return_value = {'id': 'alice', 'email': 'alice@test.com', 'display_name': 'Alice'}
+        get.return_value.json.return_value = {'id': 'alice', 'email': 'alice@test.com', 'display_name': 'Alice', 'images': [{'url': 'https://i.scdn.co/image/photo'}]}
         r = client.get(f'/api/v1/auth/callback?code=code&state={state}', follow_redirects=False)
         assert r.status_code == 302
         url = urlparse(r.headers['location'])
@@ -227,6 +227,8 @@ def test_oauth_state_validation_and_separate_session(lab):
         session = values['jwt'][0]
         me = client.get('/api/v1/auth/me', headers={'Authorization': f'Bearer {session}'})
         assert me.json()['email'] == 'alice@test.com'
+        with lab[1]() as db:
+            assert db.query(User).filter_by(email='alice@test.com').one().foto_perfil == 'https://i.scdn.co/image/photo'
         assert 'tunify_oauth_state' not in client.cookies
         assert client.get(f'/api/v1/auth/callback?code=code&state={state}').status_code == 400
 
@@ -250,3 +252,38 @@ def test_local_password_cannot_be_taken_over_and_local_login_works(lab):
     assert r.status_code == 200
     h = {'Authorization': f'Bearer {r.json()["access_token"]}'}
     assert client.get('/api/v1/auth/me', headers=h).json()['email'] == 'alice@test.com'
+
+
+def test_social_profile_photo_is_returned_from_saved_profile(lab):
+    client, Session = lab
+    with Session() as db:
+        db.query(User).filter_by(email='alice@test.com').one().foto_perfil = 'https://i.scdn.co/image/alice-photo'
+        db.commit()
+    code = invite(client)
+    details = client.get(f'/sync/convites/{code}').json()
+    assert details['sender']['foto_perfil'] == 'https://i.scdn.co/image/alice-photo'
+    connection = accept(client, code).json()
+    assert connection['amigo']['foto_perfil'] == 'https://i.scdn.co/image/alice-photo'
+
+
+def test_profile_photo_migration_preserves_existing_users():
+    import importlib.util
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+    from sqlalchemy import inspect
+
+    path = Path(__file__).resolve().parents[1] / 'alembic/versions/b82fa031c9de_user_profile_photo.py'
+    spec = importlib.util.spec_from_file_location('photo_migration', path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    engine = create_engine('sqlite://')
+    with engine.begin() as conn:
+        conn.exec_driver_sql('CREATE TABLE users (id INTEGER PRIMARY KEY, display_name TEXT)')
+        conn.exec_driver_sql("INSERT INTO users VALUES (1, 'Existing user')")
+        migration.op = Operations(MigrationContext.configure(conn))
+        migration.upgrade()
+        assert 'foto_perfil' in {c['name'] for c in inspect(conn).get_columns('users')}
+        assert conn.exec_driver_sql('SELECT display_name, foto_perfil FROM users').one() == ('Existing user', None)
+        migration.downgrade()
+        assert 'foto_perfil' not in {c['name'] for c in inspect(conn).get_columns('users')}
+    engine.dispose()

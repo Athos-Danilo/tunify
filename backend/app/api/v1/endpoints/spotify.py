@@ -93,6 +93,12 @@ async def get_resumo_perfil(email: str, db: Session = Depends(get_db)):
     if dados_me.get("images") and len(dados_me["images"]) > 0:
         foto_url = dados_me["images"][0]["url"]
 
+    # Aproveita a consulta do próprio dashboard; não consulta dados de amigos.
+    foto_social = dados_me["images"][0].get("url") if dados_me.get("images") else None
+    if usuario.foto_perfil != foto_social:
+        usuario.foto_perfil = foto_social
+        db.commit()
+
     tipo_conta = "PREMIUM" if dados_me.get("product") == "premium" else "FREE"
 
     pacote_resumo = {
