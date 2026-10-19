@@ -48,9 +48,37 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
+  obterIdentidade(): Observable<{ id: number; nome: string; email: string }> {
+    return this.http.get<{ id: number; nome: string; email: string }>(`${this.apiUrl}/me`);
+  }
+
+  guardarConvite(codigo: string): void {
+    if (/^vibe-[A-Za-z0-9]{1,12}$/.test(codigo)) {
+      sessionStorage.setItem('tunify_convite_pendente', codigo);
+    }
+  }
+
+  destinoAposLogin(): string[] {
+    const codigo = sessionStorage.getItem('tunify_convite_pendente');
+    sessionStorage.removeItem('tunify_convite_pendente');
+    return codigo && /^vibe-[A-Za-z0-9]{1,12}$/.test(codigo)
+      ? ['/sync/convite', codigo] : ['/dashboard'];
+  }
+
+  entrarComSpotify(): void {
+    window.location.href = `${this.apiUrl}/login`;
+  }
+
   // Descobre se o usuário tá logado (se tem token salvo)
   estaLogado(): boolean {
-    return !!this.obterToken();
+    try {
+      const payload = this.obterToken()?.split('.')[1];
+      if (!payload) return false;
+      const claims = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof claims.exp === 'number' && claims.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
   }
 
   // O botão de Sair (Apaga a memória do navegador)

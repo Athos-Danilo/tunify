@@ -12,13 +12,24 @@
     </div>
 
     <!-- 2. Estado de Erro -->
-    <div class="convite-card error-card" *ngIf="!carregando && erroMensagem && !conectadoComSucesso">
+    <div class="convite-card error-card" *ngIf="!carregando && erroMensagem && !conectadoComSucesso && !jaConectados">
       <div class="card-icon-art">⚠️</div>
       <h2 class="card-title">Ops! Não foi possível conectar</h2>
       <p class="card-desc">{{ erroMensagem }}</p>
       <button class="btn-primary" (click)="irParaDashboard()" type="button">
         Voltar para o Início
       </button>
+    </div>
+
+    <div class="convite-card success-card" *ngIf="!carregando && jaConectados && !conectadoComSucesso">
+      <div class="card-icon-art">✓</div>
+      <div class="badge-pill">CONEXÃO ATIVA</div>
+      <h2 class="card-title">Vocês já estão conectados!</h2>
+      <p class="card-desc">
+        Você e <strong>{{ convite?.sender?.nome }}</strong> já estão sincronizados no Tunify Sync.
+        Para alterar o que você compartilha, acesse suas conexões no dashboard.
+      </p>
+      <button class="btn-primary" (click)="irParaDashboard()" type="button">Ir para o Dashboard</button>
     </div>
 
     <!-- 3. Sucesso: Vibes Sincronizadas -->
@@ -48,7 +59,7 @@
     </div>
 
     <!-- 4. Dono do Convite (Tentou abrir o próprio link) -->
-    <div class="convite-card owner-card" *ngIf="!carregando && convite && convite.is_owner && !conectadoComSucesso">
+    <div class="convite-card owner-card" *ngIf="!carregando && !erroMensagem && convite && convite.is_owner && convite.is_valid && !conectadoComSucesso && !jaConectados">
       <div class="card-icon-art">🔗</div>
       <div class="badge-pill">SEU PRÓPRIO LINK</div>
       <h2 class="card-title">Este é o seu convite!</h2>
@@ -64,7 +75,7 @@
     </div>
 
     <!-- 5. Convite Válido para Aceitar -->
-    <div class="convite-card main-invite-card" *ngIf="!carregando && convite && !convite.is_owner && !conectadoComSucesso && convite.is_valid">
+    <div class="convite-card main-invite-card" *ngIf="!carregando && !erroMensagem && convite && !convite.is_owner && !conectadoComSucesso && !jaConectados && convite.is_valid">
 
       <div class="badge-pill">TUNIFY SYNC &bull; CONVITE P2P</div>
 
@@ -106,6 +117,7 @@
           </svg>
           <span>Entrar com Spotify para Aceitar</span>
         </button>
+        <button class="btn-primary" (click)="fazerLoginLocal()" type="button">Entrar com e-mail e senha</button>
       </div>
 
       <!-- Cenário B: Usuário ESTÁ logado -> Configura permissões de volta -->

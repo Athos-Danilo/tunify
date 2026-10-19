@@ -1,7 +1,7 @@
 import os
 import secrets
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -17,6 +17,14 @@ from app.schemas.sync import (
 
 
 class SyncService:
+
+    @staticmethod
+    def _expirou(convite: SyncInvite) -> bool:
+        # SQLite não preserva timezone; PostgreSQL preserva.
+        expires_at = convite.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        return expires_at <= datetime.now(timezone.utc)
 
     @staticmethod
     def _gerar_codigo_convite() -> str:
@@ -67,28 +75,32 @@ class SyncService:
         cls, 
         db: Session, 
         codigo: str, 
-        current_user_email: Optional[str] = None
+        current_user: Optional[User] = None
     ) -> InviteDetailsResponse:
         """
         Busca os dados públicos de um convite para o convidado inspecionar.
         """
-        convite = db.query(SyncInvite).filter(SyncInvite.invite_code == codigo).first()
+        convite = db.query(SyncInvite).filter(SyncInvite.invite_code == codigo).with_for_update().first()
         if not convite:
             raise ValueError("CONVITE_NAO_ENCONTRADO")
 
-        agora = datetime.now(timezone.utc)
-
         # Checa expiração dinâmica
-        if convite.status == "PENDENTE" and convite.expires_at < agora:
+        if convite.status == "PENDENTE" and cls._expirou(convite):
             convite.status = "EXPIRADO"
             db.commit()
 
         sender = convite.sender
         sender_nome = sender.display_name or sender.email.split("@")[0] if sender.email else "Usuário do Tunify"
 
-        is_owner = False
-        if current_user_email and sender.email == current_user_email:
-            is_owner = True
+        is_owner = current_user is not None and sender.id == current_user.id
+        is_already_connected = False
+        if current_user is not None and not is_owner:
+            user_a_id, user_b_id = sorted((sender.id, current_user.id))
+            is_already_connected = db.query(SyncConnection.id).filter(
+                SyncConnection.user_a_id == user_a_id,
+                SyncConnection.user_b_id == user_b_id,
+                SyncConnection.status == "ACTIVE",
+            ).first() is not None
 
         is_valid = (convite.status == "PENDENTE")
 
@@ -105,7 +117,6 @@ class SyncService:
             sender=UserPublicInfo(
                 id=sender.id,
                 nome=sender_nome,
-                email=sender.email or "",
                 foto_perfil=None # O frontend hidrata caso tenha em cache ou busca do Spotify
             ),
             permissions=SyncPermissionsSchema.model_validate(convite.permissions or {}),
@@ -113,6 +124,7 @@ class SyncService:
             status=convite.status,
             is_valid=is_valid,
             is_owner=is_owner,
+            is_already_connected=is_already_connected,
             message=mensagem
         )
 
@@ -127,14 +139,15 @@ class SyncService:
         """
         Efetiva a conexão bidirecional entre dois usuários a partir de um convite válido.
         """
-        convite = db.query(SyncInvite).filter(SyncInvite.invite_code == codigo).first()
+        convite = db.query(SyncInvite).filter(SyncInvite.invite_code == codigo).with_for_update().first()
         if not convite:
             raise ValueError("CONVITE_NAO_ENCONTRADO")
 
         agora = datetime.now(timezone.utc)
-        if convite.status == "PENDENTE" and convite.expires_at < agora:
+        if convite.status == "PENDENTE" and cls._expirou(convite):
             convite.status = "EXPIRADO"
             db.commit()
+        if convite.status == "EXPIRADO":
             raise ValueError("CONVITE_EXPIRADO")
 
         if convite.status != "PENDENTE":
@@ -147,11 +160,17 @@ class SyncService:
         user_a_id = min(convite.sender_id, receiver.id)
         user_b_id = max(convite.sender_id, receiver.id)
 
+        # Serializa conexões do mesmo par, inclusive convites diferentes.
+        db.query(User).filter(User.id.in_([user_a_id, user_b_id])).order_by(User.id).with_for_update().all()
+
         # Verifica se já são amigos conectados
         conexao_existente = db.query(SyncConnection).filter(
             SyncConnection.user_a_id == user_a_id,
             SyncConnection.user_b_id == user_b_id
         ).first()
+
+        if conexao_existente and conexao_existente.status == "BLOCKED":
+            raise ValueError("CONVITE_INVALIDO_BLOCKED")
 
         if conexao_existente and conexao_existente.status == "ACTIVE":
             raise ValueError("JA_CONECTADOS")
@@ -195,7 +214,7 @@ class SyncService:
         convite = db.query(SyncInvite).filter(
             SyncInvite.invite_code == codigo,
             SyncInvite.sender_id == user.id
-        ).first()
+        ).with_for_update().first()
 
         if not convite:
             raise ValueError("CONVITE_NAO_ENCONTRADO")
@@ -240,32 +259,56 @@ class SyncService:
             SyncConnection.status == "ACTIVE"
         ).order_by(SyncConnection.created_at.desc()).all()
 
-        resultado = []
-        for c in conexoes:
-            # Identifica quem é o amigo
-            if c.user_a_id == user.id:
-                amigo = c.user_b
-                minhas_permissoes = c.permissions_a_to_b
-                permissoes_amigo = c.permissions_b_to_a
-            else:
-                amigo = c.user_a
-                minhas_permissoes = c.permissions_b_to_a
-                permissoes_amigo = c.permissions_a_to_b
+        return [cls.formatar_conexao(c, user) for c in conexoes]
 
-            amigo_nome = amigo.display_name or (amigo.email.split("@")[0] if amigo.email else "Amigo Tunify")
+    @staticmethod
+    def formatar_conexao(c: SyncConnection, user: User) -> ConnectionResponse:
+        if c.user_a_id == user.id:
+            amigo = c.user_b
+            minhas_permissoes = c.permissions_a_to_b
+            permissoes_amigo = c.permissions_b_to_a
+        else:
+            amigo = c.user_a
+            minhas_permissoes = c.permissions_b_to_a
+            permissoes_amigo = c.permissions_a_to_b
+        return ConnectionResponse(
+            connection_id=c.id,
+            amigo=UserPublicInfo(
+                id=amigo.id,
+                nome=amigo.display_name or (amigo.email.split("@")[0] if amigo.email else "Amigo Tunify"),
+                foto_perfil=None,
+            ),
+            minhas_permissoes_para_ele=SyncPermissionsSchema.model_validate(minhas_permissoes),
+            permissoes_dele_para_mim=SyncPermissionsSchema.model_validate(permissoes_amigo),
+            status=c.status,
+            created_at=c.created_at,
+        )
 
-            resultado.append(ConnectionResponse(
-                connection_id=c.id,
-                amigo=UserPublicInfo(
-                    id=amigo.id,
-                    nome=amigo_nome,
-                    email=amigo.email or "",
-                    foto_perfil=None
-                ),
-                minhas_permissoes_para_ele=SyncPermissionsSchema.model_validate(minhas_permissoes or {}),
-                permissoes_dele_para_mim=SyncPermissionsSchema.model_validate(permissoes_amigo or {}),
-                status=c.status,
-                created_at=c.created_at
-            ))
 
-        return resultado
+    @classmethod
+    def _conexao_do_usuario(cls, db: Session, connection_id: int, user: User) -> SyncConnection:
+        conexao = db.query(SyncConnection).filter(
+            SyncConnection.id == connection_id,
+            or_(SyncConnection.user_a_id == user.id, SyncConnection.user_b_id == user.id),
+            SyncConnection.status == "ACTIVE",
+        ).with_for_update().first()
+        if not conexao:
+            raise ValueError("CONEXAO_NAO_ENCONTRADA")
+        return conexao
+
+    @classmethod
+    def atualizar_permissoes(cls, db: Session, connection_id: int, user: User,
+                             permissoes: SyncPermissionsSchema) -> SyncConnection:
+        conexao = cls._conexao_do_usuario(db, connection_id, user)
+        if conexao.user_a_id == user.id:
+            conexao.permissions_a_to_b = permissoes.model_dump()
+        else:
+            conexao.permissions_b_to_a = permissoes.model_dump()
+        db.commit()
+        return conexao
+
+    @classmethod
+    def desconectar(cls, db: Session, connection_id: int, user: User) -> None:
+        conexao = cls._conexao_do_usuario(db, connection_id, user)
+        conexao.status = "PAUSED"
+        db.commit()

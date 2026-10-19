@@ -39,11 +39,6 @@
     </div>
   </div>
 
-  <!-- ============================================================== -->
-  <!-- ABA 1: GERAR CONVITE COM PERMISSÕES                            -->
-  <!-- ============================================================== -->
-  <div class="sync-body" *ngIf="abaAtiva === 'convidar'">
-
     <!-- Alertas de Feedback -->
     <div class="sync-alert sucesso" *ngIf="mensagemSucesso">
       <span class="alert-icon">✓</span>
@@ -53,7 +48,13 @@
     <div class="sync-alert erro" *ngIf="mensagemErro">
       <span class="alert-icon">⚠️</span>
       <span>{{ mensagemErro }}</span>
+      <button *ngIf="precisaLogin" type="button" (click)="entrarNovamente()">Entrar novamente</button>
     </div>
+
+  <!-- ============================================================== -->
+  <!-- ABA 1: GERAR CONVITE COM PERMISSÕES                            -->
+  <!-- ============================================================== -->
+  <div class="sync-body" *ngIf="abaAtiva === 'convidar'">
 
     <div class="permissions-intro">
       <div class="intro-tag">
@@ -67,6 +68,8 @@
         Selecione exatamente o que você deseja liberar para o amigo que aceitar este convite:
       </p>
     </div>
+
+    <p *ngIf="conviteAtivo">As permissões deste link já foram salvas. Para mudar, cancele o convite e gere outro.</p>
 
     <!-- Grid dos 4 Toggles de Permissão -->
     <div class="permissions-grid">
@@ -242,11 +245,23 @@
           <h4 class="friend-name">{{ conexao.amigo.nome }}</h4>
           <span class="friend-status-badge">Sincronizado &bull; Ativo</span>
 
+          <p>O que este amigo compartilha com você:</p>
           <div class="friend-perms-summary">
             <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_minutes">⏱️ Pódio</span>
             <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_tracks">🎵 Top Músicas</span>
             <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_artists">🎤 Top Artistas</span>
             <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_peak_time">🌙 Pico</span>
+          </div>
+          <button type="button" class="tab-btn" (click)="editarPermissoes(conexao)">Minhas permissões</button>
+          <button type="button" class="tab-btn" (click)="desconectar(conexao)">Desconectar</button>
+          <div *ngIf="editandoConexao === conexao.connection_id && permissoesEdicao as edicao">
+            <p>O que você permite que {{ conexao.amigo.nome }} veja:</p>
+            <label><input type="checkbox" [(ngModel)]="edicao.share_minutes"> Minutos ouvidos</label>
+            <label><input type="checkbox" [(ngModel)]="edicao.share_top_tracks"> Top músicas</label>
+            <label><input type="checkbox" [(ngModel)]="edicao.share_top_artists"> Top artistas</label>
+            <label><input type="checkbox" [(ngModel)]="edicao.share_peak_time"> Horário de pico</label>
+            <button type="button" class="tab-btn" [disabled]="salvandoPermissoes" (click)="salvarPermissoes()">Salvar</button>
+            <button type="button" class="tab-btn" [disabled]="salvandoPermissoes" (click)="editandoConexao = null">Cancelar</button>
           </div>
         </div>
       </div>

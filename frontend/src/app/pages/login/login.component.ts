@@ -114,7 +114,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.loginLocal(dadosLogin).subscribe({
       next: (resposta) => {
         this.carregando = false;
-        console.log('Login efetuado com sucesso!', resposta);
         
         // 🚨 3. Usa a sua própria função pra guardar o passaporte no navegador!
         // Confirme se o FastAPI está retornando "access_token" e "usuario" nesses mesmos nomes
@@ -124,7 +123,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.authService.salvarSessao(token, usuario);
         
         // 4. Redireciona o usuário para a Home ou Dashboard
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(this.authService.destinoAposLogin(), { replaceUrl: true });
       },
       error: (erro) => {
         this.carregando = false;

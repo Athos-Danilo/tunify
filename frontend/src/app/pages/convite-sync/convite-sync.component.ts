@@ -39,6 +39,7 @@ export class ConviteSyncComponent implements OnInit {
 
   aceitando: boolean = false;
   conectadoComSucesso: boolean = false;
+  jaConectados: boolean = false;
   modoEscuro: boolean = true;
 
   ngOnInit() {
@@ -51,8 +52,6 @@ export class ConviteSyncComponent implements OnInit {
       }
     }
 
-    this.verificarSessao();
-
     this.codigoConvite = this.route.snapshot.paramMap.get('codigo') || '';
     if (!this.codigoConvite) {
       this.erroMensagem = 'Código de convite não fornecido.';
@@ -60,32 +59,44 @@ export class ConviteSyncComponent implements OnInit {
       return;
     }
 
-    this.carregarConvite();
+    this.verificarSessao();
   }
 
   verificarSessao() {
     this.estaLogado = this.authService.estaLogado();
-    if (typeof window !== 'undefined') {
-      const userInfoStr = localStorage.getItem('tunify_user_info');
-      if (userInfoStr) {
-        try {
-          const user = JSON.parse(userInfoStr);
-          this.emailUsuarioLogado = user.email || null;
-          this.nomeUsuarioLogado = user.nome || user.display_name || user.email;
-        } catch (e) {
-          console.error(e);
-        }
-      }
+    if (!this.estaLogado) {
+      this.carregarConvite();
+      return;
     }
+    this.authService.obterIdentidade().subscribe({
+      next: user => {
+        this.emailUsuarioLogado = user.email;
+        this.nomeUsuarioLogado = user.nome || user.email;
+        this.carregarConvite();
+      },
+      error: (err) => {
+        if (err.status !== 401) {
+          this.erroMensagem = 'Não foi possível verificar sua sessão. Atualize a página para tentar novamente.';
+          this.carregando = false;
+          this.cdr.detectChanges();
+          return;
+        }
+        this.authService.logout();
+        this.estaLogado = false;
+        this.carregarConvite();
+      }
+    });
   }
 
   carregarConvite() {
     this.carregando = true;
     this.erroMensagem = null;
 
-    this.syncService.obterDetalhesConvite(this.codigoConvite, this.emailUsuarioLogado || undefined).subscribe({
+    this.syncService.obterDetalhesConvite(this.codigoConvite).subscribe({
       next: (dados) => {
         this.convite = dados;
+        this.jaConectados = dados.is_already_connected;
+        if (!this.jaConectados && !dados.is_valid) this.erroMensagem = dados.message || 'Este convite não está mais disponível.';
         this.carregando = false;
         this.cdr.detectChanges();
       },
@@ -107,21 +118,22 @@ export class ConviteSyncComponent implements OnInit {
   }
 
   fazerLoginParaAceitar() {
-    // Salva o convite para processar após o login
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('tunify_convite_pendente', this.codigoConvite);
-    }
-    // Redireciona para o login do Spotify
-    window.location.href = 'http://localhost:8000/api/v1/auth/login';
+    this.authService.guardarConvite(this.codigoConvite);
+    this.authService.entrarComSpotify();
+  }
+
+  fazerLoginLocal() {
+    this.authService.guardarConvite(this.codigoConvite);
+    this.router.navigate(['/login']);
   }
 
   aceitarConexao() {
-    if (!this.emailUsuarioLogado || !this.convite) return;
+    if (!this.estaLogado || !this.emailUsuarioLogado || !this.convite?.is_valid || this.jaConectados || this.aceitando) return;
 
     this.aceitando = true;
     this.erroMensagem = null;
 
-    this.syncService.aceitarConvite(this.codigoConvite, this.emailUsuarioLogado, this.minhasPermissoes).subscribe({
+    this.syncService.aceitarConvite(this.codigoConvite, this.minhasPermissoes).subscribe({
       next: () => {
         this.aceitando = false;
         this.conectadoComSucesso = true;
@@ -130,8 +142,12 @@ export class ConviteSyncComponent implements OnInit {
       error: (err) => {
         console.error('[ConviteSync] Erro ao aceitar:', err);
         this.aceitando = false;
-        if (err.status === 409) {
-          this.erroMensagem = 'Vocês já estão conectados no Tunify Sync!';
+        if (err.status === 401) {
+          this.authService.logout();
+          this.estaLogado = false;
+          this.erroMensagem = 'Sua sessão expirou. Entre novamente para aceitar o convite.';
+        } else if (err.status === 409) {
+          this.jaConectados = true;
         } else if (err.status === 410) {
           this.erroMensagem = 'Este convite expirou. Peça ao seu amigo para gerar um novo.';
         } else {

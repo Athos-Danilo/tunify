@@ -8,12 +8,14 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 from sqlalchemy.pool import StaticPool
 
 # Importações do seu projeto
 from main import app
 from app.core.database import Base, get_db
 from app.models.user import User
+from app.core.config import settings
 
 # ========================================================================= #
 # 1. O LABORATÓRIO (Banco de Dados Falso na Memória RAM)
@@ -39,7 +41,8 @@ def override_get_db():
     finally:
         db.close()
 
-client = TestClient(app)
+callback_origin = urlparse(settings.SPOTIFY_REDIRECT_URI)
+client = TestClient(app, base_url=f"{callback_origin.scheme}://{callback_origin.netloc}")
 
 # 🚨 A MÁGICA DO ISOLAMENTO
 @pytest.fixture(autouse=True)
@@ -87,7 +90,9 @@ def test_callback_spotify_cria_usuario_novo(mock_get, mock_post):
 
     # 3. Ação: O robô bate na rota. 
     # 🚨 ADICIONADO: follow_redirects=False para o robô não tentar abrir o Angular de verdade
-    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno", follow_redirects=False)
+    login = client.get("/api/v1/auth/login", follow_redirects=False)
+    state = parse_qs(urlparse(login.headers["location"]).query)["state"][0]
+    response = client.get(f"/api/v1/auth/callback?code=codigo_falso_de_retorno&state={state}", follow_redirects=False)
 
     # 4. Verificação da Resposta da API
     # 🚨 MUDOU: Agora esperamos um 302 (Redirecionamento) em vez de 200
@@ -140,7 +145,9 @@ def test_callback_spotify_atualiza_usuario_existente(mock_get, mock_post):
 
     # 4. Ação: O robô bate na rota simulando o retorno do login
     # 🚨 ADICIONADO: follow_redirects=False
-    response = client.get("/api/v1/auth/callback?code=codigo_falso_de_retorno", follow_redirects=False)
+    login = client.get("/api/v1/auth/login", follow_redirects=False)
+    state = parse_qs(urlparse(login.headers["location"]).query)["state"][0]
+    response = client.get(f"/api/v1/auth/callback?code=codigo_falso_de_retorno&state={state}", follow_redirects=False)
 
     # 5. Verificações da Resposta da API
     # 🚨 MUDOU: Agora esperamos um 302

@@ -1,29 +1,21 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.user import User
+from app.core.security import obter_usuario_atual, obter_usuario_opcional
 from app.services.sync_service import SyncService
 from app.schemas.sync import (
     CreateInviteRequest,
     InviteDetailsResponse,
     AcceptInviteRequest,
     InviteSummaryResponse,
-    ConnectionResponse
+    ConnectionResponse,
+    SyncPermissionsSchema
 )
 
 router = APIRouter()
-
-
-def _obter_usuario_por_email(db: Session, email: str) -> User:
-    usuario = db.query(User).filter(User.email == email).first()
-    if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Usuário não encontrado."
-        )
-    return usuario
 
 
 # ======> 1. Criar Novo Convite P2P com Permissões Granulares
@@ -31,10 +23,9 @@ def _obter_usuario_por_email(db: Session, email: str) -> User:
 @router.post("/convites", response_model=InviteSummaryResponse)
 def criar_convite(
     payload: CreateInviteRequest,
-    email: str = Query(..., description="E-mail do usuário remetente"),
+    usuario: User = Depends(obter_usuario_atual),
     db: Session = Depends(get_db)
 ):
-    usuario = _obter_usuario_por_email(db, email)
     convite = SyncService.criar_convite(db, usuario, payload.permissions)
     
     base_url = SyncService._obter_base_frontend_url()
@@ -53,10 +44,9 @@ def criar_convite(
 # --------------------------------------------------------------------------- #
 @router.get("/convites/meus-ativos", response_model=List[InviteSummaryResponse])
 def listar_meus_convites_ativos(
-    email: str = Query(..., description="E-mail do usuário"),
+    usuario: User = Depends(obter_usuario_atual),
     db: Session = Depends(get_db)
 ):
-    usuario = _obter_usuario_por_email(db, email)
     return SyncService.listar_convites_ativos(db, usuario)
 
 
@@ -65,11 +55,11 @@ def listar_meus_convites_ativos(
 @router.get("/convites/{codigo}", response_model=InviteDetailsResponse)
 def obter_detalhes_convite(
     codigo: str,
-    email_logado: Optional[str] = Query(None, description="E-mail do usuário que está visualizando o convite (se logado)"),
+    usuario: Optional[User] = Depends(obter_usuario_opcional),
     db: Session = Depends(get_db)
 ):
     try:
-        return SyncService.obter_detalhes_convite(db, codigo, email_logado)
+        return SyncService.obter_detalhes_convite(db, codigo, usuario)
     except ValueError as e:
         if str(e) == "CONVITE_NAO_ENCONTRADO":
             raise HTTPException(
@@ -85,21 +75,13 @@ def obter_detalhes_convite(
 def aceitar_convite(
     codigo: str,
     payload: AcceptInviteRequest,
-    email: str = Query(..., description="E-mail do usuário que está aceitando o convite"),
+    usuario: User = Depends(obter_usuario_atual),
     db: Session = Depends(get_db)
 ):
-    usuario_receptor = _obter_usuario_por_email(db, email)
     
     try:
-        conexao = SyncService.aceitar_convite(db, codigo, usuario_receptor, payload.permissions)
-        # Formata para a resposta da conexão
-        conexoes = SyncService.listar_conexoes(db, usuario_receptor)
-        for c in conexoes:
-            if c.connection_id == conexao.id:
-                return c
-        
-        # Fallback caso não ache na lista
-        raise HTTPException(status_code=200, detail="Conexão criada com sucesso.")
+        conexao = SyncService.aceitar_convite(db, codigo, usuario, payload.permissions)
+        return SyncService.formatar_conexao(conexao, usuario)
 
     except ValueError as e:
         err = str(e)
@@ -121,10 +103,9 @@ def aceitar_convite(
 @router.delete("/convites/{codigo}")
 def revogar_convite(
     codigo: str,
-    email: str = Query(..., description="E-mail do dono do convite"),
+    usuario: User = Depends(obter_usuario_atual),
     db: Session = Depends(get_db)
 ):
-    usuario = _obter_usuario_por_email(db, email)
     try:
         SyncService.revogar_convite(db, codigo, usuario)
         return {"status": "sucesso", "mensagem": "Convite cancelado com sucesso."}
@@ -140,8 +121,26 @@ def revogar_convite(
 # --------------------------------------------------------------------------- #
 @router.get("/conexoes", response_model=List[ConnectionResponse])
 def listar_conexoes(
-    email: str = Query(..., description="E-mail do usuário"),
+    usuario: User = Depends(obter_usuario_atual),
     db: Session = Depends(get_db)
 ):
-    usuario = _obter_usuario_por_email(db, email)
     return SyncService.listar_conexoes(db, usuario)
+
+
+@router.patch("/conexoes/{connection_id}/permissoes", response_model=ConnectionResponse)
+def atualizar_permissoes(connection_id: int, payload: SyncPermissionsSchema,
+                         usuario: User = Depends(obter_usuario_atual), db: Session = Depends(get_db)):
+    try:
+        conexao = SyncService.atualizar_permissoes(db, connection_id, usuario, payload)
+        return SyncService.formatar_conexao(conexao, usuario)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Conexão ativa não encontrada.")
+
+
+@router.delete("/conexoes/{connection_id}", status_code=204)
+def desconectar(connection_id: int, usuario: User = Depends(obter_usuario_atual),
+                db: Session = Depends(get_db)):
+    try:
+        SyncService.desconectar(db, connection_id, usuario)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Conexão ativa não encontrada.")
