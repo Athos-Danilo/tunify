@@ -1,16 +1,6 @@
 <div class="sync-surface" [class.tema-claro]="!modoEscuro">
   <button class="sync-tile" type="button" (click)="abrirPainel()" aria-haspopup="dialog" [attr.aria-expanded]="painelAberto"
     (mouseenter)="pausado = true" (mouseleave)="pausado = false" (focus)="pausado = true" (blur)="pausado = false">
-    <span class="tile-header">
-      <span class="tile-title-group">
-        <span class="status-dot" [class.online]="amigosConectados.length > 0" aria-hidden="true"></span>
-        <span class="card-title">Tunify Sync</span>
-      </span>
-      <span class="arrow-btn" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </span>
-    </span>
-    <span class="card-separador" aria-hidden="true"></span>
     <span class="carrossel-wrapper" aria-hidden="true">
       <span class="slide" [class.ativo]="slide === 0">
         <span class="titulo-icone">
@@ -22,7 +12,6 @@
             <span class="friend-photo-wrapper">
               <img *ngIf="amigosConectados[0].amigo.foto_perfil && !fotosFalhas.has(amigosConectados[0].amigo.id); else inicialUnica" [src]="amigosConectados[0].amigo.foto_perfil" alt="" class="friend-photo" (error)="fotosFalhas.add(amigosConectados[0].amigo.id)">
               <ng-template #inicialUnica><b class="friend-initial">{{ iniciais(amigosConectados[0].amigo.nome) }}</b></ng-template>
-              <i class="sync-badge-dot"></i>
             </span>
             <span class="friend-info-col">
               <span class="texto-especial">{{ amigosConectados[0].amigo.nome }}</span>
