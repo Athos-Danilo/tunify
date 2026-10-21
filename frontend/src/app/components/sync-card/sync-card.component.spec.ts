@@ -77,4 +77,24 @@ describe('Gerenciamento das conexões', () => {
     component.conviteRecebido='https://example.com/sync/convite/vibe-abc'; component.abrirConviteRecebido();
     expect(component.erroCodigo).toContain('válido');
   });
+  it('exibe foto do amigo conectado e até 5 avatares no card fechado com 3 telinhas', () => {
+    const umAmigo = [{connection_id:1, amigo:{id:2, nome:'Ainoã Raquel', foto_perfil:'https://i.scdn.co/image/ainoa'}, minhas_permissoes_para_ele:permissions, permissoes_dele_para_mim:permissions}];
+    const seisAmigos = [1,2,3,4,5,6].map(id => ({connection_id:id, amigo:{id, nome:`Amigo ${id}`, foto_perfil:`https://i.scdn.co/image/${id}`}, minhas_permissoes_para_ele:permissions, permissoes_dele_para_mim:permissions}));
+    const service = {
+      listarMeusConvitesAtivos: vi.fn().mockReturnValue(of([])),
+      listarConexoes: vi.fn().mockReturnValueOnce(of(umAmigo)).mockReturnValueOnce(of(seisAmigos))
+    };
+    TestBed.configureTestingModule({imports:[SyncCardComponent],providers:[provideRouter([]),{provide:SyncService,useValue:service}]});
+    const fixture = TestBed.createComponent(SyncCardComponent);
+    fixture.componentInstance.email = 'alice@test.com';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.sync-tile .slide')).toHaveLength(3);
+    expect(fixture.nativeElement.querySelector('.single-friend-showcase img')?.getAttribute('src')).toBe('https://i.scdn.co/image/ainoa');
+    expect(fixture.nativeElement.querySelector('.single-friend-showcase .texto-especial')?.textContent).toContain('Ainoã Raquel');
+    fixture.componentInstance.carregarDadosIniciais();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.amigosVisiveis).toHaveLength(5);
+    expect(fixture.componentInstance.amigosExtras).toBe(1);
+    expect(fixture.nativeElement.querySelector('.dock-extra')?.textContent).toContain('+1');
+  });
 });

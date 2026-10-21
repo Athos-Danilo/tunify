@@ -95,6 +95,19 @@ export class SyncCardComponent implements OnInit, OnDestroy {
 
   contar(permissoes: SyncPermissions): number { return this.categorias.filter(c => permissoes[c.chave]).length; }
   iniciais(nome: string): string { return nome.trim().split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase(); }
+  get amigosVisiveis(): ConnectionItem[] { return this.amigosConectados.slice(0, 5); }
+  get amigosExtras(): number { return Math.max(0, this.amigosConectados.length - 5); }
+  get primeiroNomeAmigo(): string {
+    const nome = this.amigosConectados[0]?.amigo?.nome?.trim();
+    return nome ? nome.split(/\s+/)[0] : 'seu amigo';
+  }
+  get resumoNomesAmigos(): string {
+    const total = this.amigosConectados.length;
+    if (!total) return 'Conectar Amigos';
+    if (total === 1) return this.amigosConectados[0].amigo.nome;
+    const primeiros = this.amigosConectados.slice(0, 2).map(c => c.amigo.nome.trim().split(/\s+/)[0]);
+    return total === 2 ? `${primeiros[0]} e ${primeiros[1]}` : `${primeiros[0]}, ${primeiros[1]} +${total - 2}`;
+  }
   get conexoesFiltradas(): ConnectionItem[] {
     return this.amigosConectados.filter(c => (!this.busca || c.amigo.nome.toLocaleLowerCase().includes(this.busca.toLocaleLowerCase())) &&
       (this.filtro === 'todos' || this.contar(this.filtro === 'veem' ? c.minhas_permissoes_para_ele : c.permissoes_dele_para_mim) > 0));

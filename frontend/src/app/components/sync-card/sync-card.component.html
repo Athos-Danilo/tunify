@@ -1,39 +1,72 @@
 <div class="sync-surface" [class.tema-claro]="!modoEscuro">
   <button class="sync-tile" type="button" (click)="abrirPainel()" aria-haspopup="dialog" [attr.aria-expanded]="painelAberto"
     (mouseenter)="pausado = true" (mouseleave)="pausado = false" (focus)="pausado = true" (blur)="pausado = false">
-    <span class="tile-art" aria-hidden="true">
-      <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
-      <span class="vinyl vinyl-back"><i></i></span>
-      <span class="vinyl vinyl-front" [class.portrait-disc]="amigosConectados.length">
-        <ng-container *ngIf="amigosConectados.length; else discoCentro">
-          <ng-container *ngIf="amigosConectados[slide % amigosConectados.length].amigo as destaque">
-            <img *ngIf="destaque.foto_perfil && !fotosFalhas.has(destaque.id); else destaqueInicial" [src]="destaque.foto_perfil" alt="" (error)="fotosFalhas.add(destaque.id)">
-            <ng-template #destaqueInicial><b>{{ iniciais(destaque.nome) }}</b></ng-template>
-          </ng-container>
-        </ng-container>
-        <ng-template #discoCentro><i></i></ng-template>
+    <span class="tile-header">
+      <span class="tile-title-group">
+        <span class="status-dot" [class.online]="amigosConectados.length > 0" aria-hidden="true"></span>
+        <span class="card-title">Tunify Sync</span>
       </span>
-      <span class="art-spark spark-one">✦</span><span class="art-spark spark-two">✧</span>
-      <span class="wave"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="arrow-btn" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
     </span>
-    <span class="tile-copy">
-      <span class="eyebrow">TUNIFY SYNC <span class="tiny-star">✦</span></span>
-      <strong>{{ amigosConectados.length ? 'Seu círculo musical' : 'Conectar com amigos' }}</strong>
-      <span class="tile-carousel" aria-hidden="true">
-        <span *ngFor="let mensagem of mensagensCard; let i = index" [class.current]="slide === i">{{ mensagem }}</span>
-      </span>
-      <span class="sr-only">{{ mensagensCard[0] }}</span>
-      <span class="tile-bottom">
-        <span class="avatar-stack" *ngIf="amigosConectados.length">
-          <span class="mini-avatar" *ngFor="let c of amigosConectados | slice:0:3">
-            <img *ngIf="c.amigo.foto_perfil && !fotosFalhas.has(c.amigo.id); else inicialMini" [src]="c.amigo.foto_perfil" alt="" (error)="fotosFalhas.add(c.amigo.id)">
-            <ng-template #inicialMini>{{ iniciais(c.amigo.nome) }}</ng-template>
-          </span>
-          <span class="mini-avatar overflow-avatar" *ngIf="amigosConectados.length > 3">+{{ amigosConectados.length - 3 }}</span>
+    <span class="card-separador" aria-hidden="true"></span>
+    <span class="carrossel-wrapper" aria-hidden="true">
+      <span class="slide" [class.ativo]="slide === 0">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="destaque-minimalista">{{ amigosConectados.length === 1 ? 'Conectado com' : amigosConectados.length > 1 ? 'Amigos Conectados' : 'Círculo Musical' }}</span>
         </span>
-        <span class="tile-action">{{ precisaLogin ? 'Entrar novamente' : amigosConectados.length ? 'Gerenciar conexões' : 'Abra seu círculo' }} <span>↗</span></span>
+        <span class="box-informacao"><span class="box-bg">
+          <span class="single-friend-showcase" *ngIf="amigosConectados.length === 1">
+            <span class="friend-photo-wrapper">
+              <img *ngIf="amigosConectados[0].amigo.foto_perfil && !fotosFalhas.has(amigosConectados[0].amigo.id); else inicialUnica" [src]="amigosConectados[0].amigo.foto_perfil" alt="" class="friend-photo" (error)="fotosFalhas.add(amigosConectados[0].amigo.id)">
+              <ng-template #inicialUnica><b class="friend-initial">{{ iniciais(amigosConectados[0].amigo.nome) }}</b></ng-template>
+              <i class="sync-badge-dot"></i>
+            </span>
+            <span class="friend-info-col">
+              <span class="texto-especial">{{ amigosConectados[0].amigo.nome }}</span>
+              <span class="texto-apoio">Sincronizado com você</span>
+            </span>
+          </span>
+          <span class="multi-friends-showcase" *ngIf="amigosConectados.length > 1">
+            <span class="avatar-dock-five">
+              <span class="dock-avatar" *ngFor="let c of amigosVisiveis; let idx = index" [style.--avatar-idx]="idx">
+                <img *ngIf="c.amigo.foto_perfil && !fotosFalhas.has(c.amigo.id); else inicialMulti" [src]="c.amigo.foto_perfil" alt="" (error)="fotosFalhas.add(c.amigo.id)">
+                <ng-template #inicialMulti><b>{{ iniciais(c.amigo.nome) }}</b></ng-template>
+              </span>
+              <span class="dock-avatar dock-extra" *ngIf="amigosExtras > 0">+{{ amigosExtras }}</span>
+            </span>
+            <span class="texto-especial texto-compacto">{{ resumoNomesAmigos }}</span>
+          </span>
+          <span class="text-showcase" *ngIf="amigosConectados.length === 0">
+            <span class="texto-especial">{{ precisaLogin ? 'Entrar Novamente' : 'Conectar Amigos' }}</span>
+            <span class="texto-apoio">{{ precisaLogin ? 'Sua sessão expirou' : 'Sincronize seu Spotify' }}</span>
+          </span>
+        </span></span>
+      </span>
+      <span class="slide" [class.ativo]="slide === 1">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+          <span class="destaque-minimalista">{{ amigosConectados.length ? 'Sintonia Ativa' : 'Privacidade Total' }}</span>
+        </span>
+        <span class="box-informacao"><span class="box-bg"><span class="text-showcase">
+          <span class="texto-especial">{{ amigosConectados.length ? 'Ver Informações' : 'Você no Controle' }}</span>
+          <span class="texto-apoio">{{ amigosConectados.length === 1 ? 'Dados com ' + primeiroNomeAmigo : amigosConectados.length > 1 ? 'Gerencie suas ' + amigosConectados.length + ' conexões' : 'Escolha o que compartilhar' }}</span>
+        </span></span></span>
+      </span>
+      <span class="slide" [class.ativo]="slide === 2">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
+          <span class="destaque-minimalista">{{ conviteAtivo ? 'Convite Pendente' : 'Expandir Conexões' }}</span>
+        </span>
+        <span class="box-informacao"><span class="box-bg"><span class="text-showcase">
+          <span class="texto-especial">{{ conviteAtivo ? 'Compartilhar Link' : 'Conectar Amigos' }}</span>
+          <span class="texto-apoio">{{ conviteAtivo ? validadeConvite : 'Gere um convite ou use um código' }}</span>
+        </span></span></span>
       </span>
     </span>
+    <span class="sr-only">{{ mensagensCard[0] }}</span>
     <span class="carousel-progress" aria-hidden="true"><i *ngFor="let i of [0,1,2]" [class.current]="slide === i"></i></span>
   </button>
 

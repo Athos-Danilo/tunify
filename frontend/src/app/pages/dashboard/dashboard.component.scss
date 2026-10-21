@@ -179,8 +179,6 @@ app-top-artistas {
 app-sync-card {
   display: block;
   width: 100%;
-  max-width: 380px;
   order: 5;
-  justify-self: center;
-  @include tela-media { order: unset; max-width: none; }
+  @include tela-media { order: unset; }
 }
