@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-// 🚨 Importando o nosso novo carteiro de autenticação
+import { combineLatest, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -12,48 +13,61 @@ import { AuthService } from '../../core/services/auth.service';
       <p>Ajustando a sua Vibe...</p>
     </div>
   `,
-  // Se você tiver um CSS bonitinho pra essa tela, pode manter o styleUrl aqui:
-  // styleUrl: './callback.component.scss'
 })
 export class CallbackComponent implements OnInit {
-  
-  // Injetamos as ferramentas do Angular para ler a URL (ActivatedRoute) e para mudar de página (Router)
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  // 🚨 Injetando o AuthService!
-  private authService = inject(AuthService); 
+  private authService = inject(AuthService);
 
   ngOnInit(): void {
-    // Fica escutando a URL em busca de parâmetros (?token=...&nome=...)
-    this.route.fragment.subscribe(fragment => {
-      const params = new URLSearchParams(fragment || '');
-      const token = params.get('token');
-      const jwt = params.get('jwt');
-      const nome = params.get('nome');
-      const email = params.get('email');
+    const fragment$ = this.route.fragment ?? of(null);
+    const queryParams$ = this.route.queryParams ?? of({} as Record<string, string>);
 
-      if (token && jwt && email) {
-        console.log('[SUCESSO] O Porteiro pegou os dados da URL!');
-        
-        // 🚨 1. Tranca os dados usando o nosso novo AuthService para a tela de configurações achar!
-        // Criamos o objeto do usuário exatamente como o Configurações espera:
-        const usuario = { nome: nome, email: email, spotify_token: token };
-        this.authService.salvarSessao(jwt, usuario);
+    combineLatest([fragment$, queryParams$])
+      .pipe(
+        map(([fragment, queryParams]) => {
+          const fragParams = new URLSearchParams(fragment || '');
+          const hashParams =
+            typeof window !== 'undefined' && window.location.hash
+              ? new URLSearchParams(window.location.hash.replace(/^#/, ''))
+              : new URLSearchParams();
+          const searchParams =
+            typeof window !== 'undefined' && window.location.search
+              ? new URLSearchParams(window.location.search)
+              : new URLSearchParams();
 
-        // Mantendo os antigos temporariamente só pra garantir que a sua Dashboard não quebre
-        // (podemos limpar isso no futuro quando o projeto inteiro estiver usando o AuthService)
-        localStorage.setItem('spotify_token', token);
-        localStorage.setItem('usuario_nome', nome || email);
-        localStorage.setItem('usuario_email', email);
+          const get = (key: string): string | null =>
+            fragParams.get(key) ||
+            (queryParams && queryParams[key]) ||
+            this.route.snapshot?.queryParamMap?.get(key) ||
+            hashParams.get(key) ||
+            searchParams.get(key);
 
-        // 2. Libera a catraca e manda o usuário direto para a Área VIP
-        this.router.navigate(this.authService.destinoAposLogin(), { replaceUrl: true });
-        
-      } else {
-        console.error('[ERRO] Acesso negado. Cadê o token?');
-        // Se alguém tentar entrar na página /callback direto, é chutado pra Home
-        this.router.navigate(['/']);
-      }
-    });
+          return {
+            token: get('token'),
+            jwt: get('jwt'),
+            nome: get('nome'),
+            email: get('email'),
+          };
+        })
+      )
+      .subscribe(({ token, jwt, nome, email }) => {
+        if (token && (email || nome)) {
+          const emailFinal = email || nome || '';
+          const nomeFinal = nome || emailFinal;
+          const usuario = { nome: nomeFinal, email: emailFinal, spotify_token: token };
+
+          this.authService.salvarSessao(jwt || token, usuario);
+
+          localStorage.setItem('spotify_token', token);
+          localStorage.setItem('usuario_nome', nomeFinal);
+          localStorage.setItem('usuario_email', emailFinal);
+
+          this.router.navigate(this.authService.destinoAposLogin(), { replaceUrl: true });
+        } else {
+          console.error('[ERRO] Acesso negado. Cadê o token?');
+          this.router.navigate(['/']);
+        }
+      });
   }
 }

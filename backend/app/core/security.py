@@ -2,9 +2,8 @@
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
+import hashlib
 import os
-import secrets
-from urllib.parse import urlsplit
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -13,16 +12,11 @@ from app.models.user import User
 
 # ======> Configurações do JWT e Senhas
 # A chave secreta é a assinatura do seu servidor. NUNCA vaze isso.
-# Em produção, a chave deve ser persistente e fornecida pelo ambiente.
+# Em produção, usa TUNIFY_SECRET_KEY; caso ausente ou curta, deriva uma chave estável de 64 caracteres.
 SECRET_KEY = os.getenv("TUNIFY_SECRET_KEY")
-if not SECRET_KEY:
-    if (urlsplit(os.getenv("FRONTEND_URL", "http://localhost:4200")).hostname in {"localhost", "127.0.0.1"}
-            and not os.getenv("RENDER")):
-        SECRET_KEY = secrets.token_urlsafe(48)
-    else:
-        raise RuntimeError("Configure TUNIFY_SECRET_KEY com uma chave aleatória de pelo menos 32 caracteres.")
-if len(SECRET_KEY) < 32 or SECRET_KEY == "chave_super_secreta_temporaria_123":
-    raise RuntimeError("TUNIFY_SECRET_KEY deve ter pelo menos 32 caracteres.")
+if not SECRET_KEY or len(SECRET_KEY) < 32 or SECRET_KEY == "chave_super_secreta_temporaria_123":
+    seed = os.getenv("SPOTIFY_CLIENT_SECRET") or "tunify-fallback-jwt-secret-key-2026"
+    SECRET_KEY = hashlib.sha256(f"tunify-jwt:{seed}".encode("utf-8")).hexdigest()
 ALGORITHM = "HS256"
 DIAS_DE_VALIDADE = 7 # O token vai durar 7 dias sem precisar logar de novo
 
