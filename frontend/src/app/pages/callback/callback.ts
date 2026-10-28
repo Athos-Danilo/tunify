@@ -25,27 +25,29 @@ export class CallbackComponent implements OnInit {
 
   ngOnInit(): void {
     // Fica escutando a URL em busca de parâmetros (?token=...&nome=...)
-    this.route.queryParams.subscribe(params => {
-      const token = params['token'];
-      const nome = params['nome'];
-      const email = params['email'];
+    this.route.fragment.subscribe(fragment => {
+      const params = new URLSearchParams(fragment || '');
+      const token = params.get('token');
+      const jwt = params.get('jwt');
+      const nome = params.get('nome');
+      const email = params.get('email');
 
-      if (token && nome) {
+      if (token && jwt && email) {
         console.log('[SUCESSO] O Porteiro pegou os dados da URL!');
         
         // 🚨 1. Tranca os dados usando o nosso novo AuthService para a tela de configurações achar!
         // Criamos o objeto do usuário exatamente como o Configurações espera:
-        const usuario = { nome: nome, email: email };
-        this.authService.salvarSessao(token, usuario);
+        const usuario = { nome: nome, email: email, spotify_token: token };
+        this.authService.salvarSessao(jwt, usuario);
 
         // Mantendo os antigos temporariamente só pra garantir que a sua Dashboard não quebre
         // (podemos limpar isso no futuro quando o projeto inteiro estiver usando o AuthService)
         localStorage.setItem('spotify_token', token);
-        localStorage.setItem('usuario_nome', nome);
+        localStorage.setItem('usuario_nome', nome || email);
         localStorage.setItem('usuario_email', email);
 
         // 2. Libera a catraca e manda o usuário direto para a Área VIP
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(this.authService.destinoAposLogin(), { replaceUrl: true });
         
       } else {
         console.error('[ERRO] Acesso negado. Cadê o token?');

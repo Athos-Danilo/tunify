@@ -13,7 +13,6 @@ export interface SyncPermissions {
 export interface UserPublicInfo {
   id: number;
   nome: string;
-  email: string;
   foto_perfil?: string;
 }
 
@@ -35,6 +34,7 @@ export interface InviteDetails {
   status: string;
   is_valid: boolean;
   is_owner: boolean;
+  is_already_connected: boolean;
   message?: string;
 }
 
@@ -57,9 +57,9 @@ export class SyncService {
   /**
    * Gera um novo link de convite exclusivo com as permissões escolhidas
    */
-  criarConvite(email: string, permissions: SyncPermissions): Observable<InviteSummary> {
+  criarConvite(permissions: SyncPermissions): Observable<InviteSummary> {
     return this.http.post<InviteSummary>(
-      `${this.apiUrl}/convites?email=${encodeURIComponent(email)}`, 
+      `${this.apiUrl}/convites`,
       { permissions }
     );
   }
@@ -67,29 +67,25 @@ export class SyncService {
   /**
    * Lista todos os convites ativos (não expirados e pendentes) criados pelo usuário
    */
-  listarMeusConvitesAtivos(email: string): Observable<InviteSummary[]> {
+  listarMeusConvitesAtivos(): Observable<InviteSummary[]> {
     return this.http.get<InviteSummary[]>(
-      `${this.apiUrl}/convites/meus-ativos?email=${encodeURIComponent(email)}`
+      `${this.apiUrl}/convites/meus-ativos`
     );
   }
 
   /**
    * Consulta os detalhes de um convite específico para o convidado inspecionar
    */
-  obterDetalhesConvite(codigo: string, emailLogado?: string): Observable<InviteDetails> {
-    let url = `${this.apiUrl}/convites/${encodeURIComponent(codigo)}`;
-    if (emailLogado) {
-      url += `?email_logado=${encodeURIComponent(emailLogado)}`;
-    }
-    return this.http.get<InviteDetails>(url);
+  obterDetalhesConvite(codigo: string): Observable<InviteDetails> {
+    return this.http.get<InviteDetails>(`${this.apiUrl}/convites/${encodeURIComponent(codigo)}`);
   }
 
   /**
    * Conecta os dois usuários, enviando as permissões de volta
    */
-  aceitarConvite(codigo: string, email: string, permissions: SyncPermissions): Observable<ConnectionItem> {
+  aceitarConvite(codigo: string, permissions: SyncPermissions): Observable<ConnectionItem> {
     return this.http.post<ConnectionItem>(
-      `${this.apiUrl}/convites/${encodeURIComponent(codigo)}/aceitar?email=${encodeURIComponent(email)}`,
+      `${this.apiUrl}/convites/${encodeURIComponent(codigo)}/aceitar`,
       { permissions }
     );
   }
@@ -97,18 +93,26 @@ export class SyncService {
   /**
    * Revoga um convite pendente antes que alguém o utilize
    */
-  revogarConvite(codigo: string, email: string): Observable<any> {
+  revogarConvite(codigo: string): Observable<any> {
     return this.http.delete(
-      `${this.apiUrl}/convites/${encodeURIComponent(codigo)}?email=${encodeURIComponent(email)}`
+      `${this.apiUrl}/convites/${encodeURIComponent(codigo)}`
     );
+  }
+
+  atualizarPermissoes(connectionId: number, permissions: SyncPermissions): Observable<ConnectionItem> {
+    return this.http.patch<ConnectionItem>(`${this.apiUrl}/conexoes/${connectionId}/permissoes`, permissions);
+  }
+
+  desconectar(connectionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/conexoes/${connectionId}`);
   }
 
   /**
    * Lista todos os amigos atualmente conectados e sincronizados
    */
-  listarConexoes(email: string): Observable<ConnectionItem[]> {
+  listarConexoes(): Observable<ConnectionItem[]> {
     return this.http.get<ConnectionItem[]>(
-      `${this.apiUrl}/conexoes?email=${encodeURIComponent(email)}`
+      `${this.apiUrl}/conexoes`
     );
   }
 }

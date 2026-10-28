@@ -1,38 +1,33 @@
 import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool, ConfigDict
 
 
 # ======> Schema das Permissões Granulares (Fase 1)
 # Controla exatamente quais módulos do usuário o amigo poderá ver.
 # --------------------------------------------------------------------------- #
 class SyncPermissionsSchema(BaseModel):
-    share_minutes: bool = Field(default=True, description="Compartilhar minutos totais ouvidos (Pódio da Casa)")
-    share_top_tracks: bool = Field(default=True, description="Compartilhar Top 10 músicas mensais")
-    share_top_artists: bool = Field(default=True, description="Compartilhar Top 15 artistas mensais")
-    share_peak_time: bool = Field(default=True, description="Compartilhar horário de pico (madrugada/tarde...)")
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
+    share_minutes: StrictBool = Field(description="Compartilhar minutos totais ouvidos (Pódio da Casa)")
+    share_top_tracks: StrictBool = Field(description="Compartilhar Top 10 músicas mensais")
+    share_top_artists: StrictBool = Field(description="Compartilhar Top 15 artistas mensais")
+    share_peak_time: StrictBool = Field(description="Compartilhar horário de pico (madrugada/tarde...)")
 
-    class Config:
-        from_attributes = True
 
 
 # ======> Payload para Criar Convite
 # --------------------------------------------------------------------------- #
 class CreateInviteRequest(BaseModel):
-    permissions: SyncPermissionsSchema = Field(default_factory=SyncPermissionsSchema)
+    permissions: SyncPermissionsSchema
 
 
 # ======> Informações Básicas do Usuário (Para exibição no Convite e Conexão)
 # --------------------------------------------------------------------------- #
 class UserPublicInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     nome: str
-    email: str
     foto_perfil: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
 
 # ======> Detalhes Públicos do Convite (Exibidos ao Convidado)
 # --------------------------------------------------------------------------- #
@@ -44,6 +39,7 @@ class InviteDetailsResponse(BaseModel):
     status: str
     is_valid: bool
     is_owner: bool = False
+    is_already_connected: bool = False
     message: Optional[str] = None
 
 
@@ -51,7 +47,7 @@ class InviteDetailsResponse(BaseModel):
 # O convidado escolhe as permissões que ELE concede de volta.
 # --------------------------------------------------------------------------- #
 class AcceptInviteRequest(BaseModel):
-    permissions: SyncPermissionsSchema = Field(default_factory=SyncPermissionsSchema)
+    permissions: SyncPermissionsSchema
 
 
 # ======> Resumo de Convite do Próprio Usuário

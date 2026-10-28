@@ -1,257 +1,158 @@
-<section class="sync-card-container" [ngClass]="{'tema-claro': !modoEscuro}">
-
-  <!-- Fundo com Orbes Luminosos Dinâmicos -->
-  <div class="sync-glow-orb orb-primary"></div>
-  <div class="sync-glow-orb orb-secondary"></div>
-
-  <!-- Cabeçalho do Card com Título e Seletor de Abas -->
-  <div class="sync-header">
-    <div class="header-info">
-      <div class="badge-vibe">
-        <span class="pulse-dot"></span>
-        <span class="badge-text">TUNIFY SYNC &bull; MATCH DE VIBE</span>
-      </div>
-      <h2 class="sync-title">Conexão Musical P2P</h2>
-      <p class="sync-subtitle">
-        Conecte-se com seus amigos para comparar suas vibes e disputar o Pódio da Casa com privacidade total.
-      </p>
-    </div>
-
-    <!-- Navegação de Abas -->
-    <div class="sync-tabs">
-      <button 
-        class="tab-btn" 
-        [class.ativo]="abaAtiva === 'convidar'" 
-        (click)="abaAtiva = 'convidar'"
-        type="button">
-        <span class="tab-icon">✨</span>
-        <span>Gerar Convite</span>
-      </button>
-
-      <button 
-        class="tab-btn" 
-        [class.ativo]="abaAtiva === 'amigos'" 
-        (click)="abaAtiva = 'amigos'"
-        type="button">
-        <span class="tab-icon">👥</span>
-        <span>Amigos ({{ amigosConectados.length }})</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ============================================================== -->
-  <!-- ABA 1: GERAR CONVITE COM PERMISSÕES                            -->
-  <!-- ============================================================== -->
-  <div class="sync-body" *ngIf="abaAtiva === 'convidar'">
-
-    <!-- Alertas de Feedback -->
-    <div class="sync-alert sucesso" *ngIf="mensagemSucesso">
-      <span class="alert-icon">✓</span>
-      <span>{{ mensagemSucesso }}</span>
-    </div>
-
-    <div class="sync-alert erro" *ngIf="mensagemErro">
-      <span class="alert-icon">⚠️</span>
-      <span>{{ mensagemErro }}</span>
-    </div>
-
-    <div class="permissions-intro">
-      <div class="intro-tag">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <span>Privacidade por Design</span>
-      </div>
-      <p class="intro-text">
-        Selecione exatamente o que você deseja liberar para o amigo que aceitar este convite:
-      </p>
-    </div>
-
-    <!-- Grid dos 4 Toggles de Permissão -->
-    <div class="permissions-grid">
-
-      <!-- 1. Minutos Ouvidos -->
-      <div 
-        class="perm-card" 
-        [class.ativo]="permissoes.share_minutes" 
-        (click)="alternarPermissao('share_minutes')">
-        <div class="perm-icon-wrapper minutes">
-          <span class="perm-emoji">⏱️</span>
-        </div>
-        <div class="perm-content">
-          <h4 class="perm-title">Pódio da Casa</h4>
-          <p class="perm-desc">Compartilha seus minutos mensais para disputar a coroa de Audiófilo do Mês.</p>
-        </div>
-        <div class="perm-toggle">
-          <span class="switch" [class.on]="permissoes.share_minutes"></span>
-        </div>
-      </div>
-
-      <!-- 2. Top 10 Músicas -->
-      <div 
-        class="perm-card" 
-        [class.ativo]="permissoes.share_top_tracks" 
-        (click)="alternarPermissao('share_top_tracks')">
-        <div class="perm-icon-wrapper tracks">
-          <span class="perm-emoji">🎵</span>
-        </div>
-        <div class="perm-content">
-          <h4 class="perm-title">Top 10 Músicas</h4>
-          <p class="perm-desc">Permite que seu amigo veja suas faixas mais ouvidas e variações de tendência.</p>
-        </div>
-        <div class="perm-toggle">
-          <span class="switch" [class.on]="permissoes.share_top_tracks"></span>
-        </div>
-      </div>
-
-      <!-- 3. Top 15 Artistas -->
-      <div 
-        class="perm-card" 
-        [class.ativo]="permissoes.share_top_artists" 
-        (click)="alternarPermissao('share_top_artists')">
-        <div class="perm-icon-wrapper artists">
-          <span class="perm-emoji">🎤</span>
-        </div>
-        <div class="perm-content">
-          <h4 class="perm-title">Top 15 Artistas</h4>
-          <p class="perm-desc">Exibe seus artistas favoritos e a quantidade de músicas diferentes exploradas.</p>
-        </div>
-        <div class="perm-toggle">
-          <span class="switch" [class.on]="permissoes.share_top_artists"></span>
-        </div>
-      </div>
-
-      <!-- 4. Horário de Pico -->
-      <div 
-        class="perm-card" 
-        [class.ativo]="permissoes.share_peak_time" 
-        (click)="alternarPermissao('share_peak_time')">
-        <div class="perm-icon-wrapper peak">
-          <span class="perm-emoji">🌙</span>
-        </div>
-        <div class="perm-content">
-          <h4 class="perm-title">Horário de Pico</h4>
-          <p class="perm-desc">Revela seu turno favorito para escutar música (Madrugada, Tarde ou Noite).</p>
-        </div>
-        <div class="perm-toggle">
-          <span class="switch" [class.on]="permissoes.share_peak_time"></span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Seção de Ação: Criar Convite OU Exibir Link Ativo -->
-    <div class="sync-actions-zone">
-
-      <!-- Cenário A: Ainda não tem convite ativo gerado -->
-      <div class="generate-box" *ngIf="!conviteAtivo">
-        <button 
-          class="btn-gerar" 
-          [disabled]="gerandoConvite"
-          (click)="gerarNovoConvite()" 
-          type="button">
-          <span *ngIf="!gerandoConvite" class="btn-text">
-            <span>⚡ Gerar Link de Convite Único</span>
+<div class="sync-surface" [class.tema-claro]="!modoEscuro">
+  <button class="sync-tile" type="button" (click)="abrirPainel()" aria-haspopup="dialog" [attr.aria-expanded]="painelAberto"
+    (mouseenter)="pausado = true" (mouseleave)="pausado = false" (focus)="pausado = true" (blur)="pausado = false">
+    <span class="carrossel-wrapper" aria-hidden="true">
+      <span class="slide" [class.ativo]="slide === 0">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="destaque-minimalista">{{ amigosConectados.length === 1 ? 'Conectado com' : amigosConectados.length > 1 ? 'Amigos Conectados' : 'Círculo Musical' }}</span>
+        </span>
+        <span class="box-informacao"><span class="box-bg">
+          <span class="single-friend-showcase" *ngIf="amigosConectados.length === 1">
+            <span class="friend-photo-wrapper">
+              <img *ngIf="amigosConectados[0].amigo.foto_perfil && !fotosFalhas.has(amigosConectados[0].amigo.id); else inicialUnica" [src]="amigosConectados[0].amigo.foto_perfil" alt="" class="friend-photo" (error)="fotosFalhas.add(amigosConectados[0].amigo.id)">
+              <ng-template #inicialUnica><b class="friend-initial">{{ iniciais(amigosConectados[0].amigo.nome) }}</b></ng-template>
+            </span>
+            <span class="friend-info-col">
+              <span class="texto-especial">{{ amigosConectados[0].amigo.nome }}</span>
+              <span class="texto-apoio">Sincronizado com você</span>
+            </span>
           </span>
-          <span *ngIf="gerandoConvite" class="btn-loading">
-            <span class="spinner"></span> Gerando link seguro...
+          <span class="multi-friends-showcase" *ngIf="amigosConectados.length > 1">
+            <span class="avatar-dock-five">
+              <span class="dock-avatar" *ngFor="let c of amigosVisiveis; let idx = index" [style.--avatar-idx]="idx">
+                <img *ngIf="c.amigo.foto_perfil && !fotosFalhas.has(c.amigo.id); else inicialMulti" [src]="c.amigo.foto_perfil" alt="" (error)="fotosFalhas.add(c.amigo.id)">
+                <ng-template #inicialMulti><b>{{ iniciais(c.amigo.nome) }}</b></ng-template>
+              </span>
+              <span class="dock-avatar dock-extra" *ngIf="amigosExtras > 0">+{{ amigosExtras }}</span>
+            </span>
+            <span class="texto-especial texto-compacto">{{ resumoNomesAmigos }}</span>
           </span>
-        </button>
-      </div>
+          <span class="text-showcase" *ngIf="amigosConectados.length === 0">
+            <span class="texto-especial">{{ precisaLogin ? 'Entrar Novamente' : 'Conectar Amigos' }}</span>
+            <span class="texto-apoio">{{ precisaLogin ? 'Sua sessão expirou' : 'Sincronize seu Spotify' }}</span>
+          </span>
+        </span></span>
+      </span>
+      <span class="slide" [class.ativo]="slide === 1">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+          <span class="destaque-minimalista">{{ amigosConectados.length ? 'Sintonia Ativa' : 'Privacidade Total' }}</span>
+        </span>
+        <span class="box-informacao"><span class="box-bg"><span class="text-showcase">
+          <span class="texto-especial">{{ amigosConectados.length ? 'Ver Informações' : 'Você no Controle' }}</span>
+          <span class="texto-apoio">{{ amigosConectados.length === 1 ? 'Dados com ' + primeiroNomeAmigo : amigosConectados.length > 1 ? 'Gerencie suas ' + amigosConectados.length + ' conexões' : 'Escolha o que compartilhar' }}</span>
+        </span></span></span>
+      </span>
+      <span class="slide" [class.ativo]="slide === 2">
+        <span class="titulo-icone">
+          <span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
+          <span class="destaque-minimalista">{{ conviteAtivo ? 'Convite Pendente' : 'Expandir Conexões' }}</span>
+        </span>
+        <span class="box-informacao"><span class="box-bg"><span class="text-showcase">
+          <span class="texto-especial">{{ conviteAtivo ? 'Compartilhar Link' : 'Conectar Amigos' }}</span>
+          <span class="texto-apoio">{{ conviteAtivo ? validadeConvite : 'Gere um convite ou use um código' }}</span>
+        </span></span></span>
+      </span>
+    </span>
+    <span class="sr-only">{{ mensagensCard[0] }}</span>
+    <span class="carousel-progress" aria-hidden="true"><i *ngFor="let i of [0,1,2]" [class.current]="slide === i"></i></span>
+  </button>
 
-      <!-- Cenário B: Convite Ativo Pronto para Compartilhar -->
-      <div class="active-invite-box" *ngIf="conviteAtivo">
-        <div class="invite-status-header">
-          <div class="status-badge ativo">
-            <span class="badge-dot"></span>
-            <span>Link Ativo &bull; Válido por 7 dias</span>
-          </div>
+  <dialog #painel class="sync-dialog" [class.closing]="fechando" aria-labelledby="sync-panel-title" (cancel)="fecharPainel($event)" (click)="clicarFundo($event)">
+    <section class="sync-panel">
+      <header class="panel-header">
+        <div><span class="eyebrow">MÚSICA QUE APROXIMA</span><h2 id="sync-panel-title">Tunify Sync<span>✦</span></h2></div>
+        <button type="button" class="icon-button" aria-label="Fechar painel" (click)="fecharPainel()">×</button>
+      </header>
+      <nav class="panel-nav" aria-label="Tunify Sync">
+        <button type="button" [class.active]="vista === 'amigos' || vista === 'detalhes'" (click)="navegar('amigos')">Meu círculo <span>{{ amigosConectados.length }}</span></button>
+        <button type="button" [class.active]="vista === 'convidar'" (click)="navegar('convidar')">{{ conviteAtivo ? 'Meu convite' : 'Convidar amigo' }} <span>↗</span></button>
+      </nav>
+      <div #conteudo class="panel-scroll">
+        <div class="feedback error" role="alert" *ngIf="mensagemErro">{{ mensagemErro }}
+          <button type="button" *ngIf="precisaLogin" (click)="entrarNovamente()">Entrar novamente →</button>
+          <button type="button" *ngIf="!precisaLogin && !carregandoDados" (click)="carregarDadosIniciais()">Atualizar</button>
+        </div>
+        <div class="feedback success" role="status" *ngIf="mensagemSucesso">✓ {{ mensagemSucesso }}</div>
 
-          <button class="btn-revogar" (click)="revogarConviteAtual()" title="Cancelar este link" type="button">
-            Cancelar Link
-          </button>
+        <div class="view" *ngIf="vista === 'amigos'">
+          <div class="section-heading"><span class="eyebrow">BOAS COMPANHIAS</span><h3>Seu círculo musical.</h3><p>As pessoas com quem você escolheu se conectar.</p></div>
+          <div class="skeleton-list" *ngIf="carregandoDados && !dadosCarregados" aria-label="Carregando conexões"><div></div><div></div><div></div></div>
+          <ng-container *ngIf="dadosCarregados || !carregandoDados">
+            <div class="empty-state" *ngIf="!amigosConectados.length && !mensagemErro">
+              <div class="empty-art" aria-hidden="true"><span>♫</span><span>✦</span></div>
+              <h4>Toda boa música merece companhia.</h4><p>Convide alguém para o seu círculo. Cada pessoa escolhe o que quer compartilhar.</p>
+              <button class="primary" type="button" (click)="navegar('convidar')">Convidar meu primeiro amigo <span>↗</span></button>
+            </div>
+            <ng-container *ngIf="amigosConectados.length">
+              <div class="filters" aria-label="Filtrar conexões">
+                <button type="button" [class.selected]="filtro === 'todos'" [attr.aria-pressed]="filtro === 'todos'" (click)="filtro = 'todos'">Todas</button>
+                <button type="button" [class.selected]="filtro === 'veem'" [attr.aria-pressed]="filtro === 'veem'" (click)="filtro = 'veem'">Quem vê meus dados</button>
+                <button type="button" [class.selected]="filtro === 'compartilham'" [attr.aria-pressed]="filtro === 'compartilham'" (click)="filtro = 'compartilham'">Compartilha comigo</button>
+              </div>
+              <label class="search" *ngIf="amigosConectados.length > 5"><span>⌕</span><input type="search" [(ngModel)]="busca" placeholder="Buscar alguém no seu círculo" aria-label="Buscar amigo"></label>
+              <div class="friend-list">
+                <button type="button" class="friend-row" *ngFor="let c of conexoesFiltradas; let i = index" [style.--row-index]="i" (click)="editarPermissoes(c)">
+                  <span class="avatar"><img *ngIf="c.amigo.foto_perfil && !fotosFalhas.has(c.amigo.id); else inicialAmigo" [src]="c.amigo.foto_perfil" alt="" (error)="fotosFalhas.add(c.amigo.id)"><ng-template #inicialAmigo>{{ iniciais(c.amigo.nome) }}</ng-template></span>
+                  <span class="friend-text"><strong>{{ c.amigo.nome }}</strong><span>Você libera {{ contar(c.minhas_permissoes_para_ele) }} · Recebe {{ contar(c.permissoes_dele_para_mim) }}</span><span class="no-sharing" *ngIf="!contar(c.minhas_permissoes_para_ele) && !contar(c.permissoes_dele_para_mim)">Sem categorias compartilhadas</span></span>
+                  <span class="row-arrow" aria-hidden="true">↗</span>
+                </button>
+              </div>
+              <p class="filter-empty" *ngIf="!conexoesFiltradas.length">Nenhuma conexão neste filtro.</p>
+              <div class="quiet-note"><span>⌁</span><p>Conexão é uma escolha dos dois.<br>As permissões podem ser diferentes de cada lado.</p></div>
+            </ng-container>
+          </ng-container>
         </div>
 
-        <div class="link-display-row">
-          <div class="link-input-wrapper">
-            <input 
-              type="text" 
-              class="link-input" 
-              [value]="conviteAtivo.invite_url" 
-              readonly>
-          </div>
-
-          <button 
-            class="btn-copiar" 
-            [class.copiado]="linkCopiado"
-            (click)="copiarLink()" 
-            type="button">
-            <span *ngIf="!linkCopiado">📋 Copiar</span>
-            <span *ngIf="linkCopiado">✓ Copiado!</span>
-          </button>
-
-          <button 
-            class="btn-whatsapp" 
-            (click)="compartilharWhatsApp()" 
-            type="button" 
-            title="Enviar no WhatsApp">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.031 2C6.514 2 2.029 6.485 2.029 12.002c0 1.956.564 3.782 1.54 5.333L2.247 22l4.821-1.265c1.488.814 3.197 1.269 4.963 1.269 5.518 0 10.003-4.485 10.003-10.002C22.034 6.485 17.549 2 12.031 2zm5.82 14.286c-.244.685-1.218 1.257-1.996 1.424-.533.114-1.23.205-3.567-.763-2.986-1.237-4.912-4.275-5.06-4.474-.148-.198-1.209-1.611-1.209-3.072 0-1.462.766-2.18 1.039-2.477.273-.297.597-.371.796-.371.199 0 .398.002.57.01.183.008.43-.07.671.509.248.594.845 2.067.92 2.216.074.148.124.322.025.52-.099.198-.148.322-.297.495-.149.173-.313.387-.447.52-.149.148-.305.309-.131.607.174.298.775 1.278 1.662 2.069 1.141 1.018 2.103 1.334 2.401 1.483.298.149.472.124.646-.074.174-.199.745-.867.943-1.165.199-.297.397-.248.67-.148.273.099 1.739.82 2.037.969.298.149.497.223.571.347.075.124.075.719-.169 1.404z"/>
-            </svg>
-            <span>WhatsApp</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ============================================================== -->
-  <!-- ABA 2: AMIGOS CONECTADOS                                       -->
-  <!-- ============================================================== -->
-  <div class="sync-body" *ngIf="abaAtiva === 'amigos'">
-
-    <!-- Estado Vazio -->
-    <div class="empty-friends" *ngIf="amigosConectados.length === 0">
-      <div class="empty-icon-art">
-        <span class="icon-orb">🎧</span>
-      </div>
-      <h3 class="empty-title">Nenhum amigo conectado ainda</h3>
-      <p class="empty-desc">
-        Gere um link na aba de convites e envie para quem você divide o fone de ouvido.
-      </p>
-      <button class="btn-gerar-empty" (click)="abaAtiva = 'convidar'" type="button">
-        Convidar Meu Primeiro Amigo
-      </button>
-    </div>
-
-    <!-- Lista de Amigos Sincronizados -->
-    <div class="friends-list" *ngIf="amigosConectados.length > 0">
-      <div class="friend-card" *ngFor="let conexao of amigosConectados">
-        <div class="friend-avatar">
-          <img 
-            [src]="conexao.amigo.foto_perfil || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'" 
-            [alt]="conexao.amigo.nome" 
-            class="avatar-img">
-          <span class="online-indicator"></span>
+        <div class="view" *ngIf="vista === 'convidar'">
+          <ng-container *ngIf="!conviteAtivo; else convitePronto">
+            <div class="section-heading"><span class="eyebrow">AMPLIE SEU CÍRCULO</span><h3>Uma boa conexão<br>começa com um convite.</h3><p>Escolha o que você quer compartilhar. Seu amigo faz as próprias escolhas ao aceitar.</p></div>
+            <div class="permission-list">
+              <label class="permission-row" *ngFor="let categoria of categorias" [class.enabled]="permissoes[categoria.chave]">
+                <span class="category-icon" aria-hidden="true">{{ categoria.icone }}</span><span class="permission-copy"><strong>{{ categoria.nome }}</strong><small>{{ categoria.detalhe }}</small></span>
+                <input type="checkbox" [(ngModel)]="permissoes[categoria.chave]" [disabled]="gerandoConvite || precisaLogin" [attr.aria-label]="'Compartilhar ' + categoria.nome"><span class="switch" aria-hidden="true"></span>
+              </label>
+            </div>
+            <p class="selection-summary">{{ contar(permissoes) }} de 4 categorias selecionadas <span>· Só você decide</span></p>
+            <button class="primary full" type="button" (click)="gerarNovoConvite()" [disabled]="gerandoConvite || precisaLogin || carregandoDados">{{ gerandoConvite ? 'Preparando seu convite…' : 'Gerar link de convite' }} <span>↗</span></button>
+            <p class="fine-print">Um link de uso único, válido por 7 dias.</p>
+          </ng-container>
+          <ng-template #convitePronto>
+            <div class="section-heading"><span class="eyebrow">PRÓXIMA FAIXA: UMA CONEXÃO</span><h3>Seu convite<br>está pronto.</h3><p>Envie para quem você quer ter por perto.</p></div>
+            <div class="invite-ticket">
+              <span class="ticket-glow" aria-hidden="true"></span><span class="ticket-label">TUNIFY SYNC <span>↗</span></span>
+              <div class="ticket-art" aria-hidden="true"><span class="ticket-disc">♫</span><span class="ticket-disc">✦</span></div>
+              <strong>Uma música.<br>Dois universos.</strong><div class="ticket-meta"><span>{{ validadeConvite }}</span><span>USO ÚNICO</span></div>
+            </div>
+            <div class="share-buttons"><button class="primary" type="button" (click)="copiarLink()">{{ linkCopiado ? '✓ Link copiado!' : 'Copiar link' }} <span>↗</span></button><button class="secondary whatsapp" type="button" (click)="compartilharWhatsApp()">WhatsApp ↗</button></div>
+            <details class="invite-details"><summary>Permissões deste convite <span>{{ contar(conviteAtivo!.permissions) }} de 4</span></summary><div class="ticket-permissions"><span *ngFor="let categoria of categorias" [class.off]="!conviteAtivo!.permissions[categoria.chave]">{{ categoria.icone }} {{ categoria.nome }} <b>{{ conviteAtivo!.permissions[categoria.chave] ? 'Permitido' : 'Não compartilhado' }}</b></span></div><p>Para mudar estas escolhas, cancele o link e gere outro.</p></details>
+            <button type="button" class="text-button" (click)="mostrarCodigo = !mostrarCodigo" [attr.aria-expanded]="mostrarCodigo">{{ mostrarCodigo ? 'Ocultar código' : 'Ver código e link' }} <span>⌁</span></button>
+            <div class="code-box" *ngIf="mostrarCodigo"><span>CÓDIGO DO CONVITE</span><code>{{ conviteAtivo!.invite_code }}</code><label>Link completo<input readonly [value]="conviteAtivo!.invite_url" aria-label="Link completo do convite" (focus)="$any($event.target).select()"></label></div>
+            <button type="button" class="text-button danger" [disabled]="revogando" (click)="revogarConviteAtual()">{{ revogando ? 'Cancelando…' : 'Cancelar este convite' }}</button>
+          </ng-template>
+          <button type="button" class="received-link" (click)="navegar('receber')">Já recebeu um convite? <strong>Abra por aqui →</strong></button>
         </div>
 
-        <div class="friend-info">
-          <h4 class="friend-name">{{ conexao.amigo.nome }}</h4>
-          <span class="friend-status-badge">Sincronizado &bull; Ativo</span>
+        <div class="view" *ngIf="vista === 'receber'">
+          <button type="button" class="back-button" (click)="navegar('convidar')">← Voltar</button>
+          <div class="section-heading"><span class="eyebrow">SUA PRÓXIMA CONEXÃO</span><h3>Alguém chamou<br>você para perto?</h3><p>Cole o link ou o código que recebeu. Você confere tudo antes de aceitar.</p></div>
+          <form (ngSubmit)="abrirConviteRecebido()"><label class="input-label" for="sync-code">Link ou código do convite</label><input id="sync-code" name="convite" class="code-input" [(ngModel)]="conviteRecebido" placeholder="vibe-…" autocomplete="off" [attr.aria-invalid]="!!erroCodigo" aria-describedby="sync-code-error"><p class="field-error" id="sync-code-error" *ngIf="erroCodigo" role="alert">{{ erroCodigo }}</p><button class="primary full" type="submit">Ver convite <span>↗</span></button></form>
+        </div>
 
-          <div class="friend-perms-summary">
-            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_minutes">⏱️ Pódio</span>
-            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_tracks">🎵 Top Músicas</span>
-            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_top_artists">🎤 Top Artistas</span>
-            <span class="perm-pill" [class.on]="conexao.permissoes_dele_para_mim.share_peak_time">🌙 Pico</span>
-          </div>
+        <div class="view" *ngIf="vista === 'detalhes' && selecionado as amigo">
+          <button type="button" class="back-button" (click)="navegar('amigos')">← Meu círculo</button>
+          <div class="connection-hero"><span class="avatar large"><img *ngIf="amigo.amigo.foto_perfil && !fotosFalhas.has(amigo.amigo.id); else inicialDetalhes" [src]="amigo.amigo.foto_perfil" alt="" (error)="fotosFalhas.add(amigo.amigo.id)"><ng-template #inicialDetalhes>{{ iniciais(amigo.amigo.nome) }}</ng-template></span><span class="eyebrow">NO SEU CÍRCULO</span><h3>{{ amigo.amigo.nome }}</h3><p>Uma conexão, escolhas de cada lado.</p></div>
+          <section class="sharing-section" *ngIf="permissoesEdicao as edicao"><h4>Você compartilha <span>→</span></h4><p>Escolha o que {{ amigo.amigo.nome.split(' ')[0] }} pode ver.</p>
+            <div class="permission-list compact"><label class="permission-row" *ngFor="let categoria of categorias" [class.enabled]="edicao[categoria.chave]"><span class="category-icon" aria-hidden="true">{{ categoria.icone }}</span><span class="permission-copy"><strong>{{ categoria.nome }}</strong></span><input type="checkbox" [(ngModel)]="edicao[categoria.chave]" [disabled]="salvandoPermissoes || desconectando" [attr.aria-label]="'Compartilhar ' + categoria.nome"><span class="switch" aria-hidden="true"></span></label></div>
+            <button class="primary full" type="button" [disabled]="salvandoPermissoes || desconectando" (click)="salvarPermissoes()">{{ salvandoPermissoes ? 'Salvando…' : 'Salvar minhas permissões' }} <span>✓</span></button>
+          </section>
+          <section class="sharing-section incoming"><h4>Compartilhado com você <span>←</span></h4><p>Estas escolhas são de {{ amigo.amigo.nome.split(' ')[0] }}.</p><div class="incoming-row" *ngFor="let categoria of categorias" [class.allowed]="amigo.permissoes_dele_para_mim[categoria.chave]"><span>{{ categoria.icone }} &nbsp;{{ categoria.nome }}</span><small>{{ amigo.permissoes_dele_para_mim[categoria.chave] ? 'Permitido' : 'Não compartilhado' }}</small></div></section>
+          <button type="button" class="text-button danger" *ngIf="!confirmarDesconexao" (click)="confirmarDesconexao = true">Desconectar de {{ amigo.amigo.nome.split(' ')[0] }}</button>
+          <div class="disconnect-confirm" *ngIf="confirmarDesconexao" role="group" aria-label="Confirmar desconexão"><strong>Encerrar esta conexão?</strong><p>O compartilhamento será interrompido para os dois. Vocês podem se reconectar com um novo convite.</p><div><button type="button" class="secondary" [disabled]="desconectando" (click)="confirmarDesconexao = false">Manter conexão</button><button type="button" class="danger-button" [disabled]="desconectando" (click)="desconectar(amigo)">{{ desconectando ? 'Desconectando…' : 'Sim, desconectar' }}</button></div></div>
         </div>
       </div>
-    </div>
-
-  </div>
-
-</section>
+      <footer class="panel-footer"><span aria-hidden="true">⌁</span> Seu círculo. Suas escolhas.<span class="footer-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span></footer>
+    </section>
+  </dialog>
+</div>

@@ -21,6 +21,7 @@ class User(Base):
 
     # 3. Nome de Exibição
     display_name = Column(String, nullable=True)
+    foto_perfil = Column(String, nullable=True)
 
     # 4. E-mail
     email = Column(String, unique=True, index=True, nullable=True)

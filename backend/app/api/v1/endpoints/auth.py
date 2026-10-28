@@ -1,5 +1,5 @@
 # Ferramentas do FastAPI para criar rotas, injetar dependências e lançar erros HTTP.
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 
 # Ferramenta para redirecionar o usuário para outra página (neste caso, o site do Spotify).
 from fastapi.responses import RedirectResponse
@@ -12,6 +12,7 @@ import urllib.parse
 import requests
 import base64
 import os
+import secrets
 
 # Importa as variáveis de ambiente.
 from app.core.config import settings
@@ -22,13 +23,16 @@ from app.core.database import get_db
 # Importa o schema do Usuário no banco.
 from app.models.user import User
 
-from fastapi import Query
-
 # 🚨 NOVIDADES AQUI NO TOPO: Importando o nosso chaveiro e as ferramentas do Pydantic
-from app.core.security import get_password_hash, verify_password, criar_token_jwt
+from app.core.security import get_password_hash, verify_password, criar_token_jwt, obter_usuario_atual
 from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
+
+
+@router.get("/me")
+def minha_identidade(usuario: User = Depends(obter_usuario_atual)):
+    return {"id": usuario.id, "nome": usuario.display_name, "email": usuario.email}
 
 
 # ======> MOLDES DO PYDANTIC (Para o FastAPI ler o que o Angular manda)
@@ -48,7 +52,16 @@ class LoginLocalRequest(BaseModel):
 # 3) Redireciona o usuário para a página oficial de autorização do Spotify.
 # --------------------------------------------------------------------------- #
 @router.get("/login")
-def login_spotify():
+def login_spotify(request: Request):
+    # O cookie de state precisa nascer no mesmo host que recebe o callback.
+    # Em desenvolvimento, localhost e 127.0.0.1 são hosts diferentes.
+    callback_url = urllib.parse.urlsplit(settings.SPOTIFY_REDIRECT_URI)
+    if request.url.netloc != callback_url.netloc:
+        login_url = urllib.parse.urlunsplit((
+            callback_url.scheme, callback_url.netloc,
+            callback_url.path.rsplit("/", 1)[0] + "/login", "", "",
+        ))
+        return RedirectResponse(login_url)
     try:
         print("[INFO] Iniciando redirecionamento para o login do Spotify...")
         
@@ -77,7 +90,9 @@ def login_spotify():
         ]
         
         # Parâmetros obrigatórios exigidos pela documentação do Spotify.
+        oauth_state = secrets.token_urlsafe(32)
         params = {
+            "state": oauth_state,
             "client_id": settings.SPOTIFY_CLIENT_ID,
             "response_type": "code",
             "redirect_uri": settings.SPOTIFY_REDIRECT_URI,
@@ -89,7 +104,11 @@ def login_spotify():
         url = f"https://accounts.spotify.com/authorize?{urllib.parse.urlencode(params)}"
         
         print("[SUCESSO] Usuário sendo redirecionado para a tela de autorização.")
-        return RedirectResponse(url)
+        response = RedirectResponse(url)
+        response.set_cookie("tunify_oauth_state", oauth_state, max_age=600,
+                            httponly=True, secure=settings.SPOTIFY_REDIRECT_URI.startswith("https://"),
+                            samesite="lax", path="/api/v1/auth/callback")
+        return response
 
     except Exception as error:
         # Log do erro no terminal.
@@ -106,20 +125,27 @@ def login_spotify():
 # ------------------------------------------------------------------------- #
 @router.get("/callback")
 def callback_spotify(
+    request: Request,
     # 🚨 1. Mudamos a porta de entrada para aceitar o "error" e tornar o "code" opcional
     code: str | None = None, 
     error: str | None = None, 
+    state: str | None = None,
     db: Session = Depends(get_db)
 ):
+    expected_state = request.cookies.get("tunify_oauth_state")
+    if not state or not expected_state or not secrets.compare_digest(state, expected_state):
+        raise HTTPException(status_code=400, detail="Login inválido ou expirado. Inicie o login novamente.")
     # 🚨 2. Trava de segurança 1: A usuária clicou em "Cancelar"
     if error == "access_denied":
         print("[AVISO] O login foi cancelado na tela do Spotify.")
         
         # Puxa a URL do Render, se não achar, usa o Localhost
-        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200").rstrip("/")
         
         # Manda ela de volta para a tela de login para tentar de novo
-        return RedirectResponse(url=f"{base_url}/login?erro=cancelado", status_code=302)
+        response = RedirectResponse(url=f"{base_url}/login?erro=cancelado", status_code=302)
+        response.delete_cookie("tunify_oauth_state", path="/api/v1/auth/callback")
+        return response
         
     # 🚨 3. Trava de segurança 2: A URL veio vazia, sem código e sem erro
     if not code:
@@ -176,8 +202,12 @@ def callback_spotify(
             
         user_profile = me_response.json()
         spotify_id = user_profile.get("id")
-        display_name = user_profile.get("display_name")
+        display_name = user_profile.get("display_name") or user_profile.get("id")
         email = user_profile.get("email")
+        images = user_profile.get("images") or []
+        foto_perfil = images[0].get("url") if images else None
+        if not spotify_id or not email:
+            raise HTTPException(status_code=400, detail="O Spotify não informou a identidade da conta.")
 
 
         # --- SALVA OU ATUALIZA O USUÁRIO NO BANCO DE DADOS ---
@@ -191,6 +221,8 @@ def callback_spotify(
             if refresh_token:
                 db_user.refresh_token = refresh_token
             db_user.display_name = display_name
+            db_user.email = email
+            db_user.foto_perfil = foto_perfil
             
             # O commit "salva" as alterações no banco de fato.
             db.commit()
@@ -201,6 +233,7 @@ def callback_spotify(
             novo_usuario = User(
                 spotify_id=spotify_id,
                 display_name=display_name,
+                foto_perfil=foto_perfil,
                 email=email,
                 access_token=access_token,
                 refresh_token=refresh_token
@@ -212,23 +245,28 @@ def callback_spotify(
             print(f"[SUCESSO] Novo usuário '{display_name}' criado no banco de dados.")
 
         # Retorna o resultado final para o Angular usando a variável de ambiente.
-        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        base_url = os.getenv("FRONTEND_URL", "http://localhost:4200").rstrip("/")
         frontend_url = f"{base_url}/callback"
         
         # Empacotamos o token e o nome para o Angular salvar na memória (LocalStorage).
         params = {
             "token": access_token,
+            "jwt": criar_token_jwt({"sub": email}),
             "nome": display_name,
             "email": email
         }
         
         # Juntamos tudo e mandamos o usuário de volta pro Front-end.
-        url_redirecionamento = f"{frontend_url}?{urllib.parse.urlencode(params)}"
+        url_redirecionamento = f"{frontend_url}#{urllib.parse.urlencode(params)}"
         
         print(f"[SUCESSO] Redirecionando usuário para o Angular...")
         
         # Usamos o status_code=302 (Found) que é o padrão da web para redirecionamentos temporários.
-        return RedirectResponse(url=url_redirecionamento, status_code=302)
+        response = RedirectResponse(url=url_redirecionamento, status_code=302)
+        response.delete_cookie("tunify_oauth_state", path="/api/v1/auth/callback")
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
 
     except HTTPException as http_exc:
         # Se for um erro que nós mesmos lançamos (como o HTTPException acima), apenas repassamos ele.
@@ -250,7 +288,10 @@ def callback_spotify(
 # Recebe o e-mail dela e a senha nova, e salva tudo criptografado no banco.
 # --------------------------------------------------------------------------- #
 @router.post("/local/cadastrar-senha")
-def cadastrar_senha(dados: CadastrarSenhaRequest, db: Session = Depends(get_db)):
+def cadastrar_senha(dados: CadastrarSenhaRequest, db: Session = Depends(get_db),
+                    usuario_atual: User = Depends(obter_usuario_atual)):
+    if dados.email != usuario_atual.email:
+        raise HTTPException(status_code=403, detail="Você só pode configurar a própria senha.")
     print(f"[INFO] Tentando cadastrar senha local para o email: {dados.email}")
     
     # 1. Verifica se a pessoa já existe no banco (ela TÊM que ter entrado pelo Spotify antes)
