@@ -20,7 +20,7 @@
     <div class="painel-gavetas">
       
       <!-- GAVETA 1: HISTÓRICO RECENTE -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaHistoricoAberta}">
+      <div id="gaveta-historico" class="gaveta-item" [ngClass]="{'aberta': gavetaHistoricoAberta}">
         <button class="gaveta-header" (click)="alternarGavetaHistorico()">
           <div class="gaveta-info">
             <div class="icone-badge azul">
@@ -43,7 +43,7 @@
       </div>
 
       <!-- GAVETA 2: TOP 10 MÚSICAS MENSAIS -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopMusicasAberta}">
+      <div id="gaveta-top-musicas" class="gaveta-item" [ngClass]="{'aberta': gavetaTopMusicasAberta}">
         <button class="gaveta-header" (click)="alternarGavetaTopMusicas()">
           <div class="gaveta-info">
             <div class="icone-badge dourado">
@@ -66,7 +66,7 @@
       </div>
 
       <!-- GAVETA 3: TOP 15 ARTISTAS MENSAIS -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopArtistasAberta}">
+      <div id="gaveta-top-artistas" class="gaveta-item" [ngClass]="{'aberta': gavetaTopArtistasAberta}">
         <button class="gaveta-header" (click)="alternarGavetaTopArtistas()">
           <div class="gaveta-info">
             <div class="icone-badge verde">
@@ -89,7 +89,7 @@
       </div>
 
       <!-- GAVETA 4: GRÁFICO DE MINUTOS OUVIDOS -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaTopMinutosAberta}">
+      <div id="gaveta-imersao" class="gaveta-item" [ngClass]="{'aberta': gavetaTopMinutosAberta}">
         <button class="gaveta-header" (click)="alternarGavetaTopMinutos()">
           <div class="gaveta-info">
             <div class="icone-badge cinza">
@@ -112,7 +112,7 @@
       </div>
 
       <!-- GAVETA 5: GRÁFICO DIÁRIO -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaGraficoDiarioAberta}">
+      <div id="gaveta-jornada-diaria" class="gaveta-item" [ngClass]="{'aberta': gavetaGraficoDiarioAberta}">
         <button class="gaveta-header" (click)="alternarGavetaGraficoDiario()">
           <div class="gaveta-info">
             <div class="icone-badge roxo">
@@ -135,7 +135,7 @@
       </div>
 
       <!-- GAVETA 6: HORÁRIO DE PICO -->
-      <div class="gaveta-item" [ngClass]="{'aberta': gavetaHorarioPicoAberta}">
+      <div id="gaveta-horario-pico" class="gaveta-item" [ngClass]="{'aberta': gavetaHorarioPicoAberta}">
         <button class="gaveta-header" (click)="alternarGavetaHorarioPico()">
           <div class="gaveta-info">
             <div class="icone-badge laranja">

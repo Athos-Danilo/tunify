@@ -369,49 +369,41 @@
 }
 
 .btn-ghost-historico {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50px;
+  border-radius: 50%;
   color: var(--branco-dk);
   cursor: pointer;
   outline: none;
   backdrop-filter: blur(5px);
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  .icone-grafico {
-    transition: transform 0.4s ease;
-    
-    line {
-      transform-origin: bottom;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-  }
-
-  .texto-btn {
-    font-family: var(--fonte-principal);
-    font-weight: 600;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
+  .icone-info {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(2, 133, 255, 0.14);
+    border-color: rgba(2, 133, 255, 0.55);
+    color: var(--azul-claro-dk, #2C9FFF);
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 20px rgba(2, 133, 255, 0.2);
 
-    .icone-grafico {
-      transform: scale(1.1);
-
-      /* Animação do gráfico estilo equalizador musical */
-      .barra-1 { transform: scaleY(1.4); }
-      .barra-2 { transform: scaleY(1.7); }
-      .barra-3 { transform: scaleY(0.8); }
+    .icone-info {
+      transform: scale(1.12);
     }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--azul-dk, #0285FF);
+    outline-offset: 3px;
   }
 
   &:active {
@@ -585,8 +577,10 @@
     color: var(--preto-lt);
 
     &:hover {
-      background: rgba(0, 0, 0, 0.08);
-      border-color: rgba(0, 0, 0, 0.3);
+      background: rgba(2, 133, 255, 0.1);
+      border-color: rgba(2, 133, 255, 0.45);
+      color: var(--azul-lt, #0285FF);
+      box-shadow: 0 8px 16px rgba(2, 133, 255, 0.15);
     }
   }
 }
