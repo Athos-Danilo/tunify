@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import gsap from 'gsap';
 import { HeaderComponent } from '../../components/header/header.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -35,7 +36,19 @@ export class EstatisticasComponent implements OnInit {
   private authService = inject(AuthService);
   private spotifyService = inject(SpotifyService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+  private scrollRafId: number | null = null;
+
+  private readonly gavetasPorQuery: Record<string, () => void> = {
+    'historico': () => { this.gavetaHistoricoAberta = true; },
+    'top-musicas': () => { this.gavetaTopMusicasAberta = true; },
+    'top-artistas': () => { this.gavetaTopArtistasAberta = true; },
+    'imersao': () => { this.gavetaTopMinutosAberta = true; },
+    'jornada-diaria': () => { this.gavetaGraficoDiarioAberta = true; },
+    'horario-pico': () => { this.gavetaHorarioPicoAberta = true; },
+  };
 
   ngOnInit() {
     // Sincroniza o modo claro/escuro com o restante da aplicação
@@ -50,7 +63,39 @@ export class EstatisticasComponent implements OnInit {
       }
     }
 
+    this.destroyRef.onDestroy(() => {
+      if (this.scrollRafId !== null && typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(this.scrollRafId);
+        this.scrollRafId = null;
+      }
+    });
+
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const gaveta = params.get('gaveta');
+        if (gaveta && this.gavetasPorQuery[gaveta]) {
+          this.gavetasPorQuery[gaveta]();
+          this.cdr.markForCheck();
+          this.rolarParaGaveta(gaveta);
+        }
+      });
+
     this.carregarDadosUsuario();
+  }
+
+  private rolarParaGaveta(gaveta: string) {
+    if (typeof document === 'undefined' || typeof requestAnimationFrame !== 'function') return;
+    if (this.scrollRafId !== null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this.scrollRafId);
+    }
+    this.scrollRafId = requestAnimationFrame(() => {
+      this.scrollRafId = null;
+      document.getElementById(`gaveta-${gaveta}`)?.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
   }
 
   carregarDadosUsuario() {
