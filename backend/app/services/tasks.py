@@ -1,7 +1,7 @@
 import logging
+import asyncio
+import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 
 # O 'func' do SQLAlchemy para fazer as somas matemáticas direto no banco!
 from sqlalchemy import func
@@ -13,20 +13,29 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Tunify-Robots")
 
 # Instância do nosso Agendador Assíncrono (Ele não trava o FastAPI!)
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(
+    timezone=datetime.timezone.utc,
+    job_defaults={
+        "coalesce": True,
+        "max_instances": 1,
+        "misfire_grace_time": None,
+    },
+)
 
 from app.models.track import TrackCache
 from app.models.artist import ArtistCache # 🚨 REATIVADO: Importando a tabela de artistas
-import asyncio
-import time 
-import datetime
 from app.core.database import SessionLocal 
 from app.models.user import User
 from app.models.history import MonthlyHistory, TopTwoHundred, MinutesListened, MonthlyTopArtist, MonthlyTopTrack, DailyMinutesListened
-from app.models.system import SystemMetadata
 from app.services.spotify_service import SpotifyService
 from app.services.listening_history import record_play
 from app.services.genius_service import GeniusService # 🚨 NOVO: O carteiro do Genius
+from app.services.robot_scheduler import (
+    RobotDefinition,
+    get_robot_lock,
+    initialize_robots,
+    upsert_robot_success_metadata,
+)
 from app.core.config import settings
 
 # ======> Importações do Microserviço de Letras
@@ -38,7 +47,7 @@ from app.api_tunify_liricys.schemas.letras import LetraSchema
 # 1) Roda a cada 100 minutos.
 # 2) Salva as músicas e "planta a semente" dos artistas novos na tabela ArtistCache.
 # -------------------------------------------------------------------------------------- #
-async def robo_rastreador_hourly():
+async def _robo_rastreador_hourly_core():
     logger.info("🤖 [RASTREADOR] Acordando para buscar novas músicas...")
     
     spotify = SpotifyService()
@@ -60,7 +69,7 @@ async def robo_rastreador_hourly():
                 await asyncio.sleep(5) 
             else:
                 logger.error(f"❌ [RASTREADOR] Banco não acordou: {db_error}")
-                return
+                raise db_error
         finally:
             db_inicial.close()
 
@@ -203,34 +212,30 @@ async def robo_rastreador_hourly():
 
             await asyncio.sleep(35) 
 
-        # Registra a execução nos metadados do sistema para o Frontend consumir
-        db_meta = SessionLocal()
-        try:
-            agora = datetime.datetime.now(datetime.timezone.utc)
-            proxima = agora + datetime.timedelta(minutes=100)
-            
-            meta = db_meta.query(SystemMetadata).filter(SystemMetadata.key == "rastreador_spotify").first()
-            if not meta:
-                meta = SystemMetadata(key="rastreador_spotify", last_run=agora, next_run=proxima)
-                db_meta.add(meta)
-            else:
-                meta.last_run = agora
-                meta.next_run = proxima
-            
-            db_meta.commit()
-            logger.info("🕒 [RASTREADOR] Horários de sincronização atualizados no banco.")
-        except Exception as e:
-            logger.error(f"❌ [RASTREADOR] Erro ao atualizar metadados: {e}")
-        finally:
-            db_meta.close()
-
     finally:
         logger.info("🤖 [RASTREADOR] Ciclo finalizado.")
 
 
+async def robo_rastreador_hourly():
+    async with get_robot_lock():
+        await _robo_rastreador_hourly_core()
+        agora = datetime.datetime.now(datetime.timezone.utc)
+        proxima = agora + datetime.timedelta(minutes=100)
+        try:
+            upsert_robot_success_metadata(
+                lambda: SessionLocal(),
+                "rastreador_spotify",
+                agora,
+                proxima,
+            )
+            logger.info("🕒 [RASTREADOR] Horários de sincronização atualizados no banco.")
+        except Exception as e:
+            logger.error(f"❌ [RASTREADOR] Erro ao atualizar metadados: {e}")
+
+
 # ======> Robô 2: O Agregador Mensal (O Rollup)
 # -------------------------------------------------------------------------------------- #
-async def robo_agregador_mensal():
+async def _robo_agregador_mensal_core():
     logger.info("🧹 [AGREGADOR] Iniciando a faxina mensal...")
     db = SessionLocal()
     
@@ -324,8 +329,13 @@ async def robo_agregador_mensal():
     except Exception as e:
         logger.error(f"❌ [AGREGADOR] Erro: {e}")
         db.rollback()
+        raise
     finally:
         db.close()
+
+
+async def robo_agregador_mensal():
+    await _robo_agregador_mensal_core()
 
 
 # 🚨 [NOVO] Robô 3: O Faxineiro de Artistas (A Fila do Genius)
@@ -333,7 +343,7 @@ async def robo_agregador_mensal():
 # 2) Pega quem está sem foto OU com foto vencida (> 15 dias).
 # 3) Processa em fila lenta para o Genius não bloquear.
 # -------------------------------------------------------------------------------------- #
-async def robo_faxineiro_artistas():
+async def _robo_faxineiro_artistas_core():
     logger.info("🧹 [FAXINEIRO] Iniciando manutenção de fotos via Genius...")
     db = SessionLocal()
     genius = GeniusService()
@@ -373,9 +383,15 @@ async def robo_faxineiro_artistas():
 
     except Exception as e:
         logger.error(f"❌ [FAXINEIRO] Erro crítico na faxina: {e}")
+        raise
     finally:
         db.close()
         logger.info("🎉 [FAXINEIRO] Turno de madrugada encerrado.")
+
+
+async def robo_faxineiro_artistas():
+    async with get_robot_lock():
+        await _robo_faxineiro_artistas_core()
 
 
 # ======> Robô 4: O Semeador Aleatório de Letras
@@ -383,7 +399,7 @@ async def robo_faxineiro_artistas():
 # 2) Pega 100 músicas aleatórias do banco que não tem letra.
 # 3) Envia para o MongoDB e acorda a API em Go.
 # -------------------------------------------------------------------------------------- #
-async def robo_semeador_letras():
+async def _robo_semeador_letras_core():
     logger.info("🌱 [SEMEADOR] Acordando para semear letras no MongoDB...")
     db = SessionLocal()
     letras_repo = LetrasRepository()
@@ -436,51 +452,56 @@ async def robo_semeador_letras():
                 
     except Exception as e:
         logger.error(f"❌ [SEMEADOR] Erro crítico: {e}")
+        raise
     finally:
         db.close()
         logger.info("🎉 [SEMEADOR] Turno de madrugada encerrado.")
 
 
+async def robo_semeador_letras():
+    async with get_robot_lock():
+        await _robo_semeador_letras_core()
+
+
+ROBOT_DEFINITIONS = [
+    RobotDefinition(
+        key="rastreador_spotify",
+        name="Busca histórico e planta sementes",
+        kind="interval",
+        interval_minutes=100,
+        runner=_robo_rastreador_hourly_core,
+    ),
+    RobotDefinition(
+        key="agregador_mensal",
+        name="Consolida dados mensais",
+        kind="cron",
+        cron_kwargs={"day": 1, "hour": 3, "minute": 0},
+        runner=_robo_agregador_mensal_core,
+    ),
+    RobotDefinition(
+        key="faxineiro_artistas",
+        name="Atualiza fotos de artistas via Genius",
+        kind="cron",
+        cron_kwargs={"hour": 4, "minute": 0},
+        runner=_robo_faxineiro_artistas_core,
+    ),
+    RobotDefinition(
+        key="semeador_letras",
+        name="Alimenta a fila do MongoDB para o microserviço Go",
+        kind="cron",
+        cron_kwargs={"hour": 5, "minute": 0},
+        runner=_robo_semeador_letras_core,
+    ),
+]
 
 
 # ======> Função de Ignição
 # -------------------------------------------------------------------------------------- #
 def iniciar_robos():
-    # Robô 1: De 100 em 100 min (Rastreador + Olheiro)
-    scheduler.add_job(
-        robo_rastreador_hourly,
-        trigger=IntervalTrigger(minutes=100),
-        id="rastreador_spotify",
-        name="Busca histórico e planta sementes",
-        replace_existing=True
+    initialize_robots(
+        scheduler=scheduler,
+        robots=ROBOT_DEFINITIONS,
+        session_factory=lambda: SessionLocal(),
+        now_fn=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
-
-    # Robô 2: Todo dia 1º (Calcula as métricas)
-    scheduler.add_job(
-        robo_agregador_mensal,
-        trigger=CronTrigger(day=1, hour=3, minute=0),
-        id="agregador_mensal",
-        name="Consolida dados mensais",
-        replace_existing=True
-    )
-
-    # 🚨 Robô 3: Todo dia às 4 da manhã (Faxineiro do Genius)
-    scheduler.add_job(
-        robo_faxineiro_artistas,
-        trigger=CronTrigger(hour=4, minute=0),
-        id="faxineiro_artistas",
-        name="Atualiza fotos de artistas via Genius",
-        replace_existing=True
-    )
-
-    # 🌱 Robô 4: Todo dia às 5 da manhã (Semeador Aleatório de Letras)
-    scheduler.add_job(
-        robo_semeador_letras,
-        trigger=CronTrigger(hour=5, minute=0),
-        id="semeador_letras",
-        name="Alimenta a fila do MongoDB para o microserviço Go",
-        replace_existing=True
-    )
-
-    scheduler.start()
-    logger.info("Central de Robôs do Tunify iniciada com Integração Genius e Letras! 🚀")
+    logger.info("Central de Robôs do Tunify iniciada com cronômetros persistentes! 🚀")
